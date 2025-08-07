@@ -2,40 +2,28 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Anime per Genere</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #f0f0f0;
-      padding: 40px;
-    }
-    h1 { text-align: center; }
-    ul {
-      max-width: 600px;
-      margin: auto;
-      padding: 0;
-      list-style: none;
-    }
-    li {
-      background: white;
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 6px rgba(0,0,0,0.1);
-    }
-    a {
-      text-decoration: none;
-      color: #007BFF;
-    }
-  </style>
+  <title>Anime Site</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Anime per Genere</h1>
-  <ul>
-    <li><a href="anime_by_genre/action.html">Azione</a></li>
-    <li><a href="anime_by_genre/romance.html">Romantico</a></li>
-    <li><a href="anime_by_genre/comedy.html">Commedia</a></li>
-    <!-- Puoi generarli automaticamente anche in Python -->
-  </ul>
+
+<!-- Contenitore dove verrà caricato l'header -->
+<div id="header-placeholder"></div>
+
+<!-- Contenuto della pagina -->
+<main>
+  <h1>Benvenuto su AniMMunity!</h1>
+  <p>Scopri gli anime per genere!</p>
+</main>
+
+<script>
+  // JavaScript per caricare l'header dinamicamente
+  fetch('header.html')
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById('header-placeholder').innerHTML = data;
+    });
+</script>
+
 </body>
 </html>
