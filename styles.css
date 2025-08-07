@@ -55,13 +55,13 @@
 
 .anime-footer {
   background: #ffffff;
-  margin: 20px auto 40px auto;
+  margin: 40px auto 20px auto;
   padding: 20px 30px;
   border-radius: 12px;
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07); /* uguale all'header */
   max-width: 1000px;
   font-size: 14px;
-  color: #555;
+  color: #333; /* stesso colore base */
 }
 
 .footer-inner {
@@ -76,11 +76,13 @@
   align-items: center;
   gap: 10px;
   font-weight: 500;
+  color: #333;
 }
 
 .footer-logo img {
-  height: 30px;
+  height: 40px; /* come l'header */
   border-radius: 8px;
+  margin-right: 10px; /* come l'header-logo */
 }
 
 .footer-links {
@@ -92,9 +94,13 @@
 .footer-links a {
   text-decoration: none;
   color: #333;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
 }
 
 .footer-links a:hover {
-  color: #000;
+  background-color: #000;
+  color: white;
 }
