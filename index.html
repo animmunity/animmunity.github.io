@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- Header verrà caricato dinamicamente -->
+  <!-- Header caricato dinamicamente -->
   <div id="header-placeholder"></div>
 
   <!-- Contenuto principale -->
@@ -17,12 +17,21 @@
     <p>Questa è la homepage. Esplora il nostro magazine o contattaci.</p>
   </main>
 
-  <!-- Script per includere header.html -->
+  <!-- Footer caricato dinamicamente -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Script per includere header e footer -->
   <script>
     fetch("header.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("header-placeholder").innerHTML = data;
+      });
+
+    fetch("footer.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("footer-placeholder").innerHTML = data;
       });
   </script>
 
