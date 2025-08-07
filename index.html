@@ -38,7 +38,7 @@
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Script per header, footer e tabella -->
+  <!-- Script JS -->
   <script>
     // Carica header e footer
     fetch("header.html")
@@ -49,7 +49,7 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Carica CSV e popola DataTable
+    // Carica CSV e popola la tabella
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
@@ -57,22 +57,30 @@
         success: function (csvData) {
           const rows = csvData.trim().split("\n");
           const headers = rows[0].split(",");
+
           const pictureIndex = headers.indexOf("main_picture");
           const titleIndex = headers.indexOf("title");
           const synopsisIndex = headers.indexOf("synopsis");
 
-          const tableData = rows.slice(1).map(row => {
-            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            const img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
-            const title = values[titleIndex]?.replace(/^"|"$/g, "") || "";
-            const synopsis = values[synopsisIndex]?.replace(/^"|"$/g, "") || "";
+          const tableData = [];
 
-            return [
+          for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // CSV-safe split
+
+            const img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
+            const title = values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo";
+            const synopsisRaw = values[synopsisIndex]?.replace(/^"|"$/g, "");
+            const synopsis = synopsisRaw && synopsisRaw.length > 0
+              ? (synopsisRaw.length > 300 ? synopsisRaw.slice(0, 300) + "..." : synopsisRaw)
+              : "Nessuna descrizione disponibile.";
+
+            tableData.push([
               `<img src="${img}" alt="${title}" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
               title,
-              synopsis.length > 300 ? synopsis.slice(0, 300) + "..." : synopsis
-            ];
-          });
+              synopsis
+            ]);
+          }
 
           $('#animeTable').DataTable({
             data: tableData,
