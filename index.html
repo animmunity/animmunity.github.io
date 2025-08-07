@@ -15,13 +15,12 @@
   <div id="header-placeholder"></div>
 
   <!-- Contenuto principale -->
-  <main style="max-width:1000px; margin:20px auto; padding:20px; background:#fff; border-radius:12px;">
+  <main class="anime-main">
     <h1>Benvenuto su AniMMunity</h1>
-    <p>Scopri il nostro archivio anime:</p>
+    <p>Scopri il nostro archivio anime aggiornato in tempo reale.</p>
 
-    <!-- Tabella animata -->
     <div class="datatable-container">
-      <table id="animeTable" class="display" style="width:100%">
+      <table id="animeTable" class="display">
         <thead>
           <tr>
             <th>Titolo</th>
@@ -38,11 +37,11 @@
   <!-- Footer caricato dinamicamente -->
   <div id="footer-placeholder"></div>
 
-  <!-- JQuery & DataTables JS -->
+  <!-- Script jQuery + DataTables -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Script per includere header e footer -->
+  <!-- Includi header e footer -->
   <script>
     fetch("header.html")
       .then(response => response.text())
@@ -56,7 +55,7 @@
         document.getElementById("footer-placeholder").innerHTML = data;
       });
 
-    // Inizializza DataTable con CSV
+    // Inizializzazione DataTables
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
@@ -68,7 +67,17 @@
 
           $('#animeTable').DataTable({
             data: tableData,
-            columns: headers.map(h => ({ title: h }))
+            columns: headers.map(h => ({ title: h })),
+            responsive: true,
+            language: {
+              search: "Cerca:",
+              lengthMenu: "Mostra _MENU_ anime",
+              info: "Mostra da _START_ a _END_ di _TOTAL_ anime",
+              paginate: {
+                previous: "Precedente",
+                next: "Successivo"
+              }
+            }
           });
         }
       });
