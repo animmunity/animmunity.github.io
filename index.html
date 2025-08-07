@@ -123,46 +123,16 @@
     function renderPagination(totalPages, current) {
       const pagination = document.getElementById("pagination");
       pagination.innerHTML = "";
-
-      const delta = 2;
-      const range = [];
-      for (let i = Math.max(2, current - delta); i <= Math.min(totalPages - 1, current + delta); i++) {
-        range.push(i);
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        if (i === current) btn.classList.add("active");
+        btn.addEventListener("click", () => {
+          currentPage = i;
+          renderPage(i, document.getElementById("searchInput").value);
+        });
+        pagination.appendChild(btn);
       }
-
-      if (current > 1) {
-        pagination.appendChild(createPageButton(1, current));
-        if (current > delta + 2) {
-          pagination.appendChild(createEllipsis());
-        }
-      }
-
-      range.forEach(i => pagination.appendChild(createPageButton(i, current)));
-
-      if (current < totalPages) {
-        if (current < totalPages - delta - 1) {
-          pagination.appendChild(createEllipsis());
-        }
-        pagination.appendChild(createPageButton(totalPages, current));
-      }
-    }
-
-    function createPageButton(page, current) {
-      const btn = document.createElement("button");
-      btn.textContent = page;
-      if (page === current) btn.classList.add("active");
-      btn.addEventListener("click", () => {
-        currentPage = page;
-        renderPage(page, document.getElementById("searchInput").value);
-      });
-      return btn;
-    }
-
-    function createEllipsis() {
-      const span = document.createElement("span");
-      span.textContent = "...";
-      span.style.margin = "0 4px";
-      return span;
     }
 
     document.getElementById("searchInput").addEventListener("input", e => {
@@ -181,9 +151,9 @@
           const values = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
           return {
             title: values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo",
-            main_picture: values[imageIndex]?.replace(/^"|"$/g, "").replace(/([a-z])\.jpg$/, "s.jpg") || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'
+            main_picture: values[imageIndex]?.replace(/^"|"$/g, "").replace(/([a-z])\.jpg$/, "l.jpg") || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'
           };
-        }).filter(a => a.title);
+        }).filter(a => a.title && a.main_picture);
 
         renderPage();
       });
