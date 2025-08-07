@@ -1,54 +1,49 @@
-.modern-header {
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
-  padding: 12px 0;
-  margin-bottom: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 999;
+.anime-header {
+  background: #ffffff;
+  padding: 15px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+  max-width: 1000px;
+  margin: 20px auto;
 }
 
-.header-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 20px;
+.header-inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
 }
 
-.logo {
+.header-logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #1a1a1a;
+  font-size: 20px;
   font-weight: bold;
-  font-size: 18px;
+  color: #333;
 }
 
-.logo img {
-  height: 36px;
+.header-logo img {
+  height: 40px;
+  border-radius: 8px;
   margin-right: 10px;
-  border-radius: 6px;
 }
 
-.nav-links {
+.header-nav {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.nav-links a {
+.header-nav a {
   text-decoration: none;
   color: #333;
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 }
 
-.nav-links a:hover {
+.header-nav a:hover {
   background-color: #007BFF;
-  color: white;
+  color: #fff;
 }
