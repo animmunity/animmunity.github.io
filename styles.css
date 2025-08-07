@@ -3,81 +3,77 @@ body {
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Container */
+.modern-header {
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
 .container {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  margin: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 20px;
+  flex-wrap: wrap;
 }
 
-/* === TOPBAR === */
-.topbar {
-  background-color: #f4f4f4;
-  padding: 10px 0;
-  border-bottom: 1px solid #ccc;
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.logo img {
+  height: 40px;
+  margin-right: 10px;
+  border-radius: 4px;
+}
+
+.nav-links a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #007BFF;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.search-bar input[type="text"] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
   font-size: 14px;
 }
 
-.topbar-left .topbar-menu,
-.topbar-right .social-icons {
-  list-style: none;
-  display: flex;
-  gap: 15px;
-  padding: 0;
-  margin: 0;
-}
-
-.topbar-menu li a,
-.social-icons li a {
+.social-icons a {
+  margin-left: 8px;
   text-decoration: none;
-  color: #333;
-}
-
-.topbar-center .logo {
-  text-align: center;
-  text-decoration: none;
-}
-
-.topbar-center img {
-  height: 40px;
-}
-
-.topbar-center h1 {
-  font-size: 16px;
-  margin: 0;
-  color: #333;
-}
-
-/* === MAIN HEADER === */
-.main-header {
-  background-color: #ffffff;
-  padding: 15px 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-}
-
-.header-left img {
-  height: 50px;
-}
-
-.main-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-  padding: 0;
-  margin: 0;
-}
-
-.main-nav a {
-  text-decoration: none;
-  color: #007BFF;
   font-weight: bold;
+  color: #555;
+  background: #f1f1f1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
-.search-form input[type="text"] {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.social-icons a:hover {
+  background-color: #007BFF;
+  color: white;
 }
