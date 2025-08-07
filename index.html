@@ -123,7 +123,7 @@
       const div = document.createElement('div');
       div.className = 'card';
       div.innerHTML = `
-        <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}">
+        <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='https://animmunity.github.io/assets/no-image.png'">
         <h3>${anime.title}</h3>
       `;
       return div;
@@ -176,7 +176,7 @@
           .filter(row => row.title && row.main_picture && row.main_picture.includes("myanimelist"))
           .map(row => ({
             title: row.title.trim(),
-            main_picture: row.main_picture.replace(/l\.jpg$/, "s.jpg")
+            main_picture: row.main_picture // Usa direttamente l.jpg
           }));
 
         animeFiltrati = [...animeData];
