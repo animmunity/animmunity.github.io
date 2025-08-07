@@ -65,7 +65,7 @@
               row.main_picture.includes("myanimelist.net")
             )
             .map(row => {
-              const img = row.main_picture.replace(/l\.jpg$/, "t.jpg");
+              const img = row.main_picture.replace(/l\.jpg$/, "s.jpg");
               const title = row.title.trim();
               return [
                 `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
