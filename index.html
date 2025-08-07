@@ -17,14 +17,13 @@
   <!-- Contenuto principale -->
   <main class="anime-main">
     <h1>Catalogo Anime</h1>
-    <p>Scopri e sfoglia gli anime con immagini e descrizioni.</p>
+    <p>Scopri e sfoglia gli anime disponibili nel nostro database.</p>
 
     <table id="animeTable" class="display" style="width:100%">
       <thead>
         <tr>
           <th>Immagine</th>
           <th>Titolo</th>
-          <th>Descrizione</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -38,7 +37,7 @@
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Script JS -->
+  <!-- Script -->
   <script>
     // Carica header e footer
     fetch("header.html")
@@ -49,7 +48,7 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Carica CSV e popola la tabella
+    // Carica CSV e crea tabella
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
@@ -60,25 +59,19 @@
 
           const pictureIndex = headers.indexOf("main_picture");
           const titleIndex = headers.indexOf("title");
-          const synopsisIndex = headers.indexOf("synopsis");
 
           const tableData = [];
 
           for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // CSV-safe split
+            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
 
             const img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
             const title = values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo";
-            const synopsisRaw = values[synopsisIndex]?.replace(/^"|"$/g, "");
-            const synopsis = synopsisRaw && synopsisRaw.length > 0
-              ? (synopsisRaw.length > 300 ? synopsisRaw.slice(0, 300) + "..." : synopsisRaw)
-              : "Nessuna descrizione disponibile.";
 
             tableData.push([
               `<img src="${img}" alt="${title}" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
-              title,
-              synopsis
+              title
             ]);
           }
 
@@ -86,8 +79,7 @@
             data: tableData,
             columns: [
               { title: "Immagine" },
-              { title: "Titolo" },
-              { title: "Descrizione" }
+              { title: "Titolo" }
             ],
             pageLength: 5,
             responsive: true,
@@ -106,7 +98,7 @@
         },
         error: function (err) {
           console.error("Errore nel caricamento del CSV:", err);
-          document.querySelector("#animeTable tbody").innerHTML = `<tr><td colspan="3">Errore nel caricamento dei dati</td></tr>`;
+          document.querySelector("#animeTable tbody").innerHTML = `<tr><td colspan="2">Errore nel caricamento dei dati</td></tr>`;
         }
       });
     });
