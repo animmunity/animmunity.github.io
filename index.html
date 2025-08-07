@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Home - AniMMunity</title>
+  <title>AniMMunity - Catalogo Anime</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
 
@@ -11,42 +11,44 @@
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header dinamico -->
   <div id="header-placeholder"></div>
 
   <!-- Contenuto principale -->
   <main class="anime-main">
-    <h1>Benvenuto su AniMMunity</h1>
-    <p>Scopri il nostro archivio anime aggiornato in tempo reale.</p>
+    <h1>Catalogo Anime</h1>
+    <p>Scopri e sfoglia gli anime con immagini e descrizioni.</p>
 
-    <!-- Campo di ricerca -->
-    <input type="text" id="searchInput" placeholder="Cerca un anime..." class="search-bar" />
-
-    <!-- Elenco anime -->
-    <div id="animeCards" class="anime-cards"></div>
+    <table id="animeTable" class="display" style="width:100%">
+      <thead>
+        <tr>
+          <th>Immagine</th>
+          <th>Titolo</th>
+          <th>Descrizione</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer dinamico -->
   <div id="footer-placeholder"></div>
 
-  <!-- Scripts -->
+  <!-- Script JS -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Includi header/footer -->
   <script>
+    // Caricamento header e footer
     fetch("header.html")
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById("header-placeholder").innerHTML = data;
-      });
+      .then(res => res.text())
+      .then(data => document.getElementById("header-placeholder").innerHTML = data);
 
     fetch("footer.html")
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById("footer-placeholder").innerHTML = data;
-      });
+      .then(res => res.text())
+      .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Funzione per caricare e visualizzare i dati
+    // Caricamento CSV e inizializzazione DataTable
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
@@ -54,55 +56,45 @@
         success: function (data) {
           const rows = data.trim().split("\n");
           const headers = rows[0].split(",");
-          const titleIndex = headers.indexOf("title");
           const pictureIndex = headers.indexOf("main_picture");
+          const titleIndex = headers.indexOf("title");
           const synopsisIndex = headers.indexOf("synopsis");
 
-          const animeData = rows.slice(1).map(row => {
-            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // split by comma, ignore commas in quotes
-            return {
-              title: values[titleIndex],
-              main_picture: values[pictureIndex],
-              synopsis: values[synopsisIndex]
-            };
+          const tableData = rows.slice(1).map(row => {
+            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            const img = values[pictureIndex]?.trim().replace(/^"|"$/g, "");
+            const title = values[titleIndex]?.trim().replace(/^"|"$/g, "");
+            const synopsis = values[synopsisIndex]?.trim().replace(/^"|"$/g, "");
+
+            return [
+              `<img src="${img}" alt="${title}" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
+              title,
+              synopsis.length > 300 ? synopsis.slice(0, 300) + "..." : synopsis
+            ];
           });
 
-          // Mostra le card
-          renderCards(animeData);
-
-          // Ricerca dinamica
-          $('#searchInput').on('input', function () {
-            const query = $(this).val().toLowerCase();
-            const filtered = animeData.filter(anime =>
-              anime.title.toLowerCase().includes(query) ||
-              anime.synopsis.toLowerCase().includes(query)
-            );
-            renderCards(filtered);
+          $('#animeTable').DataTable({
+            data: tableData,
+            columns: [
+              { title: "Immagine" },
+              { title: "Titolo" },
+              { title: "Descrizione" }
+            ],
+            pageLength: 5,
+            language: {
+              search: "Cerca:",
+              lengthMenu: "Mostra _MENU_ anime",
+              info: "Mostra da _START_ a _END_ di _TOTAL_ anime",
+              paginate: {
+                previous: "Precedente",
+                next: "Successivo"
+              },
+              zeroRecords: "Nessun anime trovato.",
+              infoEmpty: "Nessun anime disponibile."
+            }
           });
         }
       });
-
-      function renderCards(data) {
-        const container = $("#animeCards");
-        container.empty();
-
-        if (data.length === 0) {
-          container.append("<p>Nessun risultato trovato.</p>");
-          return;
-        }
-
-        data.forEach(anime => {
-          container.append(`
-            <div class="anime-card">
-              <img src="${anime.main_picture}" alt="${anime.title}" class="anime-image" />
-              <div class="anime-info">
-                <h3 class="anime-title">${anime.title}</h3>
-                <p class="anime-synopsis">${anime.synopsis.slice(0, 250)}...</p>
-              </div>
-            </div>
-          `);
-        });
-      }
     });
   </script>
 </body>
