@@ -34,12 +34,13 @@
   <!-- Footer dinamico -->
   <div id="footer-placeholder"></div>
 
-  <!-- Script JS -->
+  <!-- jQuery + DataTables -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
+  <!-- Script per header, footer e tabella -->
   <script>
-    // Caricamento header e footer
+    // Carica header e footer
     fetch("header.html")
       .then(res => res.text())
       .then(data => document.getElementById("header-placeholder").innerHTML = data);
@@ -48,13 +49,13 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Caricamento CSV e inizializzazione DataTable
+    // Carica CSV e popola DataTable
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
         dataType: "text",
-        success: function (data) {
-          const rows = data.trim().split("\n");
+        success: function (csvData) {
+          const rows = csvData.trim().split("\n");
           const headers = rows[0].split(",");
           const pictureIndex = headers.indexOf("main_picture");
           const titleIndex = headers.indexOf("title");
@@ -62,9 +63,9 @@
 
           const tableData = rows.slice(1).map(row => {
             const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            const img = values[pictureIndex]?.trim().replace(/^"|"$/g, "");
-            const title = values[titleIndex]?.trim().replace(/^"|"$/g, "");
-            const synopsis = values[synopsisIndex]?.trim().replace(/^"|"$/g, "");
+            const img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
+            const title = values[titleIndex]?.replace(/^"|"$/g, "") || "";
+            const synopsis = values[synopsisIndex]?.replace(/^"|"$/g, "") || "";
 
             return [
               `<img src="${img}" alt="${title}" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
@@ -81,6 +82,7 @@
               { title: "Descrizione" }
             ],
             pageLength: 5,
+            responsive: true,
             language: {
               search: "Cerca:",
               lengthMenu: "Mostra _MENU_ anime",
@@ -93,6 +95,10 @@
               infoEmpty: "Nessun anime disponibile."
             }
           });
+        },
+        error: function (err) {
+          console.error("Errore nel caricamento del CSV:", err);
+          document.querySelector("#animeTable tbody").innerHTML = `<tr><td colspan="3">Errore nel caricamento dei dati</td></tr>`;
         }
       });
     });
