@@ -52,3 +52,49 @@
   background-color: #000;
   color: white;
 }
+
+.anime-footer {
+  background: #ffffff;
+  margin: 20px auto 40px auto;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 1000px;
+  font-size: 14px;
+  color: #555;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.footer-logo img {
+  height: 30px;
+  border-radius: 8px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  text-decoration: none;
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #000;
+}
