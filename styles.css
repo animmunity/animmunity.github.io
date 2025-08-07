@@ -1,0 +1,83 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* === TOPBAR === */
+.topbar {
+  background-color: #f4f4f4;
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.topbar-left .topbar-menu,
+.topbar-right .social-icons {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+}
+
+.topbar-menu li a,
+.social-icons li a {
+  text-decoration: none;
+  color: #333;
+}
+
+.topbar-center .logo {
+  text-align: center;
+  text-decoration: none;
+}
+
+.topbar-center img {
+  height: 40px;
+}
+
+.topbar-center h1 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+}
+
+/* === MAIN HEADER === */
+.main-header {
+  background-color: #ffffff;
+  padding: 15px 0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.header-left img {
+  height: 50px;
+}
+
+.main-nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  padding: 0;
+  margin: 0;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+}
+
+.search-form input[type="text"] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
