@@ -104,3 +104,14 @@
   background-color: #000;
   color: white;
 }
+
+.footer-credits {
+  text-align: right;
+  font-size: 14px;
+  color: #333;
+  flex: 1;
+}
+
+.footer-credits p {
+  margin: 0;
+}
