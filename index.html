@@ -37,7 +37,7 @@
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Script -->
+  <!-- Script JS -->
   <script>
     // Carica header e footer
     fetch("header.html")
@@ -66,11 +66,14 @@
             const row = rows[i];
             const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
 
-            const img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
+            // Ottieni immagine e converti in thumbnail
+            let img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
+            img = img.replace(/l\.jpg$/, "t.jpg"); // 🔄 da large a thumbnail
+
             const title = values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo";
 
             tableData.push([
-              `<img src="${img}" alt="${title}" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
+              `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
               title
             ]);
           }
