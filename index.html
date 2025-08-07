@@ -1,11 +1,23 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Catalogo Anime</title>
-  <link rel="stylesheet" href="styles.css">
   <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+
+    .anime-main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+
     .anime-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -14,16 +26,16 @@
     }
 
     .card {
-      background: #ffffff;
+      background: #fff;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
       padding: 10px;
       text-align: center;
       transition: transform 0.2s;
     }
 
     .card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-4px);
     }
 
     .card img {
@@ -35,14 +47,14 @@
 
     .card h3 {
       font-size: 14px;
+      margin-top: 8px;
       color: #333;
-      margin-top: 10px;
     }
 
     #searchInput {
       width: 100%;
-      max-width: 1000px;
-      margin: 20px auto 0;
+      max-width: 500px;
+      margin: auto;
       display: block;
       padding: 12px;
       border-radius: 8px;
@@ -52,15 +64,15 @@
 
     #pagination {
       text-align: center;
-      margin: 30px auto;
+      margin-top: 30px;
     }
 
     #pagination button {
       margin: 0 4px;
-      padding: 8px 12px;
+      padding: 6px 12px;
       border: none;
       border-radius: 6px;
-      background-color: #eee;
+      background: #eee;
       cursor: pointer;
     }
 
@@ -71,39 +83,35 @@
   </style>
 </head>
 <body>
-  <!-- Header dinamico -->
   <div id="header-placeholder"></div>
 
   <main class="anime-main">
     <h1 style="text-align:center">Catalogo Anime</h1>
-    <input type="text" id="searchInput" placeholder="Cerca un anime...">
+    <input type="text" id="searchInput" placeholder="Cerca un anime..."/>
     <div id="animeGrid" class="anime-grid"></div>
     <div id="pagination"></div>
   </main>
 
-  <!-- Footer dinamico -->
   <div id="footer-placeholder"></div>
 
   <script>
-    // Carica header e footer
-    fetch("header.html")
-      .then(res => res.text())
-      .then(data => document.getElementById("header-placeholder").innerHTML = data);
-
-    fetch("footer.html")
-      .then(res => res.text())
-      .then(data => document.getElementById("footer-placeholder").innerHTML = data);
+    // Carica header e footer dinamici
+    fetch("header.html").then(r => r.text()).then(d => {
+      document.getElementById("header-placeholder").innerHTML = d;
+    });
+    fetch("footer.html").then(r => r.text()).then(d => {
+      document.getElementById("footer-placeholder").innerHTML = d;
+    });
 
     const ITEMS_PER_PAGE = 16;
     let animeData = [];
     let currentPage = 1;
 
-    function renderPage(page = 1, query = '') {
+    function renderPage(page = 1, query = "") {
       const grid = document.getElementById("animeGrid");
       grid.innerHTML = "";
       const filtered = animeData.filter(a => a.title.toLowerCase().includes(query.toLowerCase()));
       const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-
       const start = (page - 1) * ITEMS_PER_PAGE;
       const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
 
@@ -111,7 +119,7 @@
         const card = document.createElement("div");
         card.className = "card";
         card.innerHTML = `
-          <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'">
+          <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
           <h3>${anime.title}</h3>
         `;
         grid.appendChild(card);
@@ -146,22 +154,17 @@
         for (let i = 1; i <= totalPages; i++) {
           pagination.appendChild(createButton(i, i, i === current));
         }
-        return;
+      } else {
+        pagination.appendChild(createButton(1, 1, current === 1));
+        if (current > 3) addEllipsis();
+        const start = Math.max(2, current - 1);
+        const end = Math.min(totalPages - 1, current + 1);
+        for (let i = start; i <= end; i++) {
+          pagination.appendChild(createButton(i, i, i === current));
+        }
+        if (current < totalPages - 2) addEllipsis();
+        pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
       }
-
-      pagination.appendChild(createButton(1, 1, current === 1));
-      if (current > 3) addEllipsis();
-
-      const start = Math.max(2, current - 1);
-      const end = Math.min(totalPages - 1, current + 1);
-
-      for (let i = start; i <= end; i++) {
-        pagination.appendChild(createButton(i, i, i === current));
-      }
-
-      if (current < totalPages - 2) addEllipsis();
-
-      pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
     }
 
     document.getElementById("searchInput").addEventListener("input", e => {
@@ -169,7 +172,7 @@
     });
 
     fetch("https://animmunity.github.io/data/anime.csv")
-      .then(res => res.text())
+      .then(r => r.text())
       .then(text => {
         const rows = text.trim().split("\n");
         const headers = rows[0].split(",");
@@ -180,9 +183,9 @@
           const values = row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/);
           return {
             title: values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo",
-            main_picture: values[imageIndex]?.replace(/^"|"$/g, "").replace(/([a-z])\.jpg$/, "l.jpg") || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'
+            main_picture: values[imageIndex]?.replace(/^"|"$/g, "").replace(/([a-z])\.jpg$/, "l.jpg") || "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
           };
-        }).filter(a => a.title && a.main_picture);
+        });
 
         renderPage();
       });
