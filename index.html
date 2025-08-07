@@ -17,7 +17,7 @@
   <!-- Contenuto principale -->
   <main class="anime-main">
     <h1>Catalogo Anime</h1>
-    <p>Scopri e sfoglia gli anime disponibili nel nostro database.</p>
+    <p>Scopri e sfoglia gli anime con immagini e titoli.</p>
 
     <table id="animeTable" class="display" style="width:100%">
       <thead>
@@ -33,13 +33,13 @@
   <!-- Footer dinamico -->
   <div id="footer-placeholder"></div>
 
-  <!-- jQuery + DataTables -->
+  <!-- Librerie JS -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-  <!-- Script JS -->
   <script>
-    // Carica header e footer
+    // Header & Footer
     fetch("header.html")
       .then(res => res.text())
       .then(data => document.getElementById("header-placeholder").innerHTML = data);
@@ -48,35 +48,22 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Carica CSV e crea tabella
+    // Carica CSV con PapaParse
     $(document).ready(function () {
-      $.ajax({
-        url: "https://animmunity.github.io/data/anime.csv",
-        dataType: "text",
-        success: function (csvData) {
-          const rows = csvData.trim().split("\n");
-          const headers = rows[0].split(",");
-
-          const pictureIndex = headers.indexOf("main_picture");
-          const titleIndex = headers.indexOf("title");
-
-          const tableData = [];
-
-          for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-
-            // Ottieni immagine e converti in thumbnail
-            let img = values[pictureIndex]?.replace(/^"|"$/g, "") || "";
-            img = img.replace(/l\.jpg$/, "t.jpg"); // 🔄 da large a thumbnail
-
-            const title = values[titleIndex]?.replace(/^"|"$/g, "") || "Senza titolo";
-
-            tableData.push([
+      Papa.parse("https://animmunity.github.io/data/anime.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
+          const data = results.data;
+          const tableData = data.map(row => {
+            let img = (row.main_picture || "").replace(/l\.jpg$/, "t.jpg");
+            const title = row.title || "Senza titolo";
+            return [
               `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
               title
-            ]);
-          }
+            ];
+          });
 
           $('#animeTable').DataTable({
             data: tableData,
@@ -98,10 +85,6 @@
               infoEmpty: "Nessun anime disponibile."
             }
           });
-        },
-        error: function (err) {
-          console.error("Errore nel caricamento del CSV:", err);
-          document.querySelector("#animeTable tbody").innerHTML = `<tr><td colspan="2">Errore nel caricamento dei dati</td></tr>`;
         }
       });
     });
