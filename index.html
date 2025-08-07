@@ -11,7 +11,7 @@
 </head>
 <body>
 
-  <!-- Header caricato dinamicamente -->
+  <!-- Header -->
   <div id="header-placeholder"></div>
 
   <!-- Contenuto principale -->
@@ -19,29 +19,20 @@
     <h1>Benvenuto su AniMMunity</h1>
     <p>Scopri il nostro archivio anime aggiornato in tempo reale.</p>
 
-    <div class="datatable-container">
-      <table id="animeTable" class="display">
-        <thead>
-          <tr>
-            <th>Titolo</th>
-            <th>Genere</th>
-            <th>Anno</th>
-            <th>Studio</th>
-            <th>Valutazione</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
+    <!-- Campo di ricerca -->
+    <input type="text" id="searchInput" placeholder="Cerca un anime..." class="search-bar" />
+
+    <!-- Elenco anime -->
+    <div id="animeCards" class="anime-cards"></div>
   </main>
 
-  <!-- Footer caricato dinamicamente -->
+  <!-- Footer -->
   <div id="footer-placeholder"></div>
 
-  <!-- Script jQuery + DataTables -->
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <!-- Includi header e footer -->
+  <!-- Includi header/footer -->
   <script>
     fetch("header.html")
       .then(response => response.text())
@@ -55,7 +46,7 @@
         document.getElementById("footer-placeholder").innerHTML = data;
       });
 
-    // Inizializzazione DataTables
+    // Funzione per caricare e visualizzare i dati
     $(document).ready(function () {
       $.ajax({
         url: "https://animmunity.github.io/data/anime.csv",
@@ -63,24 +54,55 @@
         success: function (data) {
           const rows = data.trim().split("\n");
           const headers = rows[0].split(",");
-          const tableData = rows.slice(1).map(row => row.split(","));
+          const titleIndex = headers.indexOf("title");
+          const pictureIndex = headers.indexOf("main_picture");
+          const synopsisIndex = headers.indexOf("synopsis");
 
-          $('#animeTable').DataTable({
-            data: tableData,
-            columns: headers.map(h => ({ title: h })),
-            responsive: true,
-            language: {
-              search: "Cerca:",
-              lengthMenu: "Mostra _MENU_ anime",
-              info: "Mostra da _START_ a _END_ di _TOTAL_ anime",
-              paginate: {
-                previous: "Precedente",
-                next: "Successivo"
-              }
-            }
+          const animeData = rows.slice(1).map(row => {
+            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // split by comma, ignore commas in quotes
+            return {
+              title: values[titleIndex],
+              main_picture: values[pictureIndex],
+              synopsis: values[synopsisIndex]
+            };
+          });
+
+          // Mostra le card
+          renderCards(animeData);
+
+          // Ricerca dinamica
+          $('#searchInput').on('input', function () {
+            const query = $(this).val().toLowerCase();
+            const filtered = animeData.filter(anime =>
+              anime.title.toLowerCase().includes(query) ||
+              anime.synopsis.toLowerCase().includes(query)
+            );
+            renderCards(filtered);
           });
         }
       });
+
+      function renderCards(data) {
+        const container = $("#animeCards");
+        container.empty();
+
+        if (data.length === 0) {
+          container.append("<p>Nessun risultato trovato.</p>");
+          return;
+        }
+
+        data.forEach(anime => {
+          container.append(`
+            <div class="anime-card">
+              <img src="${anime.main_picture}" alt="${anime.title}" class="anime-image" />
+              <div class="anime-info">
+                <h3 class="anime-title">${anime.title}</h3>
+                <p class="anime-synopsis">${anime.synopsis.slice(0, 250)}...</p>
+              </div>
+            </div>
+          `);
+        });
+      }
     });
   </script>
 </body>
