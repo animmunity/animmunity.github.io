@@ -5,6 +5,9 @@
   <title>Home - AniMMunity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
 
@@ -14,11 +17,30 @@
   <!-- Contenuto principale -->
   <main style="max-width:1000px; margin:20px auto; padding:20px; background:#fff; border-radius:12px;">
     <h1>Benvenuto su AniMMunity</h1>
-    <p>Questa è la homepage. Esplora il nostro magazine o contattaci.</p>
+    <p>Scopri il nostro archivio anime:</p>
+
+    <!-- Tabella animata -->
+    <div class="datatable-container">
+      <table id="animeTable" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>Titolo</th>
+            <th>Genere</th>
+            <th>Anno</th>
+            <th>Studio</th>
+            <th>Valutazione</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
   </main>
 
   <!-- Footer caricato dinamicamente -->
   <div id="footer-placeholder"></div>
+
+  <!-- JQuery & DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
   <!-- Script per includere header e footer -->
   <script>
@@ -33,7 +55,24 @@
       .then(data => {
         document.getElementById("footer-placeholder").innerHTML = data;
       });
-  </script>
 
+    // Inizializza DataTable con CSV
+    $(document).ready(function () {
+      $.ajax({
+        url: "https://animmunity.github.io/data/anime.csv",
+        dataType: "text",
+        success: function (data) {
+          const rows = data.trim().split("\n");
+          const headers = rows[0].split(",");
+          const tableData = rows.slice(1).map(row => row.split(","));
+
+          $('#animeTable').DataTable({
+            data: tableData,
+            columns: headers.map(h => ({ title: h }))
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
