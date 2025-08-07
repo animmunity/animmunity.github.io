@@ -2,38 +2,40 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Catalogo Anime</title>
+  <title>Catalogo Anime - AniMMunity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
   <style>
-    * { box-sizing: border-box; }
     body {
-      font-family: sans-serif;
-      background: #f4f6f8;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
     }
-    .container {
-      max-width: 1000px;
+
+    .anime-main {
+      background: #ffffff;
       margin: 40px auto;
-      padding: 20px;
-      background: #fff;
+      padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      max-width: 1000px;
     }
-    h1 { text-align: center; margin-bottom: 20px; }
+
     #search {
       width: 100%;
       padding: 12px;
-      margin-bottom: 20px;
       font-size: 16px;
+      margin-bottom: 30px;
       border: 1px solid #ccc;
       border-radius: 8px;
     }
+
     .anime-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
     }
+
     .card {
       background: #fff;
       border-radius: 10px;
@@ -42,26 +44,30 @@
       text-align: center;
       transition: transform 0.2s;
     }
-    .card:hover { transform: translateY(-4px); }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
     .card img {
       width: 100%;
       height: 280px;
       object-fit: cover;
       border-radius: 6px;
       background: #eee;
-      opacity: 0;
-      transition: opacity 0.3s ease;
     }
-    .card img.loaded { opacity: 1; }
+
     .card h3 {
       font-size: 16px;
       margin-top: 10px;
       color: #333;
     }
+
     #pagination {
-      text-align: center;
       margin-top: 30px;
+      text-align: center;
     }
+
     #pagination button {
       margin: 4px;
       padding: 8px 14px;
@@ -71,6 +77,7 @@
       cursor: pointer;
       transition: background 0.3s;
     }
+
     #pagination button.active {
       background: #007bff;
       color: white;
@@ -79,100 +86,104 @@
 </head>
 <body>
 
-<div class="container">
-  <h1>Catalogo Anime</h1>
-  <input type="text" id="search" placeholder="Cerca un anime...">
-  <div class="anime-grid" id="animeGrid"></div>
-  <div id="pagination"></div>
-</div>
+  <!-- Header dinamico -->
+  <div id="header-placeholder"></div>
 
-<!-- Libreria PapaParse -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <!-- Contenuto -->
+  <main class="anime-main">
+    <h1>Catalogo Anime</h1>
+    <input type="text" id="search" placeholder="Cerca per titolo...">
+    <div id="animeGrid" class="anime-grid"></div>
+    <div id="pagination"></div>
+  </main>
 
-<script>
-  const animePerPagina = 10;
-  let animeData = [], paginaCorrente = 1, animeFiltrati = [];
+  <!-- Footer dinamico -->
+  <div id="footer-placeholder"></div>
 
-  function creaCard(anime) {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-      <img data-src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='assets/no-image.png';">
-      <h3>${anime.title}</h3>
-    `;
-    return div;
-  }
+  <!-- Libreria CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-  function lazyLoad() {
-    const imgs = document.querySelectorAll('img[data-src]');
-    const obs = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src;
-          img.onload = () => img.classList.add('loaded');
-          img.removeAttribute('data-src');
-          observer.unobserve(img);
-        }
-      });
+  <!-- Header/Footer Loader -->
+  <script>
+    fetch("header.html").then(res => res.text()).then(data => {
+      document.getElementById("header-placeholder").innerHTML = data;
     });
-    imgs.forEach(img => obs.observe(img));
-  }
 
-  function mostraPagina(pagina) {
-    paginaCorrente = pagina;
-    const inizio = (pagina - 1) * animePerPagina;
-    const fine = inizio + animePerPagina;
-    const paginaAnime = animeFiltrati.slice(inizio, fine);
+    fetch("footer.html").then(res => res.text()).then(data => {
+      document.getElementById("footer-placeholder").innerHTML = data;
+    });
+  </script>
 
-    const grid = document.getElementById('animeGrid');
-    grid.innerHTML = '';
-    paginaAnime.forEach(anime => grid.appendChild(creaCard(anime)));
-    lazyLoad();
-    aggiornaPaginazione();
-  }
+  <!-- Script Catalogo -->
+  <script>
+    const animePerPagina = 16;
+    let animeData = [], paginaCorrente = 1, animeFiltrati = [];
 
-  function aggiornaPaginazione() {
-    const totalePagine = Math.ceil(animeFiltrati.length / animePerPagina);
-    const container = document.getElementById('pagination');
-    container.innerHTML = '';
-
-    for (let i = 1; i <= totalePagine; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      if (i === paginaCorrente) btn.classList.add('active');
-      btn.onclick = () => mostraPagina(i);
-      container.appendChild(btn);
+    function creaCard(anime) {
+      const div = document.createElement('div');
+      div.className = 'card';
+      div.innerHTML = `
+        <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}">
+        <h3>${anime.title}</h3>
+      `;
+      return div;
     }
-  }
 
-  function filtraAnime(termine) {
-    animeFiltrati = animeData.filter(a =>
-      a.title.toLowerCase().includes(termine.toLowerCase())
-    );
-    mostraPagina(1);
-  }
+    function mostraPagina(pagina) {
+      paginaCorrente = pagina;
+      const start = (pagina - 1) * animePerPagina;
+      const end = start + animePerPagina;
+      const daMostrare = animeFiltrati.slice(start, end);
 
-  document.getElementById('search').addEventListener('input', e => {
-    filtraAnime(e.target.value);
-  });
+      const grid = document.getElementById('animeGrid');
+      grid.innerHTML = '';
+      daMostrare.forEach(anime => grid.appendChild(creaCard(anime)));
 
-  // Carica CSV da GitHub Pages
-  Papa.parse("https://animmunity.github.io/data/anime.csv", {
-    download: true,
-    header: true,
-    complete: function (results) {
-      animeData = results.data.filter(row =>
-        row.title && row.main_picture && row.main_picture.includes("myanimelist.net")
-      ).map(row => ({
-        title: row.title.trim(),
-        main_picture: row.main_picture.replace(/l\.jpg$/, "s.jpg")
-      }));
-      animeFiltrati = [...animeData];
+      aggiornaPaginazione();
+    }
+
+    function aggiornaPaginazione() {
+      const totale = Math.ceil(animeFiltrati.length / animePerPagina);
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      for (let i = 1; i <= totale; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        if (i === paginaCorrente) btn.classList.add('active');
+        btn.onclick = () => mostraPagina(i);
+        container.appendChild(btn);
+      }
+    }
+
+    function filtra(termine) {
+      animeFiltrati = animeData.filter(a =>
+        a.title.toLowerCase().includes(termine.toLowerCase())
+      );
       mostraPagina(1);
     }
-  });
-</script>
+
+    document.getElementById('search').addEventListener('input', e => {
+      filtra(e.target.value);
+    });
+
+    // Carica il CSV
+    Papa.parse("https://animmunity.github.io/data/anime.csv", {
+      download: true,
+      header: true,
+      complete: function(results) {
+        animeData = results.data
+          .filter(row => row.title && row.main_picture && row.main_picture.includes("myanimelist"))
+          .map(row => ({
+            title: row.title.trim(),
+            main_picture: row.main_picture.replace(/l\.jpg$/, "s.jpg")
+          }));
+
+        animeFiltrati = [...animeData];
+        mostraPagina(1);
+      }
+    });
+  </script>
 
 </body>
 </html>
