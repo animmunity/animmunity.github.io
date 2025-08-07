@@ -17,7 +17,7 @@
   <!-- Contenuto principale -->
   <main class="anime-main">
     <h1>Catalogo Anime</h1>
-    <p>Scopri e sfoglia gli anime con immagini e titoli.</p>
+    <p>Scopri e sfoglia gli anime disponibili nel nostro database.</p>
 
     <table id="animeTable" class="display" style="width:100%">
       <thead>
@@ -38,8 +38,9 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
+  <!-- Script per header, footer, tabella -->
   <script>
-    // Header & Footer
+    // Carica header e footer
     fetch("header.html")
       .then(res => res.text())
       .then(data => document.getElementById("header-placeholder").innerHTML = data);
@@ -48,7 +49,7 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Carica CSV con PapaParse
+    // Carica CSV e popola DataTable
     $(document).ready(function () {
       Papa.parse("https://animmunity.github.io/data/anime.csv", {
         download: true,
@@ -56,14 +57,21 @@
         skipEmptyLines: true,
         complete: function (results) {
           const data = results.data;
-          const tableData = data.map(row => {
-            let img = (row.main_picture || "").replace(/l\.jpg$/, "t.jpg");
-            const title = row.title || "Senza titolo";
-            return [
-              `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
-              title
-            ];
-          });
+
+          const tableData = data
+            .filter(row =>
+              row.main_picture &&
+              row.title &&
+              row.main_picture.includes("myanimelist.net")
+            )
+            .map(row => {
+              const img = row.main_picture.replace(/l\.jpg$/, "t.jpg");
+              const title = row.title.trim();
+              return [
+                `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
+                title
+              ];
+            });
 
           $('#animeTable').DataTable({
             data: tableData,
