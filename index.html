@@ -38,7 +38,6 @@
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-  <!-- Script per header, footer, tabella -->
   <script>
     // Carica header e footer
     fetch("header.html")
@@ -49,7 +48,7 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
-    // Carica CSV e popola DataTable
+    // Carica CSV e inizializza DataTable
     $(document).ready(function () {
       Papa.parse("https://animmunity.github.io/data/anime.csv", {
         download: true,
@@ -65,15 +64,15 @@
               row.main_picture.includes("myanimelist.net")
             )
             .map(row => {
-              const img = row.main_picture.replace(/l\.jpg$/, "s.jpg");
+              const img = row.main_picture.replace(/l\.jpg$/, "s.jpg"); // thumbnail migliore
               const title = row.title.trim();
               return [
-                `<img src="${img}" alt="${title}" loading="lazy" style="width:80px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
+                `<img data-src="${img}" alt="${title}" style="width:100px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
                 title
               ];
             });
 
-          $('#animeTable').DataTable({
+          const table = $('#animeTable').DataTable({
             data: tableData,
             columns: [
               { title: "Immagine" },
@@ -91,6 +90,21 @@
               },
               zeroRecords: "Nessun anime trovato.",
               infoEmpty: "Nessun anime disponibile."
+            },
+            drawCallback: function () {
+              const images = document.querySelectorAll('img[data-src]');
+              const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                  if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                    obs.unobserve(img);
+                  }
+                });
+              });
+
+              images.forEach(img => observer.observe(img));
             }
           });
         }
