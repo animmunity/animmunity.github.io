@@ -1,16 +1,16 @@
 .anime-header {
   background: #ffffff;
-  padding: 15px 20px;
+  margin: 40px auto 20px auto;
+  padding: 20px 30px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
   max-width: 1000px;
-  margin: 20px auto;
 }
 
 .header-inner {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -18,9 +18,9 @@
   display: flex;
   align-items: center;
   text-decoration: none;
+  color: #333;
   font-size: 20px;
   font-weight: bold;
-  color: #333;
 }
 
 .header-logo img {
@@ -29,21 +29,26 @@
   margin-right: 10px;
 }
 
+.logo-text {
+  font-size: 22px;
+}
+
 .header-nav {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .header-nav a {
   text-decoration: none;
   color: #333;
   font-weight: 500;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease;
 }
 
 .header-nav a:hover {
   background-color: #007BFF;
-  color: #fff;
+  color: white;
 }
