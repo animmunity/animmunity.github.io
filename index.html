@@ -48,6 +48,27 @@
       .then(res => res.text())
       .then(data => document.getElementById("footer-placeholder").innerHTML = data);
 
+    // Lazy load immagini visibili
+    function lazyLoadImages() {
+      const images = document.querySelectorAll('img[data-src]');
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.removeAttribute('data-src');
+            img.classList.add('loaded');
+            obs.unobserve(img);
+          }
+        });
+      }, {
+        rootMargin: '50px 0px',
+        threshold: 0.01
+      });
+
+      images.forEach(img => observer.observe(img));
+    }
+
     // Carica CSV e inizializza DataTable
     $(document).ready(function () {
       Papa.parse("https://animmunity.github.io/data/anime.csv", {
@@ -64,15 +85,15 @@
               row.main_picture.includes("myanimelist.net")
             )
             .map(row => {
-              const img = row.main_picture.replace(/l\.jpg$/, "s.jpg"); // thumbnail migliore
+              const img = row.main_picture.replace(/l\.jpg$/, "s.jpg"); // qualità minore, più veloce
               const title = row.title.trim();
               return [
-                `<img data-src="${img}" alt="${title}" style="width:100px; border-radius:8px;" onerror="this.src='https://via.placeholder.com/80x100?text=No+Image';">`,
+                `<img data-src="${img}" alt="${title}" class="lazy-image" width="100" height="140" loading="lazy" onerror="this.src='assets/no-image.png';">`,
                 title
               ];
             });
 
-          const table = $('#animeTable').DataTable({
+          $('#animeTable').DataTable({
             data: tableData,
             columns: [
               { title: "Immagine" },
@@ -92,19 +113,7 @@
               infoEmpty: "Nessun anime disponibile."
             },
             drawCallback: function () {
-              const images = document.querySelectorAll('img[data-src]');
-              const observer = new IntersectionObserver((entries, obs) => {
-                entries.forEach(entry => {
-                  if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.removeAttribute('data-src');
-                    obs.unobserve(img);
-                  }
-                });
-              });
-
-              images.forEach(img => observer.observe(img));
+              lazyLoadImages();
             }
           });
         }
