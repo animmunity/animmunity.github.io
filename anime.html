@@ -4,6 +4,52 @@
   <meta charset="UTF-8">
   <title>Anime Info</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    #anime-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    section {
+      margin-bottom: 2rem;
+    }
+    section h2 {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 0.3rem;
+      font-size: 1.3rem;
+      color: #2c3e50;
+    }
+    p {
+      margin: 0.5rem 0;
+    }
+    .anime-image {
+      float: right;
+      margin-left: 20px;
+      max-width: 250px;
+      border-radius: 6px;
+    }
+    a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .back-link {
+      margin-top: 2rem;
+      display: block;
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
@@ -15,7 +61,38 @@
   <div id="footer"></div>
 
   <script>
-    // Carica header e footer dalla root
+    // Etichette leggibili
+    const columnLabels = {
+      "anime_id": "Anime ID", "title": "Title", "type": "Type", "score": "Score",
+      "scored_by": "Number of Ratings", "status": "Status", "episodes": "Episodes",
+      "start_date": "Start Date", "end_date": "End Date", "source": "Source Material",
+      "members": "Member Count", "favorites": "Favorites Count", "episode_duration": "Episode Duration",
+      "total_duration": "Total Duration", "rating": "Content Rating", "sfw": "Safe for Work",
+      "approved": "Approved", "created_at": "Created At", "updated_at": "Updated At",
+      "start_year": "Start Year", "start_season": "Start Season", "real_start_date": "Real Start Date",
+      "real_end_date": "Real End Date", "broadcast_day": "Broadcast Day", "broadcast_time": "Broadcast Time",
+      "genres": "Genres", "themes": "Themes", "demographics": "Demographics",
+      "studios": "Studios", "producers": "Producers", "licensors": "Licensors",
+      "synopsis": "Synopsis", "background": "Background Information",
+      "main_picture": "Main Image", "url": "Official URL", "trailer_url": "Trailer URL",
+      "title_english": "English Title", "title_japanese": "Japanese Title",
+      "title_synonyms": "Alternative Titles", "anime_url": "Official URL"
+    };
+
+    // Sezioni raggruppate logicamente
+    const sections = {
+      "Identity and Titles": ["title", "title_english", "title_japanese", "title_synonyms"],
+      "Classification and Ratings": ["type", "score", "scored_by", "status", "rating", "sfw"],
+      "Episodes and Duration": ["episodes", "episode_duration", "total_duration"],
+      "Dates and Broadcast Period": ["start_date", "end_date", "real_start_date", "real_end_date",
+                                    "start_year", "start_season", "broadcast_day", "broadcast_time"],
+      "Origin and Production": ["source", "studios", "producers", "licensors"],
+      "Popularity and Insight": ["members", "favorites", "approved", "genres", "themes", "demographics"],
+      "Content and Media": ["synopsis", "background", "trailer_url"],
+      "Technical Metadata": ["created_at", "updated_at"]
+    };
+
+    // Carica HTML statici
     async function loadHTML(id, url) {
       const res = await fetch(url);
       const html = await res.text();
@@ -24,11 +101,6 @@
 
     loadHTML("header", "header.html");
     loadHTML("footer", "footer.html");
-
-    // Funzione di utilità per visualizzare campo solo se presente
-    function field(label, value) {
-      return value && value.trim() !== "" ? `<p><strong>${label}:</strong> ${value}</p>` : "";
-    }
 
     function parseCSV(csvText) {
       const lines = csvText.split("\n").filter(l => l.trim() !== "");
@@ -39,6 +111,16 @@
         headers.forEach((h, i) => obj[h] = values[i]);
         return obj;
       });
+    }
+
+    function renderField(label, value) {
+      if (!value || value.trim() === "") return "";
+      return `<p><strong>${label}:</strong> ${value}</p>`;
+    }
+
+    function renderSection(title, fields, anime) {
+      const content = fields.map(f => renderField(columnLabels[f], anime[f])).join("");
+      return content ? `<section><h2>${title}</h2>${content}</section>` : "";
     }
 
     async function loadAnime() {
@@ -63,45 +145,24 @@
 
       document.title = anime.title;
 
-      const html = `
-        <h1>${anime.title}</h1>
-        ${field("Titolo inglese", anime.title_english)}
-        ${field("Titolo giapponese", anime.title_japanese)}
-        ${field("Sinonimi", anime.title_synonyms)}
-        ${anime.main_picture ? `<img src="${anime.main_picture}" alt="${anime.title}" style="max-width:300px;">` : ""}
-        ${field("Tipo", anime.type)}
-        ${field("Stato", anime.status)}
-        ${field("Score", anime.score)}
-        ${field("Votato da", anime.scored_by)}
-        ${field("Episodi", anime.episodes)}
-        ${field("Durata episodio", anime.episode_duration)}
-        ${field("Durata totale", anime.total_duration)}
-        ${field("Rating contenuti", anime.rating)}
-        ${field("Safe for Work", anime.sfw)}
-        ${field("Approvato", anime.approved)}
-        ${field("Data inizio", anime.start_date)}
-        ${field("Data fine", anime.end_date)}
-        ${field("Data reale inizio", anime.real_start_date)}
-        ${field("Data reale fine", anime.real_end_date)}
-        ${field("Stagione", anime.start_season)}
-        ${field("Anno", anime.start_year)}
-        ${field("Giorno broadcast", anime.broadcast_day)}
-        ${field("Ora broadcast", anime.broadcast_time)}
-        ${field("Fonte", anime.source)}
-        ${field("Membri", anime.members)}
-        ${field("Preferiti", anime.favorites)}
-        ${field("Generi", anime.genres)}
-        ${field("Temi", anime.themes)}
-        ${field("Demografica", anime.demographics)}
-        ${field("Studios", anime.studios)}
-        ${field("Produttori", anime.producers)}
-        ${field("Licenziatari", anime.licensors)}
-        ${field("Trama", anime.synopsis)}
-        ${field("Background", anime.background)}
-        ${anime.url ? `<p><a href="${anime.url}" target="_blank">Scheda ufficiale</a></p>` : ""}
-        ${anime.trailer_url ? `<p><a href="${anime.trailer_url}" target="_blank">Guarda il trailer</a></p>` : ""}
-        <p><a href="index.html">⬅ Torna all'elenco</a></p>
-      `;
+      let html = `<h1>${anime.title}</h1>`;
+
+      if (anime.main_picture) {
+        html += `<img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">`;
+      }
+
+      for (const [sectionTitle, fields] of Object.entries(sections)) {
+        html += renderSection(sectionTitle, fields, anime);
+      }
+
+      if (anime.url) {
+        html += `<p><a href="${anime.url}" target="_blank">Scheda ufficiale</a></p>`;
+      }
+      if (anime.trailer_url) {
+        html += `<p><a href="${anime.trailer_url}" target="_blank">Guarda il trailer</a></p>`;
+      }
+
+      html += `<a class="back-link" href="index.html">⬅ Torna all'elenco</a>`;
 
       document.getElementById("anime-container").innerHTML = html;
     }
