@@ -1,89 +1,80 @@
 <!-- header.html -->
 <header class="anime-header">
-<style>
-  .anime-header {
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
-    padding: 10px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
+  <style>
+    .anime-header {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
 
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 1100px;
-    margin: auto;
-    flex-wrap: wrap;
-  }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: auto;
+      flex-wrap: wrap;
+    }
 
-  .header-logo {
-    max-width: 120px;
-    display: flex;
-    align-items: center;
-  }
+    .header-logo img {
+      height: 40px;
+      border-radius: 8px;
+    }
 
-  .header-logo img {
-    height: 50px; /* Altezza fissa migliorata */
-    width: auto;  /* Mantiene le proporzioni */
-    max-width: 100%;
-    border-radius: 8px;
-    display: block;
-  }
-
-  .menu-toggle {
-    display: none;
-    background: none;
-    border: none;
-    font-size: 28px;
-    cursor: pointer;
-    color: #333;
-  }
-
-  .header-nav {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .header-nav a {
-    text-decoration: none;
-    color: #000;
-    font-weight: 500;
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-  }
-
-  .header-nav a:hover {
-    background-color: #007BFF;
-    color: #fff;
-  }
-
-  @media (max-width: 768px) {
     .menu-toggle {
-      display: block;
+      display: none;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #333;
     }
 
     .header-nav {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .header-nav.active {
       display: flex;
+      gap: 20px;
+      align-items: center;
     }
 
     .header-nav a {
-      width: 100%;
-      text-align: center;
+      text-decoration: none;
+      color: #000;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
     }
-  }
-</style>
+
+    .header-nav a:hover {
+      background-color: #007BFF;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .header-nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .header-nav.active {
+        display: flex;
+      }
+
+      .header-nav a {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
 
   <div class="header-inner">
     <a href="index.html" class="header-logo">
