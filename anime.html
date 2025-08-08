@@ -89,83 +89,53 @@
   <div id="footer"></div>
 
   <script>
-    const columnLabels = {
-      "title": "Titolo", "title_english": "Titolo Inglese", "title_japanese": "Titolo Giapponese", "title_synonyms": "Titoli alternativi",
-      "type": "Tipo", "score": "Punteggio", "scored_by": "Voti ricevuti", "status": "Stato", "rating": "Classificazione", "sfw": "Adatto a tutti",
-      "episodes": "Episodi", "episode_duration": "Durata episodio", "total_duration": "Durata totale",
-      "start_date": "Data inizio", "end_date": "Data fine", "real_start_date": "Inizio reale", "real_end_date": "Fine reale",
-      "start_year": "Anno", "start_season": "Stagione", "broadcast_day": "Giorno", "broadcast_time": "Ora",
-      "source": "Fonte", "studios": "Studi", "producers": "Produttori", "licensors": "Licenziatari",
-      "members": "Membri", "favorites": "Preferiti", "approved": "Approvato",
-      "genres": "Generi", "themes": "Temi", "demographics": "Demografia",
-      "synopsis": "Trama", "background": "Contesto", "trailer_url": "Trailer",
-      "created_at": "Creato il", "updated_at": "Aggiornato il"
-    };
-
-    const sections = {
-      "Identità e Titoli": ["title", "title_english", "title_japanese", "title_synonyms"],
-      "Classificazione": ["type", "score", "scored_by", "status", "rating", "sfw"],
-      "Episodi e Durata": ["episodes", "episode_duration", "total_duration"],
-      "Date e Programmazione": ["start_date", "end_date", "real_start_date", "real_end_date", "start_year", "start_season", "broadcast_day", "broadcast_time"],
-      "Produzione": ["source", "studios", "producers", "licensors"],
-      "Popolarità e Target": ["members", "favorites", "approved", "genres", "themes", "demographics"],
-      "Contenuto": ["synopsis", "background", "trailer_url"],
-      "Dati Tecnici": ["created_at", "updated_at"]
-    };
-
     const urlParams = new URLSearchParams(window.location.search);
     const animeId = urlParams.get('id');
 
     fetch("data/anime.csv")
       .then(res => res.text())
       .then(text => {
-        const rows = text.split("\n").filter(row => row.trim());
-        const headers = rows[0].split(',').map(h => h.trim());
+        const rows = text.trim().split("\n");
+        const headers = rows[0].split(",");
         const data = rows.slice(1).map(row => {
-          const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"|"$/g, '').trim());
-          return headers.reduce((acc, key, i) => {
-            acc[key] = values[i];
-            return acc;
+          const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(v => v.replace(/^"|"$/g, '').trim());
+          return headers.reduce((obj, key, i) => {
+            obj[key] = values[i] || "";
+            return obj;
           }, {});
         });
 
-        const anime = data.find(d => d.anime_id?.trim() === animeId?.trim());
+        const anime = data.find(a => a.anime_id === animeId);
 
         if (!anime) {
-          console.warn("Anime non trovato. Ecco tutti gli ID trovati:", data.map(a => a.anime_id));
-          document.getElementById('app').innerHTML = `
-            <p>Anime non trovato<br>ID cercato: <code>${animeId}</code></p>
-            <p>ID disponibili: <code>${data.map(a => a.anime_id).join(", ")}</code></p>
-          `;
+          document.getElementById("app").innerHTML = `<p>Anime non trovato<br>ID cercato: <code>${animeId}</code></p>`;
           return;
         }
 
         let html = `<h1>${anime.title}</h1>`;
-        if (anime.main_picture) {
+
+        if (anime.main_picture)
           html += `<img class="cover" src="${anime.main_picture}" alt="${anime.title}">`;
-        }
-        html += `<p><strong>Link:</strong> <a href="${anime.url}" target="_blank">Scheda MyAnimeList</a></p>`;
 
-        for (const section in sections) {
-          html += `<section><h2>${section}</h2>`;
-          for (const key of sections[section]) {
-            const label = columnLabels[key];
-            const value = anime[key];
-            if (value && key !== "main_picture" && key !== "url") {
-              if (key === "trailer_url" && value.includes("youtube.com")) {
-                const embed = value.replace("watch?v=", "embed/");
-                html += `<div class="video"><iframe src="${embed}" allowfullscreen></iframe></div>`;
-              } else {
-                // Parsing array visivi (es. generi) se formattati tipo "['Action','Drama']"
-                const parsedValue = value.startsWith("[") && value.endsWith("]") ? JSON.parse(value.replace(/'/g, '"')) : value;
-                html += `<p><strong>${label}:</strong> ${Array.isArray(parsedValue) ? parsedValue.join(", ") : parsedValue}</p>`;
-              }
-            }
-          }
-          html += `</section>`;
-        }
+        html += `<p><strong>Link:</strong> <a href="${anime.url}" target="_blank">${anime.url}</a></p>`;
 
-        document.getElementById('app').innerHTML = html;
+        html += `<section><h2>Trama</h2><p>${anime.synopsis}</p></section>`;
+
+        if (anime.trailer_url)
+          html += `<div class="video"><iframe src="${anime.trailer_url.replace("watch?v=", "embed/")}" allowfullscreen></iframe></div>`;
+
+        html += `<section><h2>Dati</h2>
+          <p><strong>Tipo:</strong> ${anime.type}</p>
+          <p><strong>Punteggio:</strong> ${anime.score} (${anime.scored_by} voti)</p>
+          <p><strong>Episodi:</strong> ${anime.episodes}</p>
+          <p><strong>Inizio:</strong> ${anime.start_date}</p>
+          <p><strong>Fine:</strong> ${anime.end_date}</p>
+        </section>`;
+
+        document.getElementById("app").innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById("app").innerHTML = `<p>Errore nel caricamento dati: ${err}</p>`;
       });
   </script>
 </body>
