@@ -164,14 +164,24 @@ body {
 }
 
 #searchInput {
+  display: block;
   width: 100%;
   max-width: 500px;
-  margin: auto;
-  display: block;
-  padding: 12px;
+  margin: 20px auto;
+  padding: 0.6rem 1rem;
   border-radius: 8px;
-  border: 1px solid #ccc;
+  background-color: #fff;
+  border: 1px solid #bbb;
   font-size: 16px;
+  font-family: inherit;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+#searchInput:focus {
+  border-color: #007BFF;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
 #pagination {
