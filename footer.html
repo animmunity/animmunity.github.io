@@ -4,8 +4,9 @@
       background: #fff;
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.07);
       padding: 12px 20px;
+      position: relative;
+      z-index: 1000;
       width: 100%;
-      border-top: 1px solid #eee;
     }
 
     .footer-inner {
@@ -19,16 +20,17 @@
     }
 
     .footer-logo img {
-      height: 36px;
+      height: 48px;
       width: auto;
-      border-radius: 6px;
+      border-radius: 8px;
     }
 
     .footer-credits p {
       margin: 0;
       color: #333;
       font-size: 14px;
-      font-weight: 400;
+      font-weight: 500;
+      font-family: system-ui, sans-serif;
     }
 
     @media (max-width: 768px) {
@@ -39,7 +41,7 @@
       }
 
       .footer-logo img {
-        height: 32px;
+        height: 36px;
       }
 
       .footer-credits p {
@@ -54,12 +56,17 @@
       <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhXgvXQR3-7azh_pZYam_9nDK86ZIM_QPN8epIxqNOsyp7YT4lloFISznDeNnbbVm2BK0gLaBObyOCTc1vDwkxZMjzWxz5-FNdrCUjXex_kyOmo1QKcZP-Exqkeo3eO3j-WnQs3bM9zzrdAVz66z_bmD8TQUsjiMYQpku0lmsMhWATi0AYB7unx5VUGW0U=s39" alt="AniMMunity">
     </div>
     <div class="footer-credits">
-      <p>&copy; <span id="year"></span> AniMMunity. All Rights Reserved.</p>
+      <p>&copy; <span id="footer-year"></span> AniMMunity. All Rights Reserved.</p>
     </div>
   </div>
 </footer>
 
 <script>
-  // Inserisce automaticamente l'anno corrente
-  document.getElementById("year").textContent = new Date().getFullYear();
+  // JS: imposta anno corretto
+  document.addEventListener("DOMContentLoaded", function () {
+    const yearSpan = document.getElementById("footer-year");
+    if (yearSpan) {
+      yearSpan.textContent = new Date().getFullYear();
+    }
+  });
 </script>
