@@ -16,21 +16,15 @@
       justify-content: space-between;
       max-width: 1100px;
       margin: auto;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .header-logo img {
       height: 50px;
       width: auto;
-      max-width: 100%;
+      max-width: none;
       border-radius: 8px;
       display: block;
-    }
-    
-    @media (max-width: 768px) {
-      .header-logo img {
-        height: 40px; /* più compatto su mobile */
-      }
     }
 
     .menu-toggle {
@@ -40,6 +34,7 @@
       font-size: 28px;
       cursor: pointer;
       color: #333;
+      margin-left: auto;
     }
 
     .header-nav {
@@ -82,6 +77,12 @@
         width: 100%;
         text-align: center;
       }
+
+      .header-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
   </style>
 
@@ -94,10 +95,11 @@
       ☰
     </button>
 
-    <nav class="header-nav">
-      <a href="index.html">Home</a>
-      <a href="about.html">Magazine</a>
-      <a href="contact.html">Contatti</a>
-    </nav>
   </div>
+
+  <nav class="header-nav">
+    <a href="index.html">Home</a>
+    <a href="about.html">Magazine</a>
+    <a href="contact.html">Contatti</a>
+  </nav>
 </header>
