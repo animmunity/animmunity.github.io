@@ -167,10 +167,11 @@
       const list = parseCSV(csv);
 
       // gestione BOM invisibile
-      const anime = list.find(a => {
-        const id = a.anime_id || a["﻿anime_id"];
-        return String(id).trim() === animeID;
-      });
+const anime = list.find(a => {
+  const keys = Object.keys(a);
+  const key = keys.find(k => k.trim().replace(/^﻿/, '') === 'anime_id');
+  return key && String(a[key]).trim() === animeID;
+});
 
       if (anime) {
         renderDetail(anime);
