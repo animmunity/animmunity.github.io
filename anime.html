@@ -1,43 +1,45 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Anime Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
   <style>
     :root {
-      --primary: #4D90D5;
-      --accent: #FF9C54;
-      --bg: #f9f9f9;
-      --card-bg: #ffffff;
-      --border: #e0e0e0;
-      --text: #222;
+      --primary: #7C3AED;
+      --accent: #FACC15;
+      --bg: #F3F4F6;
+      --card-bg: #FFFFFF;
+      --text: #1F2937;
+      --border: #E5E7EB;
     }
 
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: 'Nunito Sans', sans-serif;
-      margin: 0;
       background-color: var(--bg);
       color: var(--text);
+      padding: 2rem;
     }
 
-    #anime-container {
-      max-width: 960px;
-      margin: 2rem auto;
-      padding: 1rem;
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
     }
 
     .anime-card {
       background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
       padding: 2rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
     }
 
     .anime-header {
@@ -49,18 +51,25 @@
 
     .anime-header img {
       width: 240px;
+      height: auto;
       border-radius: 12px;
       object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .anime-info {
+      flex: 1;
     }
 
     .anime-info h1 {
-      margin: 0;
-      font-size: 2rem;
+      font-size: 2.2rem;
       color: var(--primary);
+      margin-bottom: 0.5rem;
     }
 
     .anime-info p {
-      margin: 0.3rem 0;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
 
     section {
@@ -68,11 +77,11 @@
     }
 
     section h2 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       color: var(--accent);
       border-bottom: 2px solid var(--accent);
-      padding-bottom: 0.25rem;
-      margin-bottom: 0.5rem;
+      padding-bottom: 0.3rem;
+      margin-bottom: 1rem;
     }
 
     section p {
@@ -80,11 +89,12 @@
     }
 
     iframe {
-      margin-top: 1rem;
-      max-width: 100%;
-      height: 360px;
+      width: 100%;
+      height: 400px;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
+      margin-top: 1rem;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     }
 
     a {
@@ -93,13 +103,27 @@
     }
 
     .back-link {
-      margin-top: 2rem;
       display: inline-block;
+      margin-top: 2rem;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .anime-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .anime-header img {
+        width: 100%;
+        max-width: 300px;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="anime-container">
+  <div class="container">
     <div class="anime-card" id="card-content">
       <p>Caricamento anime...</p>
     </div>
@@ -155,7 +179,7 @@
     }
 
     function embedYouTube(url) {
-      if (!url || !url.includes("youtube.com") && !url.includes("youtu.be")) return "";
+      if (!url || (!url.includes("youtube.com") && !url.includes("youtu.be"))) return "";
       const idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([\w-]+)/);
       if (!idMatch || !idMatch[1]) return "";
       const videoId = idMatch[1];
@@ -199,7 +223,7 @@
       }
 
       if (anime.synopsis || anime.background) {
-        html += `<section><h2>Description</h2>`;
+        html += `<section><h2>Trama</h2>`;
         if (anime.synopsis) html += `<p><strong>Synopsis:</strong> ${anime.synopsis}</p>`;
         if (anime.background) html += `<p><strong>Background:</strong> ${anime.background}</p>`;
         html += `</section>`;
