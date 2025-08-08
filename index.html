@@ -183,10 +183,12 @@
           skipEmptyLines: true,
         });
 
-        animeData = parsed.data.map(row => ({
-          title: row.title?.trim() || "Senza titolo",
-          main_picture: row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg") || "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
-        }));
+animeData = parsed.data.map(row => ({
+  title: row.title?.trim() || "Senza titolo",
+  title_english: row.title_english?.trim() || "",
+  title_japanese: row.title_japanese?.trim() || "",
+  main_picture: row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg") || "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
+}));
 
         renderPage();
       });
