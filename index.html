@@ -154,10 +154,10 @@
       for (const anime of pageItems) {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = 
-          <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
-          <h3>${anime.title}</h3>
-        ;
+card.innerHTML = `
+  <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
+  <h3>${anime.title}</h3>
+`;
         grid.appendChild(card);
       }
 
