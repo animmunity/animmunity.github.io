@@ -7,14 +7,12 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     :root {
-      --fire: #FF9C54;
-      --water: #4D90D5;
-      --grass: #63bb5b;
-      --electric: #F3D23B;
-      --psychic: #F97176;
-      --ice: #74CEC0;
-      --dark: #5A5366;
-      --fairy: #EC8FE6;
+      --primary: #4D90D5;
+      --accent: #FF9C54;
+      --bg: #f9f9f9;
+      --card-bg: #ffffff;
+      --border: #e0e0e0;
+      --text: #222;
     }
 
     * {
@@ -23,85 +21,89 @@
 
     body {
       font-family: 'Nunito Sans', sans-serif;
-      font-size: 16px;
-      font-weight: 400;
-      line-height: 1.6;
-      color: #000;
-      background-color: #fff;
       margin: 0;
-      height: 100dvh;
-      overflow: auto;
+      background-color: var(--bg);
+      color: var(--text);
     }
 
     #anime-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+      max-width: 960px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+
+    .anime-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 2rem;
-      max-width: 1000px;
-      margin: auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
     }
 
     .anime-header {
       display: flex;
-      gap: 2rem;
-      align-items: flex-start;
+      flex-direction: row;
       flex-wrap: wrap;
+      gap: 2rem;
     }
 
     .anime-header img {
-      max-width: 240px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 240px;
+      border-radius: 12px;
+      object-fit: cover;
     }
 
-    .anime-title h1 {
+    .anime-info h1 {
       margin: 0;
       font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .anime-info p {
+      margin: 0.3rem 0;
     }
 
     section {
-      background: #f5f5f5;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
+      margin-top: 2rem;
     }
 
     section h2 {
-      margin-top: 0;
-      color: #2c3e50;
-      font-size: 1.25rem;
-      border-left: 4px solid var(--water);
-      padding-left: 0.5rem;
+      font-size: 1.3rem;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
     }
 
     section p {
-      margin: 0.5rem 0;
+      margin: 0.3rem 0;
+    }
+
+    iframe {
+      margin-top: 1rem;
+      max-width: 100%;
+      height: 360px;
+      border: none;
+      border-radius: 8px;
     }
 
     a {
-      color: var(--fire);
+      color: var(--primary);
       text-decoration: none;
     }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
     .back-link {
-      display: inline-block;
       margin-top: 2rem;
-      color: var(--dark);
+      display: inline-block;
     }
   </style>
 </head>
 <body>
-  <div id="header"></div>
-
-  <main id="anime-container">
-    <p>Caricamento dati anime...</p>
-  </main>
-
-  <div id="footer"></div>
+  <div id="anime-container">
+    <div class="anime-card" id="card-content">
+      <p>Caricamento anime...</p>
+    </div>
+  </div>
 
   <script>
     const columnLabels = {
@@ -122,24 +124,14 @@
     };
 
     const sections = {
-      "Identity and Titles": ["title_english", "title_japanese", "title_synonyms"],
-      "Classification and Ratings": ["type", "score", "scored_by", "status", "rating", "sfw"],
-      "Episodes and Duration": ["episodes", "episode_duration", "total_duration"],
-      "Dates and Broadcast Period": ["start_date", "end_date", "real_start_date", "real_end_date", "start_year", "start_season", "broadcast_day", "broadcast_time"],
-      "Origin and Production": ["source", "studios", "producers", "licensors"],
-      "Popularity and Insight": ["members", "favorites", "approved", "genres", "themes", "demographics"],
-      "Content and Media": ["synopsis", "background", "trailer_url"],
-      "Technical Metadata": ["created_at", "updated_at"]
+      "Titles": ["title_english", "title_japanese", "title_synonyms"],
+      "Classification": ["type", "score", "scored_by", "status", "rating", "sfw"],
+      "Episodes": ["episodes", "episode_duration", "total_duration"],
+      "Dates": ["start_date", "end_date", "real_start_date", "real_end_date", "start_year", "start_season", "broadcast_day", "broadcast_time"],
+      "Production": ["source", "studios", "producers", "licensors"],
+      "Popularity": ["members", "favorites", "approved", "genres", "themes", "demographics"],
+      "Meta": ["created_at", "updated_at"]
     };
-
-    async function loadHTML(id, url) {
-      const res = await fetch(url);
-      const html = await res.text();
-      document.getElementById(id).innerHTML = html;
-    }
-
-    loadHTML("header", "header.html");
-    loadHTML("footer", "footer.html");
 
     function parseCSV(csvText) {
       const lines = csvText.split("\n").filter(l => l.trim() !== "");
@@ -162,12 +154,20 @@
       return content ? `<section><h2>${title}</h2>${content}</section>` : "";
     }
 
+    function embedYouTube(url) {
+      if (!url || !url.includes("youtube.com") && !url.includes("youtu.be")) return "";
+      const idMatch = url.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([\w-]+)/);
+      if (!idMatch || !idMatch[1]) return "";
+      const videoId = idMatch[1];
+      return `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;
+    }
+
     async function loadAnime() {
       const params = new URLSearchParams(window.location.search);
       const animeId = params.get("id");
 
       if (!animeId) {
-        document.getElementById("anime-container").innerHTML = "<p>ID non trovato nell'URL.</p>";
+        document.getElementById("card-content").innerHTML = "<p>ID non trovato.</p>";
         return;
       }
 
@@ -177,7 +177,7 @@
       const anime = animeList.find(a => a.anime_id === animeId);
 
       if (!anime) {
-        document.getElementById("anime-container").innerHTML = "<p>Anime non trovato.</p>";
+        document.getElementById("card-content").innerHTML = "<p>Anime non trovato.</p>";
         return;
       }
 
@@ -186,25 +186,36 @@
       let html = `
         <div class="anime-header">
           ${anime.main_picture ? `<img src="${anime.main_picture}" alt="${anime.title}">` : ""}
-          <div class="anime-title">
+          <div class="anime-info">
             <h1>${anime.title}</h1>
+            ${renderField("English Title", anime.title_english)}
+            ${renderField("Japanese Title", anime.title_japanese)}
           </div>
         </div>
       `;
 
-      for (const [sectionTitle, fields] of Object.entries(sections)) {
-        html += renderSection(sectionTitle, fields, anime);
+      for (const [title, fields] of Object.entries(sections)) {
+        html += renderSection(title, fields, anime);
+      }
+
+      if (anime.synopsis || anime.background) {
+        html += `<section><h2>Description</h2>`;
+        if (anime.synopsis) html += `<p><strong>Synopsis:</strong> ${anime.synopsis}</p>`;
+        if (anime.background) html += `<p><strong>Background:</strong> ${anime.background}</p>`;
+        html += `</section>`;
+      }
+
+      if (anime.trailer_url) {
+        html += `<section><h2>Trailer</h2>${embedYouTube(anime.trailer_url)}</section>`;
       }
 
       if (anime.url) {
-        html += `<p><a href="${anime.url}" target="_blank">Scheda ufficiale</a></p>`;
-      }
-      if (anime.trailer_url) {
-        html += `<p><a href="${anime.trailer_url}" target="_blank">Guarda il trailer</a></p>`;
+        html += `<p><a href="${anime.url}" target="_blank">🌐 Scheda ufficiale</a></p>`;
       }
 
-      html += `<a class="back-link" href="index.html">⬅ Torna all'elenco</a>`;
-      document.getElementById("anime-container").innerHTML = html;
+      html += `<a href="index.html" class="back-link">⬅ Torna all’elenco</a>`;
+
+      document.getElementById("card-content").innerHTML = html;
     }
 
     loadAnime();
