@@ -113,7 +113,10 @@
     function renderPage(page = 1, query = "") {
       const grid = document.getElementById("animeGrid");
       grid.innerHTML = "";
-      const filtered = animeData.filter(a => a.title.toLowerCase().includes(query.toLowerCase()));
+      const filtered = animeData.filter(a =>
+        [a.title, a.title_english, a.title_japanese]
+          .some(t => t.toLowerCase().includes(query.toLowerCase()))
+      );
       const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
       const start = (page - 1) * ITEMS_PER_PAGE;
       const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
