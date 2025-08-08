@@ -129,7 +129,7 @@
           }, {});
         });
 
-        const anime = data.find(d => d.anime_id === animeId);
+        const anime = data.find(d => d.anime_id.toString() === animeId);
         if (!anime) {
           document.getElementById('app').innerHTML = `<p>Anime non trovato<br>ID: ${animeId}</p>`;
           return;
