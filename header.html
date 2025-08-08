@@ -1,18 +1,101 @@
+<!-- header.html -->
 <header class="anime-header">
+  <style>
+    .anime-header {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+      padding: 10px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: auto;
+      flex-wrap: wrap;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .header-logo img {
+      height: 40px;
+      border-radius: 8px;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .header-nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .header-nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
+
+    .header-nav a:hover {
+      background-color: #007BFF;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .header-nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      .header-nav a {
+        width: 100%;
+        text-align: center;
+      }
+
+      .header-inner.active .header-nav {
+        display: flex;
+      }
+    }
+  </style>
+
   <div class="header-inner">
-    <!-- 🔰 Logo -->
     <a href="index.html" class="header-logo">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" 
-        alt="AniMMunity Logo" 
-        height="40" />
+      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
+      AniMMunity
     </a>
 
-    <!-- ☰ Toggle per Mobile -->
-    <button class="menu-toggle" aria-label="Apri Menu">
+    <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-inner').classList.toggle('active')">
       ☰
     </button>
 
-    <!-- 🌐 Navigazione principale -->
     <nav class="header-nav">
       <a href="index.html">Home</a>
       <a href="about.html">Magazine</a>
