@@ -12,11 +12,10 @@
 
     .header-inner {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       max-width: 1200px;
       margin: 0 auto;
-      flex-wrap: wrap;
+      width: 100%;
     }
 
     .logo-toggle-wrapper {
@@ -24,11 +23,13 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
+      overflow: hidden;
     }
 
     .header-logo img {
       height: 48px;
       width: auto;
+      max-width: 100%;
       transition: all 0.3s ease;
     }
 
@@ -39,6 +40,7 @@
       cursor: pointer;
       color: #333;
       display: none;
+      flex-shrink: 0;
     }
 
     .header-nav {
@@ -92,7 +94,7 @@
   <div class="header-inner">
     <div class="logo-toggle-wrapper">
       <a href="index.html" class="header-logo">
-        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity">
       </a>
 
       <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
