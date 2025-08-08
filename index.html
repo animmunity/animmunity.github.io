@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Anime List</title>
+  <title>AniMMunity – Catalogo Anime</title>
 
   <!-- ✅ Collegamento al CSS esterno -->
   <link rel="stylesheet" href="styles.css">
@@ -22,8 +22,10 @@
   <div id="header-placeholder"></div>
 
   <main class="anime-main">
-    <h1 style="text-align:center">Anime List</h1>
-    <input type="text" id="searchInput" placeholder="Cerca un anime..."/>
+    <h1 class="page-title">Catalogo Anime • AniMMunity</h1>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Cerca un anime..."/>
+    </div>
     <div id="animeGrid" class="anime-grid"></div>
     <div id="pagination"></div>
   </main>
@@ -31,11 +33,22 @@
   <!-- ✅ Footer caricato dinamicamente -->
   <div id="footer-placeholder"></div>
 
+  <!-- ✅ Script principale -->
   <script>
     // Carica header e footer dinamici
     fetch("header.html").then(r => r.text()).then(d => {
       document.getElementById("header-placeholder").innerHTML = d;
+
+      // Attiva toggle menu dopo inserimento header
+      const toggle = document.querySelector('.menu-toggle');
+      const headerInner = document.querySelector('.header-inner');
+      if (toggle && headerInner) {
+        toggle.addEventListener("click", () => {
+          headerInner.classList.toggle("active");
+        });
+      }
     });
+
     fetch("footer.html").then(r => r.text()).then(d => {
       document.getElementById("footer-placeholder").innerHTML = d;
     });
