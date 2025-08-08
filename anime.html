@@ -50,6 +50,18 @@
     .anime-description {
       margin-top: 20px;
       line-height: 1.6;
+      position: relative;
+    }
+    .description-short {
+      overflow: hidden;
+      max-height: 200px;
+    }
+    .read-more-btn {
+      display: inline-block;
+      margin-top: 10px;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.95em;
     }
     .error {
       text-align: center;
@@ -120,8 +132,30 @@
       }).data;
     }
 
+    // Format multiline text
+    function formatMultiline(text) {
+      if (!text) return "—";
+      return text
+        .replace(/\r\n|\r|\n/g, "<br>")
+        .replace(/""/g, '"')
+        .replace(/^"|"$/g, "");
+    }
+
+    // Parsare array
+    function parseArray(str) {
+      try {
+        const arr = JSON.parse(str);
+        return Array.isArray(arr) ? arr.join(", ") : str;
+      } catch {
+        return str;
+      }
+    }
+
     // Genera dettaglio anime
     function generateAnimeDetails(anime) {
+      const synopsisFormatted = formatMultiline(anime.synopsis);
+      const synopsisId = "synopsis-" + anime.anime_id;
+
       let html = `
         <div class="anime-header">
           <img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">
@@ -136,7 +170,8 @@
         </div>
         <div class="anime-description">
           <h2>Trama</h2>
-          <p>${anime.synopsis?.replace(/\n/g, "<br>") || "—"}</p>
+          <div id="${synopsisId}" class="description-short">${synopsisFormatted}</div>
+          <span class="read-more-btn" onclick="toggleSynopsis('${synopsisId}', this)">Leggi di più</span>
         </div>
       `;
 
@@ -164,12 +199,15 @@
       return html;
     }
 
-    function parseArray(str) {
-      try {
-        const arr = JSON.parse(str);
-        return Array.isArray(arr) ? arr.join(", ") : str;
-      } catch {
-        return str;
+    // Toggle descrizione
+    function toggleSynopsis(id, btn) {
+      const el = document.getElementById(id);
+      if (el.classList.contains("description-short")) {
+        el.classList.remove("description-short");
+        btn.innerText = "Leggi meno";
+      } else {
+        el.classList.add("description-short");
+        btn.innerText = "Leggi di più";
       }
     }
 
