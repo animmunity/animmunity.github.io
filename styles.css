@@ -28,7 +28,8 @@
   .header-inner.active .header-nav {
     display: flex;
   }
-  
+} 
+
 .anime-footer {
   background: #ffffff;
   margin: 40px auto 20px auto;
