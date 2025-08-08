@@ -1,10 +1,9 @@
-<!-- header.html -->
 <header class="anime-header">
   <style>
     .anime-header {
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
-      padding: 12px 24px;
+      padding: 12px 20px;
       position: sticky;
       top: 0;
       z-index: 1000;
@@ -16,24 +15,30 @@
       justify-content: space-between;
       align-items: center;
       max-width: 1200px;
-      margin: auto;
-      flex-wrap: wrap;
+      margin: 0 auto;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
     }
 
     .header-logo img {
       height: 50px;
       width: auto;
-      display: block;
-      border-radius: 8px;
+      max-width: 100%;
+      transition: all 0.3s ease;
     }
 
     .menu-toggle {
-      display: none;
       background: none;
       border: none;
-      font-size: 30px;
+      font-size: 28px;
       cursor: pointer;
       color: #333;
+      margin-left: 20px;
+      display: none;
     }
 
     .header-nav {
@@ -48,7 +53,7 @@
       font-weight: 500;
       padding: 8px 14px;
       border-radius: 6px;
-      transition: all 0.3s ease;
+      transition: background-color 0.3s ease;
     }
 
     .header-nav a:hover {
@@ -56,8 +61,18 @@
       color: #fff;
     }
 
-    /* --- Responsive --- */
+    /* -------- Responsive -------- */
     @media (max-width: 768px) {
+      .header-inner {
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .header-logo img {
+        height: 38px;
+      }
+
       .menu-toggle {
         display: block;
       }
@@ -66,7 +81,7 @@
         display: none;
         flex-direction: column;
         width: 100%;
-        padding-top: 12px;
+        margin-top: 10px;
       }
 
       .header-nav.active {
@@ -77,18 +92,6 @@
         width: 100%;
         text-align: center;
       }
-
-      .header-inner {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .header-logo {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
     }
   </style>
 
@@ -97,8 +100,11 @@
       <a href="index.html">
         <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
       </a>
-      <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">☰</button>
     </div>
+
+    <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
+      ☰
+    </button>
 
     <nav class="header-nav">
       <a href="index.html">Home</a>
