@@ -12,6 +12,29 @@
       background: #f9f9f9;
     }
 
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 5px solid #ccc;
+      border-top-color: #007BFF;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .anime-main {
       max-width: 1100px;
       margin: auto;
@@ -86,6 +109,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
 <body>
+
+  <!-- 🔄 Preloader -->
+  <div id="preloader">
+    <div class="spinner"></div>
+  </div>
+
   <div id="header-placeholder"></div>
 
   <main class="anime-main">
@@ -115,7 +144,7 @@
       grid.innerHTML = "";
       const filtered = animeData.filter(a =>
         [a.title, a.title_english, a.title_japanese]
-          .some(t => t.toLowerCase().includes(query.toLowerCase()))
+          .some(t => t && t.toLowerCase().includes(query.toLowerCase()))
       );
       const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
       const start = (page - 1) * ITEMS_PER_PAGE;
@@ -186,15 +215,25 @@
           skipEmptyLines: true,
         });
 
-animeData = parsed.data.map(row => ({
-  title: row.title?.trim() || "Senza titolo",
-  title_english: row.title_english?.trim() || "",
-  title_japanese: row.title_japanese?.trim() || "",
-  main_picture: row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg") || "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
-}));
+        animeData = parsed.data.map(row => ({
+          title: row.title?.trim() || "Senza titolo",
+          title_english: row.title_english?.trim() || "",
+          title_japanese: row.title_japanese?.trim() || "",
+          main_picture: row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg") || "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
+        }));
 
         renderPage();
       });
+
+    // Nascondi preloader dopo caricamento completo
+    window.addEventListener("load", () => {
+      const preloader = document.getElementById("preloader");
+      if (preloader) {
+        preloader.style.opacity = "0";
+        preloader.style.pointerEvents = "none";
+        setTimeout(() => preloader.remove(), 500);
+      }
+    });
   </script>
 </body>
 </html>
