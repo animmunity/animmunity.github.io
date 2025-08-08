@@ -16,10 +16,11 @@
       position: fixed;
       inset: 0;
       background: #fff;
-      z-index: 9999;
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: opacity 0.3s ease;
     }
 
     .spinner {
@@ -223,17 +224,15 @@
         }));
 
         renderPage();
-      });
 
-    // Nascondi preloader dopo caricamento completo
-    window.addEventListener("load", () => {
-      const preloader = document.getElementById("preloader");
-      if (preloader) {
-        preloader.style.opacity = "0";
-        preloader.style.pointerEvents = "none";
-        setTimeout(() => preloader.remove(), 500);
-      }
-    });
+        // ✅ Nascondi preloader DOPO il caricamento completo
+        const preloader = document.getElementById("preloader");
+        if (preloader) {
+          preloader.style.opacity = "0";
+          preloader.style.pointerEvents = "none";
+          setTimeout(() => preloader.remove(), 500);
+        }
+      });
   </script>
 </body>
 </html>
