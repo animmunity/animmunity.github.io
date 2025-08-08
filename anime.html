@@ -85,7 +85,7 @@
 </head>
 <body>
   <div id="header"></div>
-  <div id="app" class="anime-card"></div>
+  <div id="app" class="anime-card">Caricamento...</div>
   <div id="footer"></div>
 
   <script>
@@ -129,9 +129,14 @@
           }, {});
         });
 
-        const anime = data.find(d => d.anime_id.toString() === animeId);
+        const anime = data.find(d => d.anime_id?.trim() === animeId?.trim());
+
         if (!anime) {
-          document.getElementById('app').innerHTML = `<p>Anime non trovato<br>ID: ${animeId}</p>`;
+          console.warn("Anime non trovato. Ecco tutti gli ID trovati:", data.map(a => a.anime_id));
+          document.getElementById('app').innerHTML = `
+            <p>Anime non trovato<br>ID cercato: <code>${animeId}</code></p>
+            <p>ID disponibili: <code>${data.map(a => a.anime_id).join(", ")}</code></p>
+          `;
           return;
         }
 
@@ -151,7 +156,9 @@
                 const embed = value.replace("watch?v=", "embed/");
                 html += `<div class="video"><iframe src="${embed}" allowfullscreen></iframe></div>`;
               } else {
-                html += `<p><strong>${label}:</strong> ${value}</p>`;
+                // Parsing array visivi (es. generi) se formattati tipo "['Action','Drama']"
+                const parsedValue = value.startsWith("[") && value.endsWith("]") ? JSON.parse(value.replace(/'/g, '"')) : value;
+                html += `<p><strong>${label}:</strong> ${Array.isArray(parsedValue) ? parsedValue.join(", ") : parsedValue}</p>`;
               }
             }
           }
