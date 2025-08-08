@@ -4,43 +4,36 @@
     .anime-header {
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
-      padding: 10px 20px;
+      padding: 12px 24px;
       position: sticky;
       top: 0;
       z-index: 1000;
+      width: 100%;
     }
 
     .header-inner {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      max-width: 1100px;
-      margin: auto;
-      width: 100%;
-    }
-
-    .header-logo {
-      display: flex;
       align-items: center;
-      flex-shrink: 0;
+      max-width: 1200px;
+      margin: auto;
+      flex-wrap: wrap;
     }
 
     .header-logo img {
       height: 50px;
       width: auto;
-      max-width: 100%;
-      border-radius: 8px;
       display: block;
+      border-radius: 8px;
     }
 
     .menu-toggle {
       display: none;
       background: none;
       border: none;
-      font-size: 28px;
+      font-size: 30px;
       cursor: pointer;
       color: #333;
-      margin-left: auto;
     }
 
     .header-nav {
@@ -53,9 +46,9 @@
       text-decoration: none;
       color: #000;
       font-weight: 500;
-      padding: 8px 12px;
+      padding: 8px 14px;
       border-radius: 6px;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
     }
 
     .header-nav a:hover {
@@ -63,13 +56,8 @@
       color: #fff;
     }
 
-    /* Responsive */
+    /* --- Responsive --- */
     @media (max-width: 768px) {
-      .header-logo img {
-        max-height: 60px;
-        max-width: 160px;
-      }
-
       .menu-toggle {
         display: block;
       }
@@ -78,7 +66,7 @@
         display: none;
         flex-direction: column;
         width: 100%;
-        margin-top: 10px;
+        padding-top: 12px;
       }
 
       .header-nav.active {
@@ -89,22 +77,33 @@
         width: 100%;
         text-align: center;
       }
+
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-logo {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
     }
   </style>
 
   <div class="header-inner">
-    <a href="index.html" class="header-logo">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
-    </a>
+    <div class="header-logo">
+      <a href="index.html">
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
+      </a>
+      <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">☰</button>
+    </div>
 
-    <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
-      ☰
-    </button>
+    <nav class="header-nav">
+      <a href="index.html">Home</a>
+      <a href="about.html">Magazine</a>
+      <a href="contact.html">Contatti</a>
+    </nav>
   </div>
-
-  <nav class="header-nav">
-    <a href="index.html">Home</a>
-    <a href="about.html">Magazine</a>
-    <a href="contact.html">Contatti</a>
-  </nav>
 </header>
