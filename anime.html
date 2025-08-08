@@ -5,6 +5,7 @@
   <title>Anime Detail</title>
   <link rel="stylesheet" href="styles.css">
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       font-family: 'Nunito Sans', sans-serif;
@@ -111,19 +112,15 @@
     const params = new URLSearchParams(window.location.search);
     const animeId = params.get("id");
 
-    // Parsing CSV
-    function parseCSV(text) {
-      const rows = text.split("\n").filter(r => r.trim());
-      const headers = rows[0].split(",");
-      return rows.slice(1).map(row => {
-        const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(val =>
-          val?.replace(/^"|"$/g, '').replace(/""/g, '"') || ""
-        );
-        return Object.fromEntries(headers.map((h, i) => [h, values?.[i] || ""]));
-      });
+    // Usa PapaParse per leggere CSV
+    function parseCSVWithPapa(text) {
+      return Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true
+      }).data;
     }
 
-    // Mostra tutti i dati
+    // Genera dettaglio anime
     function generateAnimeDetails(anime) {
       let html = `
         <div class="anime-header">
@@ -155,7 +152,7 @@
             } catch {}
           }
 
-          if (field === "synopsis" || field === "background") continue;
+          if (["synopsis", "background", "main_picture"].includes(field)) continue;
 
           sectionHtml += `<p><strong>${columnLabels[field] || field}:</strong> ${value}</p>`;
         }
@@ -176,10 +173,11 @@
       }
     }
 
+    // Carica CSV e mostra i dati
     fetch("data/anime.csv")
       .then(response => response.text())
       .then(csvText => {
-        const data = parseCSV(csvText);
+        const data = parseCSVWithPapa(csvText);
         const anime = data.find(a => a.anime_id === animeId);
         if (!anime) {
           document.getElementById("content").innerHTML = `<div class="error">Anime non trovato<br>ID cercato: ${animeId}</div>`;
