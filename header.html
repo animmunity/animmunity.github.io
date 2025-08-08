@@ -16,18 +16,19 @@
       align-items: center;
       max-width: 1200px;
       margin: 0 auto;
+      flex-wrap: wrap;
     }
 
-    .header-logo {
+    .logo-toggle-wrapper {
       display: flex;
       align-items: center;
-      flex-grow: 1;
+      justify-content: space-between;
+      width: 100%;
     }
 
     .header-logo img {
-      height: 50px;
+      height: 48px;
       width: auto;
-      max-width: 100%;
       transition: all 0.3s ease;
     }
 
@@ -37,7 +38,6 @@
       font-size: 28px;
       cursor: pointer;
       color: #333;
-      margin-left: 20px;
       display: none;
     }
 
@@ -63,14 +63,8 @@
 
     /* -------- Responsive -------- */
     @media (max-width: 768px) {
-      .header-inner {
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-      }
-
       .header-logo img {
-        height: 38px;
+        height: 36px;
       }
 
       .menu-toggle {
@@ -96,15 +90,15 @@
   </style>
 
   <div class="header-inner">
-    <div class="header-logo">
-      <a href="index.html">
+    <div class="logo-toggle-wrapper">
+      <a href="index.html" class="header-logo">
         <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity" />
       </a>
-    </div>
 
-    <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
-      ☰
-    </button>
+      <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
+        ☰
+      </button>
+    </div>
 
     <nav class="header-nav">
       <a href="index.html">Home</a>
