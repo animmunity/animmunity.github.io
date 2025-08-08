@@ -2,51 +2,111 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Elenco Anime</title>
+  <title>Anime Info</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="header"></div>
-  <main>
-    <h1>Anime List</h1>
-    <ul id="anime-list"></ul>
+
+  <main id="anime-container">
+    <p>Caricamento dati anime...</p>
   </main>
+
   <div id="footer"></div>
 
   <script>
+    // Carica header e footer dalla root
     async function loadHTML(id, url) {
       const res = await fetch(url);
       const html = await res.text();
       document.getElementById(id).innerHTML = html;
     }
 
-    loadHTML("header", "templates/header.html");
-    loadHTML("footer", "templates/footer.html");
+    loadHTML("header", "header.html");
+    loadHTML("footer", "footer.html");
 
-    async function loadCSV() {
-      const res = await fetch("data/anime.csv");
-      const csv = await res.text();
-
-      const lines = csv.split("\n");
-      const headers = lines[0].split(",");
-      const titleIndex = headers.indexOf("title");
-      const idIndex = headers.indexOf("anime_id");
-
-      const list = document.getElementById("anime-list");
-
-      for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(",");
-        const title = cols[titleIndex];
-        const id = cols[idIndex];
-        if (!title || !id) continue;
-
-        const li = document.createElement("li");
-        li.innerHTML = `<a href="anime.html?id=${id}">${title}</a>`;
-        list.appendChild(li);
-      }
+    // Funzione di utilità per visualizzare campo solo se presente
+    function field(label, value) {
+      return value && value.trim() !== "" ? `<p><strong>${label}:</strong> ${value}</p>` : "";
     }
 
-    loadCSV();
+    function parseCSV(csvText) {
+      const lines = csvText.split("\n").filter(l => l.trim() !== "");
+      const headers = lines[0].split(",");
+      return lines.slice(1).map(line => {
+        const values = line.split(",");
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = values[i]);
+        return obj;
+      });
+    }
+
+    async function loadAnime() {
+      const params = new URLSearchParams(window.location.search);
+      const animeId = params.get("id");
+
+      if (!animeId) {
+        document.getElementById("anime-container").innerHTML = "<p>ID non trovato nell'URL.</p>";
+        return;
+      }
+
+      const res = await fetch("data/anime.csv");
+      const csv = await res.text();
+      const animeList = parseCSV(csv);
+
+      const anime = animeList.find(a => a.anime_id === animeId);
+
+      if (!anime) {
+        document.getElementById("anime-container").innerHTML = "<p>Anime non trovato.</p>";
+        return;
+      }
+
+      document.title = anime.title;
+
+      const html = `
+        <h1>${anime.title}</h1>
+        ${field("Titolo inglese", anime.title_english)}
+        ${field("Titolo giapponese", anime.title_japanese)}
+        ${field("Sinonimi", anime.title_synonyms)}
+        ${anime.main_picture ? `<img src="${anime.main_picture}" alt="${anime.title}" style="max-width:300px;">` : ""}
+        ${field("Tipo", anime.type)}
+        ${field("Stato", anime.status)}
+        ${field("Score", anime.score)}
+        ${field("Votato da", anime.scored_by)}
+        ${field("Episodi", anime.episodes)}
+        ${field("Durata episodio", anime.episode_duration)}
+        ${field("Durata totale", anime.total_duration)}
+        ${field("Rating contenuti", anime.rating)}
+        ${field("Safe for Work", anime.sfw)}
+        ${field("Approvato", anime.approved)}
+        ${field("Data inizio", anime.start_date)}
+        ${field("Data fine", anime.end_date)}
+        ${field("Data reale inizio", anime.real_start_date)}
+        ${field("Data reale fine", anime.real_end_date)}
+        ${field("Stagione", anime.start_season)}
+        ${field("Anno", anime.start_year)}
+        ${field("Giorno broadcast", anime.broadcast_day)}
+        ${field("Ora broadcast", anime.broadcast_time)}
+        ${field("Fonte", anime.source)}
+        ${field("Membri", anime.members)}
+        ${field("Preferiti", anime.favorites)}
+        ${field("Generi", anime.genres)}
+        ${field("Temi", anime.themes)}
+        ${field("Demografica", anime.demographics)}
+        ${field("Studios", anime.studios)}
+        ${field("Produttori", anime.producers)}
+        ${field("Licenziatari", anime.licensors)}
+        ${field("Trama", anime.synopsis)}
+        ${field("Background", anime.background)}
+        ${anime.url ? `<p><a href="${anime.url}" target="_blank">Scheda ufficiale</a></p>` : ""}
+        ${anime.trailer_url ? `<p><a href="${anime.trailer_url}" target="_blank">Guarda il trailer</a></p>` : ""}
+        <p><a href="index.html">⬅ Torna all'elenco</a></p>
+      `;
+
+      document.getElementById("anime-container").innerHTML = html;
+    }
+
+    loadAnime();
   </script>
 </body>
 </html>
