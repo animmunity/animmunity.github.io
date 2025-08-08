@@ -16,7 +16,11 @@
       max-width: 1200px;
       margin: 0 auto;
       flex-wrap: wrap;
-      gap: 10px;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
     }
 
     .footer-logo img {
@@ -25,10 +29,9 @@
       border-radius: 8px;
     }
 
-    .footer-credits p {
-      margin: 0;
-      color: #333;
+    .footer-credits {
       font-size: 14px;
+      color: #333;
       font-weight: 500;
       font-family: system-ui, sans-serif;
     }
@@ -38,22 +41,24 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
+        gap: 8px;
       }
 
       .footer-logo img {
         height: 36px;
       }
 
-      .footer-credits p {
+      .footer-credits {
         font-size: 13px;
-        padding-top: 6px;
       }
     }
   </style>
 
   <div class="footer-inner">
     <div class="footer-logo">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhXgvXQR3-7azh_pZYam_9nDK86ZIM_QPN8epIxqNOsyp7YT4lloFISznDeNnbbVm2BK0gLaBObyOCTc1vDwkxZMjzWxz5-FNdrCUjXex_kyOmo1QKcZP-Exqkeo3eO3j-WnQs3bM9zzrdAVz66z_bmD8TQUsjiMYQpku0lmsMhWATi0AYB7unx5VUGW0U=s39" alt="AniMMunity">
+      <a href="index.html">
+        <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhXgvXQR3-7azh_pZYam_9nDK86ZIM_QPN8epIxqNOsyp7YT4lloFISznDeNnbbVm2BK0gLaBObyOCTc1vDwkxZMjzWxz5-FNdrCUjXex_kyOmo1QKcZP-Exqkeo3eO3j-WnQs3bM9zzrdAVz66z_bmD8TQUsjiMYQpku0lmsMhWATi0AYB7unx5VUGW0U=s39" alt="AniMMunity">
+      </a>
     </div>
     <div class="footer-credits">
       <p>&copy; <span id="footer-year"></span> AniMMunity. All Rights Reserved.</p>
@@ -62,7 +67,6 @@
 </footer>
 
 <script>
-  // JS: imposta anno corretto
   document.addEventListener("DOMContentLoaded", function () {
     const yearSpan = document.getElementById("footer-year");
     if (yearSpan) {
