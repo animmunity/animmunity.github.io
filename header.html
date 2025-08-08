@@ -1,5 +1,9 @@
 <header class="anime-header">
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     .anime-header {
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
@@ -12,24 +16,17 @@
 
     .header-inner {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
       max-width: 1200px;
       margin: 0 auto;
       width: 100%;
     }
 
-    .logo-toggle-wrapper {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      overflow: hidden;
-    }
-
     .header-logo img {
       height: 48px;
-      width: auto;
       max-width: 100%;
+      width: auto;
       transition: all 0.3s ease;
     }
 
@@ -40,7 +37,6 @@
       cursor: pointer;
       color: #333;
       display: none;
-      flex-shrink: 0;
     }
 
     .header-nav {
@@ -65,6 +61,18 @@
 
     /* -------- Responsive -------- */
     @media (max-width: 768px) {
+      .header-inner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+
       .header-logo img {
         height: 36px;
       }
@@ -92,7 +100,7 @@
   </style>
 
   <div class="header-inner">
-    <div class="logo-toggle-wrapper">
+    <div class="top-bar">
       <a href="index.html" class="header-logo">
         <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMunity">
       </a>
