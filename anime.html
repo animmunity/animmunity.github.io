@@ -34,10 +34,17 @@
     h1 {
       margin: 0 0 10px 0;
     }
+    h3 {
+      margin-top: 40px;
+      color: #444;
+    }
     .anime-meta {
       margin-bottom: 10px;
       font-size: 0.95em;
       color: #666;
+    }
+    .anime-section {
+      margin-top: 25px;
     }
     .anime-description {
       margin-top: 20px;
@@ -62,7 +69,37 @@
   <div id="footer"></div>
 
   <script>
-    // Carica header e footer dinamicamente
+    // === Etichette leggibili ===
+    const columnLabels = {
+      anime_id: "Anime ID", title: "Title", type: "Type", score: "Score",
+      scored_by: "Number of Ratings", status: "Status", episodes: "Episodes",
+      start_date: "Start Date", end_date: "End Date", source: "Source Material",
+      members: "Member Count", favorites: "Favorites Count", episode_duration: "Episode Duration",
+      total_duration: "Total Duration", rating: "Content Rating", sfw: "Safe for Work",
+      approved: "Approved", created_at: "Created At", updated_at: "Updated At",
+      start_year: "Start Year", start_season: "Start Season", real_start_date: "Real Start Date",
+      real_end_date: "Real End Date", broadcast_day: "Broadcast Day", broadcast_time: "Broadcast Time",
+      genres: "Genres", themes: "Themes", demographics: "Demographics",
+      studios: "Studios", producers: "Producers", licensors: "Licensors",
+      synopsis: "Synopsis", background: "Background Information",
+      main_picture: "Main Image", url: "Official URL", trailer_url: "Trailer URL",
+      title_english: "English Title", title_japanese: "Japanese Title",
+      title_synonyms: "Alternative Titles", anime_url: "Official URL"
+    };
+
+    // === Sezioni organizzate ===
+    const sections = {
+      "Identity and Titles": ["title", "title_english", "title_japanese", "title_synonyms"],
+      "Classification and Ratings": ["type", "score", "scored_by", "status", "rating", "sfw"],
+      "Episodes and Duration": ["episodes", "episode_duration", "total_duration"],
+      "Dates and Broadcast Period": ["start_date", "end_date", "real_start_date", "real_end_date", "start_year", "start_season", "broadcast_day", "broadcast_time"],
+      "Origin and Production": ["source", "studios", "producers", "licensors"],
+      "Popularity and Insight": ["members", "favorites", "approved", "genres", "themes", "demographics"],
+      "Content and Media": ["synopsis", "background", "trailer_url"],
+      "Technical Metadata": ["created_at", "updated_at"]
+    };
+
+    // Carica header e footer
     fetch("header.html").then(res => res.text()).then(data => {
       document.getElementById("header").innerHTML = data;
     });
@@ -74,16 +111,69 @@
     const params = new URLSearchParams(window.location.search);
     const animeId = params.get("id");
 
-    // Funzione per leggere il CSV
+    // Parsing CSV
     function parseCSV(text) {
       const rows = text.split("\n").filter(r => r.trim());
       const headers = rows[0].split(",");
       return rows.slice(1).map(row => {
-        const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g).map(val =>
-          val.replace(/^"|"$/g, '').replace(/""/g, '"')
+        const values = row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(val =>
+          val?.replace(/^"|"$/g, '').replace(/""/g, '"') || ""
         );
-        return Object.fromEntries(headers.map((h, i) => [h, values[i]]));
+        return Object.fromEntries(headers.map((h, i) => [h, values?.[i] || ""]));
       });
+    }
+
+    // Mostra tutti i dati
+    function generateAnimeDetails(anime) {
+      let html = `
+        <div class="anime-header">
+          <img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">
+          <div class="anime-details">
+            <h1>${anime.title_english || anime.title}</h1>
+            <div class="anime-meta">🗓 ${anime.start_date} — ${anime.end_date || "In corso"}</div>
+            <div class="anime-meta">🎬 Tipo: ${anime.type} — Episodi: ${anime.episodes || "?"}</div>
+            <div class="anime-meta">⭐ Punteggio: ${anime.score} (${anime.scored_by} voti)</div>
+            <div class="anime-meta">📺 Studio: ${anime.studios}</div>
+            <div class="anime-meta">🎭 Generi: ${parseArray(anime.genres)}</div>
+          </div>
+        </div>
+        <div class="anime-description">
+          <h2>Trama</h2>
+          <p>${anime.synopsis?.replace(/\n/g, "<br>") || "—"}</p>
+        </div>
+      `;
+
+      for (const [sectionName, fields] of Object.entries(sections)) {
+        let sectionHtml = "";
+        for (const field of fields) {
+          let value = anime[field];
+          if (!value || value === "[]") continue;
+
+          if (value.startsWith("[") && value.endsWith("]")) {
+            try {
+              value = JSON.parse(value).join(", ");
+            } catch {}
+          }
+
+          if (field === "synopsis" || field === "background") continue;
+
+          sectionHtml += `<p><strong>${columnLabels[field] || field}:</strong> ${value}</p>`;
+        }
+
+        if (sectionHtml)
+          html += `<div class="anime-section"><h3>${sectionName}</h3>${sectionHtml}</div>`;
+      }
+
+      return html;
+    }
+
+    function parseArray(str) {
+      try {
+        const arr = JSON.parse(str);
+        return Array.isArray(arr) ? arr.join(", ") : str;
+      } catch {
+        return str;
+      }
     }
 
     fetch("data/anime.csv")
@@ -95,23 +185,7 @@
           document.getElementById("content").innerHTML = `<div class="error">Anime non trovato<br>ID cercato: ${animeId}</div>`;
           return;
         }
-
-        document.getElementById("content").innerHTML = `
-          <div class="anime-header">
-            <img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">
-            <div class="anime-details">
-              <h1>${anime.title_english || anime.title}</h1>
-              <div class="anime-meta">🗓 ${anime.start_date} — ${anime.end_date || "In corso"}</div>
-              <div class="anime-meta">🎬 Tipo: ${anime.type} — Episodi: ${anime.episodes || "?"}</div>
-              <div class="anime-meta">⭐ Punteggio: ${anime.score} (${anime.scored_by} voti)</div>
-              <div class="anime-meta">📺 Studio: ${anime.studios}</div>
-              <div class="anime-meta">🎭 Generi: ${anime.genres}</div>
-            </div>
-          </div>
-          <div class="anime-description">
-            ${anime.synopsis.replace(/\n/g, "<br>")}
-          </div>
-        `;
+        document.getElementById("content").innerHTML = generateAnimeDetails(anime);
       })
       .catch(error => {
         document.getElementById("content").innerHTML = `<div class="error">Errore nel caricamento: ${error}</div>`;
