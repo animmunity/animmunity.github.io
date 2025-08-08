@@ -1,4 +1,54 @@
 <footer class="anime-footer">
+  <style>
+    .anime-footer {
+      background: #fff;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.07);
+      padding: 12px 20px;
+      width: 100%;
+      border-top: 1px solid #eee;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-logo img {
+      height: 36px;
+      width: auto;
+      border-radius: 6px;
+    }
+
+    .footer-credits p {
+      margin: 0;
+      color: #333;
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    @media (max-width: 768px) {
+      .footer-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .footer-logo img {
+        height: 32px;
+      }
+
+      .footer-credits p {
+        font-size: 13px;
+        padding-top: 6px;
+      }
+    }
+  </style>
+
   <div class="footer-inner">
     <div class="footer-logo">
       <img src="https://blogger.googleusercontent.com/img/a/AVvXsEhXgvXQR3-7azh_pZYam_9nDK86ZIM_QPN8epIxqNOsyp7YT4lloFISznDeNnbbVm2BK0gLaBObyOCTc1vDwkxZMjzWxz5-FNdrCUjXex_kyOmo1QKcZP-Exqkeo3eO3j-WnQs3bM9zzrdAVz66z_bmD8TQUsjiMYQpku0lmsMhWATi0AYB7unx5VUGW0U=s39" alt="AniMMunity">
