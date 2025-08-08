@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>AniMMunity - Anime Info</title>
+  <title>AniMMunity - Anime</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
@@ -68,7 +68,7 @@
 <div id="footer-container"></div>
 
 <script>
-  // === Carica header/footer ===
+  // === Carica header e footer ===
   fetch("header.html").then(res => res.text()).then(data => {
     document.getElementById("header-container").innerHTML = data;
   });
@@ -76,11 +76,9 @@
     document.getElementById("footer-container").innerHTML = data;
   });
 
-  // === Estrai ID dalla URL ===
   const urlParams = new URLSearchParams(window.location.search);
   const animeID = urlParams.get('id');
 
-  // === Etichette leggibili ===
   const columnLabels = {
     "anime_id": "Anime ID", "title": "Title", "type": "Type", "score": "Score",
     "scored_by": "Number of Ratings", "status": "Status", "episodes": "Episodes",
@@ -110,11 +108,9 @@
     "Technical Metadata": ["created_at", "updated_at"]
   };
 
-  // === CSV → JSON ===
   function parseCSV(text) {
     const lines = text.split('\n').filter(Boolean);
     const headers = lines[0].split(',');
-
     return lines.slice(1).map(line => {
       const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
       const obj = {};
@@ -123,12 +119,11 @@
     });
   }
 
-  // === Genera pagina dettaglio ===
   function renderDetail(anime) {
     const container = document.getElementById("anime-content");
     container.innerHTML = '';
 
-    // Immagine + trailer
+    // Media: immagine e trailer
     const mediaDiv = document.createElement('div');
     mediaDiv.className = "image-trailer";
 
@@ -151,10 +146,11 @@
       fields.forEach(field => {
         const value = anime[field];
         if (value && value !== '[]') {
+          const pretty = value.replaceAll("['", "").replaceAll("']", "").replaceAll("', '", ', ');
           sectionDiv.innerHTML += `
             <div class="row">
               <span class="label">${columnLabels[field] || field}:</span>
-              <span class="value"> ${value.replaceAll("['", "").replaceAll("']", "").replaceAll("', '", ', ')}</span>
+              <span class="value"> ${pretty}</span>
             </div>
           `;
         }
@@ -164,24 +160,27 @@
     }
   }
 
-  // === Avvia ===
+  // === Caricamento CSV e visualizzazione ===
   fetch('data/anime.csv')
     .then(res => res.text())
     .then(csv => {
       const list = parseCSV(csv);
 
-      if (animeID) {
-        const anime = list.find(a => a.anime_id === animeID);
-        if (anime) {
-          renderDetail(anime);
-        } else {
-          document.getElementById("anime-content").innerHTML = `
-            <div class="not-found"><h2>Anime non trovato</h2><p>ID: ${animeID}</p></div>
-          `;
-        }
+      // gestione BOM invisibile
+      const anime = list.find(a => {
+        const id = a.anime_id || a["﻿anime_id"];
+        return String(id).trim() === animeID;
+      });
+
+      if (anime) {
+        renderDetail(anime);
+        document.title = anime.title + " - AniMMunity";
       } else {
         document.getElementById("anime-content").innerHTML = `
-          <div class="not-found"><h2>Usa ?id=XXXX per visualizzare un anime.</h2></div>
+          <div class="not-found">
+            <h2>Anime non trovato</h2>
+            <p>ID: ${animeID}</p>
+          </div>
         `;
       }
     });
