@@ -153,7 +153,7 @@
 
     // Genera dettaglio anime
     function generateAnimeDetails(anime) {
-      const synopsisFormatted = formatMultiline(anime.synopsis);
+      const synopsisFormatted = formatMultiline(anime.synopsis).replace(/\[Written by MAL Rewrite\]$/g, '');
       const synopsisId = "synopsis-" + anime.anime_id;
 
       let html = `
@@ -170,8 +170,9 @@
         </div>
         <div class="anime-description">
           <h2>Trama</h2>
-          <div id="${synopsisId}" class="description-short">${synopsisFormatted}</div>
-          <span class="read-more-btn" onclick="toggleSynopsis('${synopsisId}', this)">Leggi di più</span>
+        <div class="anime-description">
+          <h2>Trama</h2>
+          <p>${synopsisFormatted}</p>
         </div>
       `;
 
