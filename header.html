@@ -16,21 +16,22 @@
       justify-content: space-between;
       max-width: 1100px;
       margin: auto;
-      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     .header-logo img {
-      height: 50px;
+      height: auto;
+      max-height: 50px;
       width: auto;
-      max-width: 100%;
+      max-width: 160px;
       border-radius: 8px;
       display: block;
-    }
-    
-    @media (max-width: 768px) {
-      .header-logo img {
-        height: 40px; /* più compatto su mobile */
-      }
     }
 
     .menu-toggle {
@@ -40,6 +41,7 @@
       font-size: 28px;
       cursor: pointer;
       color: #333;
+      margin-left: auto;
     }
 
     .header-nav {
@@ -62,7 +64,13 @@
       color: #fff;
     }
 
+    /* Responsive */
     @media (max-width: 768px) {
+      .header-logo img {
+        max-height: 40px;
+        max-width: 140px;
+      }
+
       .menu-toggle {
         display: block;
       }
@@ -93,11 +101,11 @@
     <button class="menu-toggle" aria-label="Apri menu" onclick="document.querySelector('.header-nav').classList.toggle('active')">
       ☰
     </button>
-
-    <nav class="header-nav">
-      <a href="index.html">Home</a>
-      <a href="about.html">Magazine</a>
-      <a href="contact.html">Contatti</a>
-    </nav>
   </div>
-</header> 
+
+  <nav class="header-nav">
+    <a href="index.html">Home</a>
+    <a href="about.html">Magazine</a>
+    <a href="contact.html">Contatti</a>
+  </nav>
+</header>
