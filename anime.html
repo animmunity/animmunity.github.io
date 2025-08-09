@@ -28,6 +28,7 @@
       align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 20px;
+      position: relative; /* Rimuoviamo fixed/sticky se presente */
     }
     .anime-image {
       width: 100%;
@@ -183,22 +184,15 @@
             <div class="anime-meta">🎭 Genres: ${parseArray(anime.genres)}</div>
           </div>
         </div>
+        <div class="anime-section">
+          <h3>Trailer</h3>
+          <iframe src="${anime.trailer_url.replace('watch?v=', 'embed/')}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
         <div class="anime-description">
           <h2>Description</h2>
           <p>${synopsisFormatted}</p>
         </div>
       `;
-
-      // Se esiste un trailer, aggiungiamo l'iframe
-      if (anime.trailer_url) {
-        const trailerEmbedUrl = anime.trailer_url.replace("watch?v=", "embed/");
-        html += `
-          <div class="anime-section">
-            <h3>Trailer</h3>
-            <iframe src="${trailerEmbedUrl}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-          </div>
-        `;
-      }
 
       // Aggiungi le altre sezioni come prima
       for (const [sectionName, fields] of Object.entries(sections)) {
