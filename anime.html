@@ -22,12 +22,10 @@
       padding: 30px;
     }
     .anime-header {
-        background: #fff;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
-        padding: 12px 20px;
-        z-index: 1000;
-        width: 100%;
-        position: relative; /* Imposta relative, rimuovendo sticky o fixed */
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      align-items: flex-start;
     }
     .anime-image {
       width: 100%;
@@ -171,7 +169,7 @@
       const synopsisFormatted = formatMultiline(anime.synopsis).replace(/\[Written by MAL Rewrite\]$/g, '');
       const synopsisId = "synopsis-" + anime.anime_id;
 
-      let html = `
+      let html = 
         <div class="anime-header">
           <img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">
           <div class="anime-details">
@@ -191,7 +189,7 @@
           <h2>Description</h2>
           <p>${synopsisFormatted}</p>
         </div>
-      `;
+      ;
 
       // Aggiungi le altre sezioni come prima
       for (const [sectionName, fields] of Object.entries(sections)) {
@@ -208,11 +206,11 @@
 
           if (["synopsis", "background", "main_picture"].includes(field)) continue;
 
-          sectionHtml += `<p><strong>${columnLabels[field] || field}:</strong> ${value}</p>`;
+          sectionHtml += <p><strong>${columnLabels[field] || field}:</strong> ${value}</p>;
         }
 
         if (sectionHtml)
-          html += `<div class="anime-section"><h3>${sectionName}</h3>${sectionHtml}</div>`;
+          html += <div class="anime-section"><h3>${sectionName}</h3>${sectionHtml}</div>;
       }
 
       return html;
@@ -237,15 +235,15 @@
         const data = parseCSVWithPapa(csvText);
         const anime = data.find(a => a.anime_id === animeId);
         if (!anime) {
-          document.getElementById("content").innerHTML = `<div class="error">Anime Not Found<br>ID Found: ${animeId}</div>`;
+          document.getElementById("content").innerHTML = <div class="error">Anime Not Found<br>ID Found: ${animeId}</div>;
           return;
         }
         document.getElementById("content").innerHTML = generateAnimeDetails(anime);
       })
       .catch(error => {
-        document.getElementById("content").innerHTML = `<div class="error">Error Loading: ${error}</div>`;
+        document.getElementById("content").innerHTML = <div class="error">Error Loading: ${error}</div>;
       });
   </script>
 
 </body>
-</html>
+</html> 
