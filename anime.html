@@ -1,97 +1,33 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Anime Detail</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    body {
-      font-family: 'Nunito Sans', sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-    }
-    .anime-container {
-      max-width: 900px;
-      margin: 80px auto;
-      background-color: #fff;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      padding: 30px;
-    }
-    .anime-header {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-    .anime-image {
-      width: 100%;
-      max-width: 300px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-    .anime-details {
-      flex: 1;
-      min-width: 280px;
-    }
-    h1 {
-      margin: 0 0 10px 0;
-    }
-    h3 {
-      margin-top: 40px;
-      color: #444;
-    }
-    .anime-meta {
-      margin-bottom: 10px;
-      font-size: 0.95em;
-      color: #666;
-    }
-    .anime-section {
-      margin-top: 20px;
-      line-height: 1.6;
-      position: relative;
-    }
-    .anime-description {
-      margin-top: 20px;
-      line-height: 1.6;
-      position: relative;
-    }
-    iframe {
-      width: 100%;
-      height: 315px;
-      border: none;
-      border-radius: 8px;
-    }
-    .description-short {
-      overflow: hidden;
-      max-height: 200px;
-    }
-    .read-more-btn {
-      display: inline-block;
-      margin-top: 10px;
-      color: #007bff;
-      cursor: pointer;
-      font-size: 0.95em;
-    }
-    .error {
-      text-align: center;
-      margin-top: 100px;
-      font-size: 1.5em;
-      color: red;
-    }
+    body { font-family: 'Nunito Sans', sans-serif; background:#f9f9f9; margin:0 }
+    .anime-container { max-width: 900px; margin: 80px auto; background:#fff; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,.1); padding:30px }
+    .anime-header { display:flex; gap:30px; flex-wrap:wrap; align-items:flex-start }
+    .anime-image { width:100%; max-width:300px; border-radius:8px; object-fit:cover }
+    .anime-details { flex:1; min-width:280px }
+    h1 { margin:0 0 10px 0 }
+    h3 { margin-top:40px; color:#444 }
+    .anime-meta { margin-bottom:10px; font-size:.95em; color:#666 }
+    .anime-section, .anime-description { margin-top:20px; line-height:1.6; position:relative }
+    iframe { width:100%; height:315px; border:none; border-radius:8px }
+    .description-short { overflow:hidden; max-height:200px }
+    .read-more-btn { display:inline-block; margin-top:10px; color:#007bff; cursor:pointer; font-size:.95em }
+    .error { text-align:center; margin:100px 0; font-size:1.1rem; color:red }
+    #loading { text-align:center; padding:40px 0; color:#666 }
   </style>
 </head>
 <body>
-
   <div id="header"></div>
-
   <div id="content" class="anime-container">
     <div id="loading">Loading...</div>
   </div>
-
   <div id="footer"></div>
 
   <script>
@@ -126,124 +62,130 @@
     };
 
     // Carica header e footer
-    fetch("header.html").then(res => res.text()).then(data => {
-      document.getElementById("header").innerHTML = data;
-    });
-    fetch("footer.html").then(res => res.text()).then(data => {
-      document.getElementById("footer").innerHTML = data;
-    });
+    fetch("header.html").then(r => r.text()).then(t => { document.getElementById("header").innerHTML = t; }).catch(()=>{});
+    fetch("footer.html").then(r => r.text()).then(t => { document.getElementById("footer").innerHTML = t; }).catch(()=>{});
 
     // Estrai ID da URL
     const params = new URLSearchParams(window.location.search);
-    const animeId = params.get("id");
+    const animeId = (params.get("id") || "").trim();
 
     // Usa PapaParse per leggere CSV
     function parseCSVWithPapa(text) {
-      return Papa.parse(text, {
-        header: true,
-        skipEmptyLines: true
-      }).data;
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      return parsed.data || [];
     }
 
     // Format multiline text
     function formatMultiline(text) {
       if (!text) return "—";
-      return text
+      return String(text)
         .replace(/\r\n|\r|\n/g, "<br>")
         .replace(/""/g, '"')
         .replace(/^"|"$/g, "");
     }
 
-    // Parsare array
+    // Parsare array se in JSON (e.g. "[\"Action\",\"Drama\"]")
     function parseArray(str) {
+      if (!str) return "—";
       try {
         const arr = JSON.parse(str);
-        return Array.isArray(arr) ? arr.join(", ") : str;
+        return Array.isArray(arr) ? arr.join(", ") : String(str);
       } catch {
-        return str;
+        return String(str);
       }
+    }
+
+    function safe(val) {
+      return (val === null || val === undefined || val === "") ? "—" : String(val);
+    }
+
+    function toYouTubeEmbed(url) {
+      if (!url) return null;
+      try {
+        if (url.includes("/watch?v=")) return url.replace("watch?v=", "embed/");
+        if (url.includes("youtu.be/")) return url.replace("youtu.be/", "www.youtube.com/embed/");
+        if (url.includes("/embed/")) return url; // già embed
+      } catch {}
+      return null; // non-YouTube o non valido
     }
 
     // Genera dettaglio anime
     function generateAnimeDetails(anime) {
-      const synopsisFormatted = formatMultiline(anime.synopsis).replace(/\[Written by MAL Rewrite\]$/g, '');
-      const synopsisId = "synopsis-" + anime.anime_id;
+      const synopsisFormatted = formatMultiline(String(anime.synopsis || "").replace(/\[Written by MAL Rewrite\]$/g, ""));
 
-      let html = 
+      let html = `
         <div class="anime-header">
-          <img class="anime-image" src="${anime.main_picture}" alt="${anime.title}">
+          <img class="anime-image" src="${safe(anime.main_picture)}" alt="${safe(anime.title)}" onerror="this.style.display='none'" />
           <div class="anime-details">
-            <h1>${anime.title_english || anime.title}</h1>
-            <div class="anime-meta">🗓 ${anime.start_date} — ${anime.end_date || "In corso"}</div>
-            <div class="anime-meta">🎬 Type: ${anime.type} — 🎥 Episodes: ${anime.episodes || "?"}</div>
-            <div class="anime-meta">⭐ Score: ${anime.score} (${anime.scored_by} voti)</div>
-            <div class="anime-meta">📺 Studio: ${anime.studios}</div>
+            <h1>${safe(anime.title_english) !== '—' ? safe(anime.title_english) : safe(anime.title)}</h1>
+            <div class="anime-meta">🗓 ${safe(anime.start_date)} — ${anime.end_date ? safe(anime.end_date) : "In corso"}</div>
+            <div class="anime-meta">🎬 Type: ${safe(anime.type)} — 🎥 Episodes: ${safe(anime.episodes)}</div>
+            <div class="anime-meta">⭐ Score: ${safe(anime.score)} (${safe(anime.scored_by)} voti)</div>
+            <div class="anime-meta">📺 Studio: ${safe(anime.studios)}</div>
             <div class="anime-meta">🎭 Genres: ${parseArray(anime.genres)}</div>
           </div>
-        </div>
-        <div class="anime-section">
-          <h3>Trailer</h3>
-          <iframe src="${anime.trailer_url.replace('watch?v=', 'embed/')}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
+        </div>`;
+
+      const embedUrl = toYouTubeEmbed(anime.trailer_url);
+      if (embedUrl) {
+        html += `
+          <div class="anime-section">
+            <h3>Trailer</h3>
+            <iframe src="${embedUrl}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>`;
+      }
+
+      html += `
         <div class="anime-description">
           <h2>Description</h2>
           <p>${synopsisFormatted}</p>
-        </div>
-      ;
+        </div>`;
 
-      // Aggiungi le altre sezioni come prima
+      // Altre sezioni
       for (const [sectionName, fields] of Object.entries(sections)) {
-        let sectionHtml = "";
+        let sectionHtmlParts = [];
         for (const field of fields) {
+          if (["synopsis", "background", "main_picture", "trailer_url"].includes(field)) continue;
           let value = anime[field];
-          if (!value || value === "[]") continue;
+          if (value === null || value === undefined || value === "") continue;
+          if (typeof value === 'string' && value.trim() === '[]') continue;
 
-          if (value.startsWith("[") && value.endsWith("]")) {
-            try {
-              value = JSON.parse(value).join(", ");
-            } catch {}
+          // Array in JSON
+          if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
+            try { value = JSON.parse(value).join(', '); } catch { /* keep as is */ }
           }
-
-          if (["synopsis", "background", "main_picture"].includes(field)) continue;
-
-          sectionHtml += <p><strong>${columnLabels[field] || field}:</strong> ${value}</p>;
+          sectionHtmlParts.push(`<p><strong>${columnLabels[field] || field}:</strong> ${safe(value)}</p>`);
         }
-
-        if (sectionHtml)
-          html += <div class="anime-section"><h3>${sectionName}</h3>${sectionHtml}</div>;
+        if (sectionHtmlParts.length) {
+          html += `<div class="anime-section"><h3>${sectionName}</h3>${sectionHtmlParts.join('')}</div>`;
+        }
       }
-
       return html;
-    }
-
-    // Toggle descrizione
-    function toggleSynopsis(id, btn) {
-      const el = document.getElementById(id);
-      if (el.classList.contains("description-short")) {
-        el.classList.remove("description-short");
-        btn.innerText = "Leggi meno";
-      } else {
-        el.classList.add("description-short");
-        btn.innerText = "Leggi di più";
-      }
     }
 
     // Carica CSV e mostra i dati
     fetch("data/anime.csv")
-      .then(response => response.text())
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.text();
+      })
       .then(csvText => {
-        const data = parseCSVWithPapa(csvText);
+        const data = parseCSVWithPapa(csvText).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
         const anime = data.find(a => a.anime_id === animeId);
+        const contentEl = document.getElementById("content");
         if (!anime) {
-          document.getElementById("content").innerHTML = <div class="error">Anime Not Found<br>ID Found: ${animeId}</div>;
+          contentEl.innerHTML = `<div class="error">Anime Not Found<br>ID: ${animeId || '—'}</div>`;
           return;
         }
-        document.getElementById("content").innerHTML = generateAnimeDetails(anime);
+        contentEl.innerHTML = generateAnimeDetails(anime);
       })
       .catch(error => {
-        document.getElementById("content").innerHTML = <div class="error">Error Loading: ${error}</div>;
+        document.getElementById("content").innerHTML = `<div class="error">Error Loading: ${error?.message || error}</div>`;
+      })
+      .finally(() => {
+        const loading = document.getElementById('loading');
+        if (loading) loading.remove();
       });
   </script>
-
 </body>
-</html> 
+</html>
