@@ -13,14 +13,14 @@
       var animeIdx = parts.indexOf("anime");
       if (animeIdx !== -1 && parts.length > animeIdx + 1) {
         var slug = parts[animeIdx + 1];
-        // reindirizza alla pagina unica (200 OK)
-        location.replace("/anime/?slug=" + encodeURIComponent(slug));
+        // reindirizza alla pagina file-based
+        location.replace("/anime.html?slug=" + encodeURIComponent(slug));
         return;
       }
 
-      // (Opzionale) se vuoi supportare anche /<slug> alla root:
+      // (Opzionale) supporta anche /<slug> alla root:
       // if (parts.length === 1 && parts[0]) {
-      //   location.replace("/anime/?slug=" + encodeURIComponent(parts[0]));
+      //   location.replace("/anime.html?slug=" + encodeURIComponent(parts[0]));
       //   return;
       // }
 
