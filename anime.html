@@ -21,6 +21,33 @@
     .read-more-btn { display:inline-block; margin-top:10px; color:#007bff; cursor:pointer; font-size:.95em }
     .error { text-align:center; margin:100px 0; font-size:1.1rem; color:red }
     #loading { text-align:center; padding:40px 0; color:#666 }
+
+    /* =======================
+       FIX: tutto scrollabile
+       ======================= */
+    html, body {
+      height: auto !important;
+      overflow: auto !important;
+    }
+
+    /* Sblocca header/footer e contenitori interni */
+    #header, #footer,
+    #content, .anime-container, .anime-header {
+      position: static !important;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      inset: auto !important;
+      transform: none !important;
+    }
+
+    /* (Opzionale) se un layout globale impone height fissa */
+    #content, .anime-container {
+      min-height: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
   </style>
 </head>
 <body>
@@ -62,8 +89,14 @@
     };
 
     // Carica header e footer
-    fetch("header.html").then(r => r.text()).then(t => { document.getElementById("header").innerHTML = t; }).catch(()=>{});
-    fetch("footer.html").then(r => r.text()).then(t => { document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+    fetch("header.html").then(r => r.text()).then(t => {
+      document.getElementById("header").innerHTML = t;
+      unstick(); // assicurati che nulla rimanga fixed/sticky
+    }).catch(()=>{});
+    fetch("footer.html").then(r => r.text()).then(t => {
+      document.getElementById("footer").innerHTML = t;
+      unstick(); // idem per il footer
+    }).catch(()=>{});
 
     // Estrai ID da URL
     const params = new URLSearchParams(window.location.search);
@@ -178,6 +211,7 @@
           return;
         }
         contentEl.innerHTML = generateAnimeDetails(anime);
+        unstick(); // dopo render, assicurati che nulla sia sticky
       })
       .catch(error => {
         document.getElementById("content").innerHTML = `<div class="error">Error Loading: ${error?.message || error}</div>`;
@@ -186,6 +220,33 @@
         const loading = document.getElementById('loading');
         if (loading) loading.remove();
       });
+
+    // --- Funzione che forza tutto a non-sticky/fixed ---
+    function unstick() {
+      // Sblocca overflow bloccanti
+      document.documentElement.style.overflow = 'auto';
+      document.body.style.overflow = 'auto';
+
+      // Elementi che non devono MAI essere sticky/fixed
+      const selectors = ['#header', '#footer', '#content', '.anime-container', '.anime-header'];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const cs = getComputedStyle(el);
+        if (cs.position === 'fixed' || cs.position === 'sticky') {
+          el.style.position = 'static';
+          el.style.top = 'auto';
+          el.style.right = 'auto';
+          el.style.bottom = 'auto';
+          el.style.left = 'auto';
+          el.style.inset = 'auto';
+          el.style.transform = 'none';
+        }
+        el.style.overflow = 'visible';
+        el.style.height = 'auto';
+        el.style.minHeight = 'auto';
+      });
+    }
   </script>
 </body>
 </html>
