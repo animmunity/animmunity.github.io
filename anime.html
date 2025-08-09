@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Anime Detail</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -88,19 +88,36 @@
       "Technical Metadata": ["created_at", "updated_at"]
     };
 
-    // Carica header e footer
-    fetch("header.html").then(r => r.text()).then(t => {
+    // Carica header e footer (percorsi assoluti)
+    fetch("/header.html").then(r => r.text()).then(t => {
       document.getElementById("header").innerHTML = t;
-      unstick(); // assicurati che nulla rimanga fixed/sticky
+      unstick();
     }).catch(()=>{});
-    fetch("footer.html").then(r => r.text()).then(t => {
+    fetch("/footer.html").then(r => r.text()).then(t => {
       document.getElementById("footer").innerHTML = t;
-      unstick(); // idem per il footer
+      unstick();
     }).catch(()=>{});
 
-    // Estrai ID da URL
+    // === Parametri: ID o friendly slug ===
     const params = new URLSearchParams(window.location.search);
     const animeId = (params.get("id") || "").trim();
+    const slugFromQuery = (params.get("slug") || "").trim();
+
+    function getSlugFromPath() {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const animeIdx = parts.indexOf("anime");
+      return (animeIdx !== -1 && parts.length > animeIdx + 1) ? parts[animeIdx + 1] : "";
+    }
+    const slugFromPath = getSlugFromPath();
+
+    // Slug dalla URL MAL (ultimo segmento)
+    function getMalSlug(malUrl) {
+      try {
+        const u = new URL(malUrl);
+        const parts = u.pathname.split('/').filter(Boolean);
+        return parts[parts.length - 1] || "";
+      } catch { return ""; }
+    }
 
     // Usa PapaParse per leggere CSV
     function parseCSVWithPapa(text) {
@@ -117,7 +134,7 @@
         .replace(/^"|"$/g, "");
     }
 
-    // Parsare array se in JSON (e.g. "[\"Action\",\"Drama\"]")
+    // Parsare array se in JSON (e.g. "["Action","Drama"]")
     function parseArray(str) {
       if (!str) return "—";
       try {
@@ -183,9 +200,8 @@
           if (value === null || value === undefined || value === "") continue;
           if (typeof value === 'string' && value.trim() === '[]') continue;
 
-          // Array in JSON
           if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-            try { value = JSON.parse(value).join(', '); } catch { /* keep as is */ }
+            try { value = JSON.parse(value).join(', '); } catch {}
           }
           sectionHtmlParts.push(`<p><strong>${columnLabels[field] || field}:</strong> ${safe(value)}</p>`);
         }
@@ -197,19 +213,45 @@
     }
 
     // Carica CSV e mostra i dati
-    fetch("data/anime.csv")
+    fetch("/data/anime.csv")
       .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.text();
       })
       .then(csvText => {
         const data = parseCSVWithPapa(csvText).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
-        const anime = data.find(a => a.anime_id === animeId);
+        let anime = null;
+
+        if (animeId) {
+          anime = data.find(a => a.anime_id === animeId);
+        } else {
+          const slug = slugFromQuery || slugFromPath;
+          if (slug) {
+            anime = data.find(a => getMalSlug(a.url) === slug);
+          }
+        }
+
         const contentEl = document.getElementById("content");
         if (!anime) {
-          contentEl.innerHTML = `<div class="error">Anime Not Found<br>ID: ${animeId || '—'}</div>`;
+          const msg = animeId ? `ID: ${animeId}` : `Slug: ${slugFromQuery || slugFromPath || '—'}`;
+          contentEl.innerHTML = `<div class="error">Anime Not Found<br>${msg}</div>`;
           return;
         }
+
+        // Canonical verso la friendly URL /anime/<slug>
+        const canonical = document.createElement('link');
+        canonical.rel = 'canonical';
+        canonical.href = `https://animmunity.github.io/anime/${getMalSlug(anime.url)}`;
+        document.head.appendChild(canonical);
+
+        // URL pulito in barra se siamo arrivati con ?slug= o /anime/?slug=
+        if (!animeId && (slugFromQuery || slugFromPath)) {
+          const pretty = "/anime/" + getMalSlug(anime.url);
+          if (location.pathname !== pretty) {
+            history.replaceState(null, "", pretty);
+          }
+        }
+
         contentEl.innerHTML = generateAnimeDetails(anime);
         unstick(); // dopo render, assicurati che nulla sia sticky
       })
@@ -223,11 +265,8 @@
 
     // --- Funzione che forza tutto a non-sticky/fixed ---
     function unstick() {
-      // Sblocca overflow bloccanti
       document.documentElement.style.overflow = 'auto';
       document.body.style.overflow = 'auto';
-
-      // Elementi che non devono MAI essere sticky/fixed
       const selectors = ['#header', '#footer', '#content', '.anime-container', '.anime-header'];
       selectors.forEach(sel => {
         const el = document.querySelector(sel);
