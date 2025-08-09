@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Loading…</title>
+  <meta name="robots" content="noindex">
+  <script>
+    (function () {
+      var path = location.pathname.replace(/^\/|\/$/g, "");
+      var parts = path.split("/");
+
+      // Caso: /anime/<slug>
+      var animeIdx = parts.indexOf("anime");
+      if (animeIdx !== -1 && parts.length > animeIdx + 1) {
+        var slug = parts[animeIdx + 1];
+        // Reindirizza alla pagina unica con query (status 200)
+        var target = "/anime/?slug=" + encodeURIComponent(slug);
+
+        // Mantieni la UX pulita: arrivi su /anime/?slug=... (200),
+        // poi puoi usare history.replaceState dentro anime/index.html per rimettere la URL bella se vuoi.
+        location.replace(target);
+        return;
+      }
+
+      // (Opzionale) Caso: root-friendly tipo /Fullmetal_Alchemist__Brotherhood
+      // Se vuoi supportarlo, scommenta sotto:
+      /*
+      if (parts.length === 1 && parts[0]) {
+        var slugRoot = parts[0];
+        location.replace("/anime/?slug=" + encodeURIComponent(slugRoot));
+        return;
+      }
+      */
+
+      // Altri 404 → home
+      location.replace("/");
+    })();
+  </script>
+</head>
+<body>Loading…</body>
+</html>
