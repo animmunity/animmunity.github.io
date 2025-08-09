@@ -76,7 +76,7 @@
   <div id="header"></div>
 
   <div id="content" class="anime-container">
-    <div id="loading">Caricamento...</div>
+    <div id="loading">Loading...</div>
   </div>
 
   <div id="footer"></div>
@@ -162,7 +162,7 @@
           <div class="anime-details">
             <h1>${anime.title_english || anime.title}</h1>
             <div class="anime-meta">🗓 ${anime.start_date} — ${anime.end_date || "In corso"}</div>
-            <div class="anime-meta">🎬 Type: ${anime.type} — Episodi: ${anime.episodes || "?"}</div>
+            <div class="anime-meta">🎬 Type: ${anime.type} — 🎥 Episodes: ${anime.episodes || "?"}</div>
             <div class="anime-meta">⭐ Score: ${anime.score} (${anime.scored_by} voti)</div>
             <div class="anime-meta">📺 Studio: ${anime.studios}</div>
             <div class="anime-meta">🎭 Genres: ${parseArray(anime.genres)}</div>
