@@ -5,69 +5,257 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AniMMunity – Anime List</title>
 
-  <!-- ✅ Collegamento al CSS esterno -->
   <link rel="stylesheet" href="styles.css">
-
-  <!-- ✅ PapaParse per leggere correttamente CSV complessi -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <style>
+    /* Stili minimi per i filtri (puoi spostarli in styles.css) */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 10px 0 6px 0;
+    }
+    .filter-group {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      padding: 10px;
+    }
+    .filter-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 6px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+    .filter-group select {
+      width: 100%;
+      min-height: 120px;
+      border-radius: 8px;
+      border: 1px solid #bbb;
+      background: #fff;
+      padding: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    .filters-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .btn-clear {
+      border: 1px solid #bbb;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn-clear:hover {
+      background: #f0f0f0;
+    }
+    .results-info {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- 🔄 Preloader -->
-  <div id="preloader">
-    <div class="spinner"></div>
-  </div>
+  <!-- Preloader -->
+  <div id="preloader"><div class="spinner"></div></div>
 
-  <!-- ✅ Header caricato dinamicamente -->
+  <!-- Header -->
   <div id="header-placeholder"></div>
 
   <main class="anime-main">
     <h1 class="page-title" style="text-align: center;">Anime List</h1>
+
     <div class="search-container">
       <input type="text" id="searchInput" placeholder="Search for an anime..."/>
     </div>
+
+    <!-- FILTRI -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filterDemographics">Demographics</label>
+        <select id="filterDemographics" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterThemes">Themes</label>
+        <select id="filterThemes" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterGenres">Genres</label>
+        <select id="filterGenres" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterLicensors">Licensors</label>
+        <select id="filterLicensors" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterProducers">Producers</label>
+        <select id="filterProducers" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filterStudios">Studios</label>
+        <select id="filterStudios" multiple></select>
+      </div>
+    </div>
+
+    <div class="filters-actions">
+      <button id="clearFilters" class="btn-clear">Reset filtri</button>
+      <span class="results-info" id="resultsInfo"></span>
+    </div>
+
     <div id="animeGrid" class="anime-grid"></div>
     <div id="pagination"></div>
   </main>
 
-  <!-- ✅ Footer caricato dinamicamente -->
+  <!-- Footer -->
   <div id="footer-placeholder"></div>
 
-  <!-- ✅ Script principale -->
   <script>
-    // Carica header e footer dinamici
+    // Carica header/footer
     fetch("header.html").then(r => r.text()).then(d => {
       document.getElementById("header-placeholder").innerHTML = d;
-
-      // Attiva toggle menu dopo inserimento header
       const toggle = document.querySelector('.menu-toggle');
       const headerInner = document.querySelector('.header-inner');
       if (toggle && headerInner) {
-        toggle.addEventListener("click", () => {
-          headerInner.classList.toggle("active");
-        });
+        toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
       }
     });
-
     fetch("footer.html").then(r => r.text()).then(d => {
       document.getElementById("footer-placeholder").innerHTML = d;
     });
 
     const ITEMS_PER_PAGE = 20;
-    let animeData = [];
+    let rawData = [];      // dati grezzi PapaParse
+    let animeData = [];    // dati normalizzati per render
     let currentPage = 1;
+
+    // Helpers per parse dei campi lista tipo "['A','B']"
+    function parseList(value) {
+      if (!value) return [];
+      let s = String(value).trim();
+      if (s === "[]" || s === "") return [];
+      // Prova JSON (sostituendo apici singoli con doppi se necessario)
+      try {
+        if (s.includes("'") && !s.includes('"')) {
+          s = s.replace(/'/g, '"');
+        }
+        const arr = JSON.parse(s);
+        return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
+      } catch {
+        // fallback: split su virgola
+        return s.replace(/^\[|\]$/g, "")
+                .split(",")
+                .map(x => x.replace(/^['"\s]+|['"\s]+$/g, ""))
+                .filter(Boolean);
+      }
+    }
+
+    // Costruisce dizionari set di opzioni uniche per ogni filtro
+    const optionSets = {
+      demographics: new Set(),
+      themes: new Set(),
+      genres: new Set(),
+      licensors: new Set(),
+      producers: new Set(),
+      studios: new Set(),
+    };
+
+    function fillOptionSetsFromRow(row) {
+      parseList(row.demographics).forEach(v => optionSets.demographics.add(v));
+      parseList(row.themes).forEach(v => optionSets.themes.add(v));
+      parseList(row.genres).forEach(v => optionSets.genres.add(v));
+      parseList(row.licensors).forEach(v => optionSets.licensors.add(v));
+      parseList(row.producers).forEach(v => optionSets.producers.add(v));
+      parseList(row.studios).forEach(v => optionSets.studios.add(v));
+    }
+
+    function populateFilters() {
+      const byId = id => document.getElementById(id);
+      const fill = (el, arr) => {
+        el.innerHTML = "";
+        arr.sort((a,b)=>a.localeCompare(b)).forEach(val => {
+          const opt = document.createElement("option");
+          opt.value = val;
+          opt.textContent = val;
+          el.appendChild(opt);
+        });
+      };
+
+      fill(byId("filterDemographics"), [...optionSets.demographics]);
+      fill(byId("filterThemes"),       [...optionSets.themes]);
+      fill(byId("filterGenres"),       [...optionSets.genres]);
+      fill(byId("filterLicensors"),    [...optionSets.licensors]);
+      fill(byId("filterProducers"),    [...optionSets.producers]);
+      fill(byId("filterStudios"),      [...optionSets.studios]);
+    }
+
+    function getSelectedValues(selectEl) {
+      return Array.from(selectEl.selectedOptions).map(o => o.value);
+    }
+
+    function animeMatchesFilters(anime, q, selections) {
+      // Ricerca testuale su più titoli
+      const hay = [anime.title, anime.title_english, anime.title_japanese]
+                    .filter(Boolean).join(" ").toLowerCase();
+      if (q && !hay.includes(q)) return false;
+
+      // Per ogni filtro: AND tra filtri diversi, OR all'interno di ciascun filtro
+      const matchFacet = (selected, fieldArr) => {
+        if (!selected.length) return true;            // nessun filtro attivo su questa faccia
+        if (!fieldArr || !fieldArr.length) return false;
+        // OR: almeno una selezione deve comparire nel campo dell'anime
+        return selected.some(s => fieldArr.includes(s));
+      };
+
+      if (!matchFacet(selections.demographics, anime.demographics)) return false;
+      if (!matchFacet(selections.themes,       anime.themes))       return false;
+      if (!matchFacet(selections.genres,       anime.genres))       return false;
+      if (!matchFacet(selections.licensors,    anime.licensors))    return false;
+      if (!matchFacet(selections.producers,    anime.producers))    return false;
+      if (!matchFacet(selections.studios,      anime.studios))      return false;
+
+      return true;
+    }
 
     function renderPage(page = 1, query = "") {
       const grid = document.getElementById("animeGrid");
-      grid.innerHTML = "";
-      const filtered = animeData.filter(a =>
-        [a.title, a.title_english, a.title_japanese]
-          .some(t => t && t.toLowerCase().includes(query.toLowerCase()))
-      );
-      const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+      const q = (query || "").toLowerCase();
+
+      const selections = {
+        demographics: getSelectedValues(document.getElementById("filterDemographics")),
+        themes:       getSelectedValues(document.getElementById("filterThemes")),
+        genres:       getSelectedValues(document.getElementById("filterGenres")),
+        licensors:    getSelectedValues(document.getElementById("filterLicensors")),
+        producers:    getSelectedValues(document.getElementById("filterProducers")),
+        studios:      getSelectedValues(document.getElementById("filterStudios")),
+      };
+
+      const filtered = animeData.filter(a => animeMatchesFilters(a, q, selections));
+
+      // info risultati
+      const info = document.getElementById("resultsInfo");
+      info.textContent = `${filtered.length} risultati`;
+
+      // paginazione
+      const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      page = Math.min(page, totalPages);
+      currentPage = page;
+
       const start = (page - 1) * ITEMS_PER_PAGE;
       const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
 
+      grid.innerHTML = "";
       for (const anime of pageItems) {
         const card = document.createElement("div");
         card.className = "card";
@@ -123,31 +311,58 @@
       }
     }
 
+    // Eventi
     document.getElementById("searchInput").addEventListener("input", e => {
       renderPage(1, e.target.value);
     });
 
-    // Carica CSV e parsa con PapaParse
+    ["filterDemographics","filterThemes","filterGenres","filterLicensors","filterProducers","filterStudios"]
+      .forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener("change", () => renderPage(1, document.getElementById("searchInput").value));
+      });
+
+    document.getElementById("clearFilters").addEventListener("click", () => {
+      ["filterDemographics","filterThemes","filterGenres","filterLicensors","filterProducers","filterStudios"]
+        .forEach(id => { const el = document.getElementById(id); Array.from(el.options).forEach(o => o.selected = false); });
+      renderPage(1, document.getElementById("searchInput").value);
+    });
+
+    // Carica CSV
     fetch("https://animmunity.github.io/data/anime.csv")
       .then(r => r.text())
       .then(csvText => {
-        const parsed = Papa.parse(csvText, {
-          header: true,
-          skipEmptyLines: true,
+        const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+        rawData = parsed.data;
+
+        // Popola set opzioni e normalizza animeData
+        animeData = rawData.map(row => {
+          // riempi set opzioni per i filtri
+          fillOptionSetsFromRow(row);
+          return {
+            anime_id: String(row.anime_id || "").trim(),
+            title: row.title?.trim() || "Senza titolo",
+            title_english: row.title_english?.trim() || "",
+            title_japanese: row.title_japanese?.trim() || "",
+            main_picture: (row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg")) ||
+                          "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg",
+            // campi array per il matching
+            demographics: parseList(row.demographics),
+            themes:       parseList(row.themes),
+            genres:       parseList(row.genres),
+            licensors:    parseList(row.licensors),
+            producers:    parseList(row.producers),
+            studios:      parseList(row.studios),
+          };
         });
 
-        animeData = parsed.data.map(row => ({
-          anime_id: row.anime_id?.trim() || "",
-          title: row.title?.trim() || "Senza titolo",
-          title_english: row.title_english?.trim() || "",
-          title_japanese: row.title_japanese?.trim() || "",
-          main_picture: row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg") || 
-            "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"
-        }));
+        // Popola UI filtri con le opzioni uniche
+        populateFilters();
 
+        // Render iniziale
         renderPage();
 
-        // ✅ Nascondi preloader DOPO il caricamento completo
+        // Nascondi preloader
         const preloader = document.getElementById("preloader");
         if (preloader) {
           preloader.style.opacity = "0";
