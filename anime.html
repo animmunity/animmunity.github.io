@@ -162,14 +162,14 @@
           <div class="anime-details">
             <h1>${anime.title_english || anime.title}</h1>
             <div class="anime-meta">🗓 ${anime.start_date} — ${anime.end_date || "In corso"}</div>
-            <div class="anime-meta">🎬 Tipo: ${anime.type} — Episodi: ${anime.episodes || "?"}</div>
-            <div class="anime-meta">⭐ Punteggio: ${anime.score} (${anime.scored_by} voti)</div>
+            <div class="anime-meta">🎬 Type: ${anime.type} — Episodi: ${anime.episodes || "?"}</div>
+            <div class="anime-meta">⭐ Score: ${anime.score} (${anime.scored_by} voti)</div>
             <div class="anime-meta">📺 Studio: ${anime.studios}</div>
-            <div class="anime-meta">🎭 Generi: ${parseArray(anime.genres)}</div>
+            <div class="anime-meta">🎭 Genres: ${parseArray(anime.genres)}</div>
           </div>
         </div>
           <div class="anime-description">
-            <h2>Trama</h2>
+            <h2>Description</h2>
             <p>${synopsisFormatted}</p>
           </div>
       `;
@@ -217,13 +217,13 @@
         const data = parseCSVWithPapa(csvText);
         const anime = data.find(a => a.anime_id === animeId);
         if (!anime) {
-          document.getElementById("content").innerHTML = `<div class="error">Anime non trovato<br>ID cercato: ${animeId}</div>`;
+          document.getElementById("content").innerHTML = `<div class="error">Anime Not Search<br>ID Found: ${animeId}</div>`;
           return;
         }
         document.getElementById("content").innerHTML = generateAnimeDetails(anime);
       })
       .catch(error => {
-        document.getElementById("content").innerHTML = `<div class="error">Errore nel caricamento: ${error}</div>`;
+        document.getElementById("content").innerHTML = `<div class="error">Error Loading: ${error}</div>`;
       });
   </script>
 
