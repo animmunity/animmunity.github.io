@@ -65,6 +65,7 @@
       font-size: 13px;
       margin-bottom: 8px;
       outline: none;
+      box-sizing: border-box;
     }
     .option {
       display: flex;
@@ -97,6 +98,26 @@
       text-align: center;
       display: block;
     }
+
+    /* Search full-width */
+    .search-container {
+      width: 100%;
+      margin: 16px 0;
+    }
+    #searchInput {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid #bbb;
+      font-size: 16px;
+    }
+    #searchInput:focus {
+      outline: none;
+      border-color: #007BFF;
+      box-shadow: 0 0 0 3px rgba(0,123,255,.2);
+    }
   </style>
 </head>
 <body>
@@ -111,7 +132,7 @@
     <h1 class="page-title" style="text-align: center;">Anime List</h1>
 
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search for an anime..."/>
+      <input type="text" id="searchInput" placeholder="Cerca un anime..."/>
     </div>
 
     <!-- 🔽 DROPDOWN FILTERS + Reset sulla stessa linea -->
@@ -161,7 +182,7 @@
     // Current selections (Set per performance)
     const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
 
-    // Parse list fields like "['Aniplex','Square Enix']"
+    // Parse list fields come "['Aniplex','Square Enix']"
     function parseList(value) {
       if (!value) return [];
       let s = String(value).trim();
@@ -202,7 +223,7 @@
         const menu = document.createElement('div');
         menu.className = 'filter-menu';
         menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
+          <input class="filter-search" type="text" placeholder="Cerca ${label}..." data-search-for="${key}">
           <div class="options" data-options-for="${key}"></div>
         `;
 
@@ -300,7 +321,7 @@
       const filtered = animeData.filter(a => animeMatchesFilters(a, q));
 
       const info = document.getElementById("resultsInfo");
-      info.textContent = `${filtered.length} Anime Found`;
+      info.textContent = `${filtered.length} risultati`;
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       page = Math.min(page, totalPages);
