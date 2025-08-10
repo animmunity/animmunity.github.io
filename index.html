@@ -37,9 +37,13 @@
   <!-- Sitemap hint -->
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
-  <!-- Performance hints -->
+  <!-- Performance hints (solo esterni usati) -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+
+  <!-- Prev/Next per SEO pagination (aggiornati via JS) -->
+  <link id="relPrev" rel="prev" href="" />
+  <link id="relNext" rel="next" href="" />
 
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
@@ -47,11 +51,7 @@
   <style>
     /* --- Dropdown Filters UI --- */
     .filters-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 16px 0;
-      align-items: center;
+      display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; align-items: center;
     }
     .filter-dropdown { position: relative; }
     .filter-btn {
@@ -81,7 +81,7 @@
     .option { display:flex; align-items:center; gap:8px; padding:6px 4px; border-radius:6px; cursor:pointer; }
     .option:hover { background:#f5f5f5; }
 
-    /* Inline reset button */
+    /* Reset button */
     .btn-clear {
       border: 1px solid #bbb; background: #fff; padding: 8px 12px;
       border-radius: 10px; cursor: pointer; font-size: 14px;
@@ -89,13 +89,7 @@
     }
     .btn-clear:hover { background:#f0f0f0; }
 
-    .results-info {
-      margin: 16px 0;
-      font-size: 14px;
-      color: #555;
-      text-align: center;
-      display: block;
-    }
+    .results-info { margin: 16px 0; font-size: 14px; color: #555; text-align: center; display: block; }
 
     /* Search full-width */
     .search-container { width: 100%; margin: 16px 0; }
@@ -105,27 +99,33 @@
     }
     #searchInput:focus { outline: none; border-color: #007BFF; box-shadow: 0 0 0 3px rgba(0,123,255,.2); }
 
-    /* Card images: prevent CLS and keep ratio */
+    /* Card images — preferisci cover o contain: cambia qui */
     .anime-grid .card img {
       width: 100%;
-      height: auto;        /* Mantiene le proporzioni originali */
-      max-width: 100%;     /* Non supera il contenitore */
-      object-fit: contain; /* Mostra l'immagine intera, con eventuali bande */
-      border-radius: 8px;
+      height: auto;      /* per SEO immagini: preserva proporzioni originali */
       display: block;
+      border-radius: 8px;
+      object-fit: contain;  /* se vuoi riempire/tagliare usa: cover */
+      background: #fff;     /* bande “pulite” con contain */
     }
 
-    /* Simple preloader demo (style in your CSS ideally) */
+    /* Preloader */
     #preloader {
       position: fixed; inset: 0; background: #ffffff; display: grid; place-items: center;
-      transition: opacity .4s ease;
-      z-index: 9999;
+      transition: opacity .4s ease; z-index: 9999;
     }
     .spinner {
       width: 44px; height: 44px; border-radius: 50%;
       border: 4px solid #e3e3e3; border-top-color: #007BFF; animation: spin 1s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Intro SEO block */
+    .seo-intro {
+      max-width: 900px; margin: 0 auto 16px; color: #444; line-height: 1.6;
+      background: #fff; padding: 12px 16px; border-radius: 12px;
+    }
+    .quick-links a { margin-right: 10px; font-size: 14px; }
   </style>
 
   <!-- JSON-LD: WebSite + SearchAction -->
@@ -142,6 +142,21 @@
     }
   }
   </script>
+
+  <!-- JSON-LD: Breadcrumbs (statici) -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      { "@type":"ListItem","position":1,"name":"Home","item":"https://animmunity.github.io/" },
+      { "@type":"ListItem","position":2,"name":"Anime List","item":"https://animmunity.github.io/" }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD: ItemList (dinamico, aggiornato via JS) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 </head>
 <body>
 
@@ -154,43 +169,67 @@
   <main class="anime-main">
     <h1 class="page-title" style="text-align: center;">Anime List</h1>
 
-    <div class="search-container">
+    <!-- Blocco introduttivo SEO -->
+    <section class="seo-intro">
+      <h2>Search, Filter &amp; Discover Anime</h2>
+      <p>
+        Explore a curated list of anime with fast search and multi-facet filters:
+        <strong>genres</strong>, <strong>themes</strong>, <strong>demographics</strong>, and
+        industry metadata like <strong>studios</strong>, <strong>producers</strong> and
+        <strong>licensors</strong>. Open any title to see trailers, descriptions, and key info.
+      </p>
+      <p class="quick-links" aria-label="Quick links">
+        Quick filters:
+        <a href="/?q=shounen">Shounen</a>
+        <a href="/?q=shoujo">Shoujo</a>
+        <a href="/?q=mecha">Mecha</a>
+        <a href="/?q=isekai">Isekai</a>
+        <a href="/?q=slice%20of%20life">Slice of Life</a>
+      </p>
+    </section>
+
+    <div class="search-container" aria-labelledby="search-label">
+      <label id="search-label" class="visually-hidden" for="searchInput">Search for an Anime</label>
       <input type="text" id="searchInput" placeholder="Search for an Anime..." autocomplete="off"/>
     </div>
 
     <!-- 🔽 DROPDOWN FILTERS + Reset on the same row -->
-    <div class="filters-bar" id="filtersBar">
+    <div class="filters-bar" id="filtersBar" aria-label="Filters">
       <!-- created via JS -->
       <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
     </div>
     <span class="results-info" id="resultsInfo" aria-live="polite"></span>
 
-    <div id="animeGrid" class="anime-grid" aria-live="polite"></div>
-    <div id="pagination" class="pagination"></div>
+    <section aria-label="Results">
+      <div id="animeGrid" class="anime-grid" aria-live="polite"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+    </section>
   </main>
 
   <!-- Footer -->
   <div id="footer-placeholder"></div>
 
-  <!-- Noscript fallback -->
+  <!-- Noscript fallback (indicizzabile) -->
   <noscript>
     <div style="max-width:900px;margin:20px auto;background:#fff;border-radius:12px;padding:16px">
       <p><strong>JavaScript is disabled.</strong> Enable it to use search and filters.</p>
       <p>Dataset: <a href="https://animmunity.github.io/data/anime.csv">anime.csv</a></p>
+      <ul>
+        <li><a href="/?q=naruto">Naruto</a></li>
+        <li><a href="/?q=one%20piece">One Piece</a></li>
+        <li><a href="/?q=attack%20on%20titan">Attack on Titan</a></li>
+      </ul>
     </div>
   </noscript>
 
   <script>
     // ===== Utilities =====
     const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    const debounce = (fn, wait=250) => {
-      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
-    };
+    const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
     const safeMainPicture = (pic) => {
       const fallback = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
       const p = (pic || '').trim();
       if (!p) return fallback;
-      // If URL ends with /s.jpg, /m.jpg, /l.jpg → force /l.jpg; otherwise leave as is
       return /\/[sml]\.jpg$/i.test(p) ? p.replace(/\/[sml]\.jpg$/i, '/l.jpg') : p;
     };
 
@@ -219,10 +258,8 @@
     function tryHidePreloader() {
       if (assetsLoaded && dataRendered) hidePreloader();
     }
-    // Assets loaded (images, CSS, etc.)
     window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
-    // Safety net: if something goes wrong, auto-hide after 8s
-    setTimeout(() => hidePreloader(), 8000);
+    setTimeout(() => hidePreloader(), 8000); // safety net
 
     // ===== App =====
     document.addEventListener("DOMContentLoaded", function () {
@@ -231,11 +268,11 @@
       let animeData = [];
       let currentPage = 1;
 
-      // Pre-fill query from ?q= for SEO sitelinks search box
+      // Pre-fill query from ?q=
       const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
       if (urlQ) window.__initialQuery = urlQ;
 
-      // Filter facets
+      // Facets
       const facets = [
         { key: 'demographics', label: 'Demographics' },
         { key: 'themes',       label: 'Themes' },
@@ -257,11 +294,7 @@
           const arr = JSON.parse(s);
           return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
         } catch {
-          // Fallback naive parser
-          return s.replace(/^\[|\]$/g, "")
-                  .split(",")
-                  .map(x => x.replace(/^['"\s]+|['"\s]+$/g, ""))
-                  .filter(Boolean);
+          return s.replace(/^\[|\]$/g, "").split(",").map(x => x.replace(/^['"\s]+|['"\s]+$/g, "")).filter(Boolean);
         }
       }
 
@@ -326,10 +359,9 @@
             if (search) setTimeout(() => search.focus(), 0);
           });
 
-          // Keep clicks inside menu from bubbling to document
+          // Keep clicks inside menu
           menu.addEventListener('click', (e) => e.stopPropagation());
-
-          // Close on Escape when menu is open
+          // Close on Escape
           menu.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
               wrapper.classList.remove('open');
@@ -352,7 +384,7 @@
           bar.insertBefore(wrapper, resetBtn);
         });
 
-        // Close on outside click ONLY if click is not inside any dropdown
+        // Close on outside click
         document.addEventListener('click', (e) => {
           if (!e.target.closest('.filter-dropdown')) {
             document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
@@ -406,6 +438,35 @@
         return facets.every(({key}) => orMatch(selections[key], anime[key]));
       }
 
+      // JSON-LD ItemList updater
+      function updateItemListLD(items) {
+        const script = document.getElementById('ld-itemlist');
+        const itemListElement = items.map((anime, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "url": `${location.origin}/anime?id=${encodeURIComponent(anime.anime_id)}`,
+          "name": anime.title,
+          "image": anime.main_picture || undefined
+        }));
+        const ld = { "@context":"https://schema.org", "@type":"ItemList", "itemListElement": itemListElement };
+        script.textContent = JSON.stringify(ld);
+      }
+
+      // Prev/Next rel links
+      function updateRelPrevNext(totalPages, current, query) {
+        const relPrev = document.getElementById('relPrev');
+        const relNext = document.getElementById('relNext');
+        const buildUrl = (p) => {
+          const u = new URL(location.href);
+          const q = (query || '').trim();
+          if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+          if (p > 1) u.searchParams.set('page', p); else u.searchParams.delete('page');
+          return u.toString();
+        };
+        relPrev.setAttribute('href', (current > 1) ? buildUrl(current - 1) : '');
+        relNext.setAttribute('href', (current < totalPages) ? buildUrl(current + 1) : '');
+      }
+
       function renderPage(page = 1, query = "") {
         const grid = document.getElementById("animeGrid");
         const q = (query || "").toLowerCase();
@@ -426,18 +487,23 @@
         for (const anime of pageItems) {
           const card = document.createElement("div");
           card.className = "card";
+          card.setAttribute('itemscope', '');
+          card.setAttribute('itemtype', 'https://schema.org/CreativeWork');
 
           const a = document.createElement('a');
           a.href = `anime?id=${encodeURIComponent(anime.anime_id)}`;
+          a.setAttribute('itemprop', 'url');
 
           const img = document.createElement('img');
           img.loading = "lazy";
           img.src = anime.main_picture;
-          img.alt = anime.title || "Anime cover";
+          img.alt = anime.title ? `${anime.title} cover` : "Anime cover";
           img.onerror = function(){ this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'; };
+          img.setAttribute('itemprop', 'image');
 
           const h3 = document.createElement('h3');
           h3.textContent = anime.title;
+          h3.setAttribute('itemprop', 'name');
 
           a.appendChild(img);
           a.appendChild(h3);
@@ -445,6 +511,11 @@
           grid.appendChild(card);
         }
 
+        // JSON-LD ItemList per la pagina corrente
+        updateItemListLD(pageItems);
+        // Prev/Next rel
+        updateRelPrevNext(totalPages, page, document.getElementById("searchInput").value);
+        // Paginazione visiva
         renderPagination(totalPages, page);
       }
 
@@ -460,6 +531,12 @@
           btn.addEventListener("click", () => {
             currentPage = pageNum;
             renderPage(pageNum, document.getElementById("searchInput").value);
+            // Aggiorna URL
+            const u = new URL(location.href);
+            const q = document.getElementById("searchInput").value.trim();
+            if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+            if (pageNum > 1) u.searchParams.set('page', pageNum); else u.searchParams.delete('page');
+            history.replaceState(null, "", u.toString());
           });
           return btn;
         };
@@ -491,10 +568,11 @@
       // Events
       const onSearchInput = (e) => {
         renderPage(1, e.target.value);
-        // Update ?q= (UX + aligns with SearchAction)
+        // Update ?q= e ?page=
         const q = e.target.value.trim();
         const u = new URL(location.href);
         if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+        u.searchParams.delete('page'); // reset page when searching
         history.replaceState(null, "", u.toString());
       };
       document.getElementById("searchInput").addEventListener("input", debounce(onSearchInput, 250));
@@ -532,16 +610,14 @@
 
           buildDropdowns();
 
-          // Pre-fill search from ?q=
+          // Pre-fill search + page da URL
           const input = document.getElementById('searchInput');
-          if (window.__initialQuery && input) {
-            input.value = window.__initialQuery;
-            renderPage(1, window.__initialQuery);
-          } else {
-            renderPage();
-          }
+          const url = new URL(location.href);
+          const qParam = url.searchParams.get('q') || '';
+          const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
+          if (qParam && input) input.value = qParam;
+          renderPage(Math.max(1, pageParam), qParam);
 
-          // Mark first render complete → try hide preloader
           dataRendered = true;
           tryHidePreloader();
         })
@@ -553,7 +629,6 @@
               Error loading data. Please try again later.
             </div>`;
           }
-          // Even in error, allow page to finish
           dataRendered = true;
           tryHidePreloader();
         });
