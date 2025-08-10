@@ -1,9 +1,47 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AniMMUnity – Anime List</title>
+
+  <title>AniMMUnity — Anime List with Powerful Filters</title>
+  <meta name="description" content="Browse the AniMMUnity anime list. Filter by genres, themes, demographics, studios, producers, and licensors. Fast search, clean cards, and detail pages with trailers and info.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://animmunity.github.io/">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://animmunity.github.io/">
+  <meta property="og:title" content="AniMMUnity — Anime List with Powerful Filters">
+  <meta property="og:description" content="Search and filter anime by genres, themes, demographics, studios, producers, and licensors.">
+  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AniMMUnity — Anime List with Powerful Filters">
+  <meta name="twitter:description" content="Search and filter anime by genres, themes, demographics, studios, producers, and licensors.">
+  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
+
+  <!-- Sitemap hint -->
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+  <!-- Performance hints -->
+  <link rel="preconnect" href="https://animmunity.github.io" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
 
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -14,85 +52,46 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 16px 0; /* uguale sopra e sotto */
+      margin: 16px 0;
       align-items: center;
     }
-    .filter-dropdown {
-      position: relative;
-    }
+    .filter-dropdown { position: relative; }
     .filter-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #fff;
-      border: 1px solid #bbb;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; background: #fff; border: 1px solid #bbb;
+      border-radius: 10px; cursor: pointer; font-size: 14px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     }
     .filter-btn .count {
-      background: #007BFF;
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 12px;
+      background: #007BFF; color: #fff; border-radius: 999px;
+      padding: 2px 8px; font-size: 12px;
     }
     .filter-menu {
-      position: absolute;
-      top: calc(100% + 6px);
-      left: 0;
-      min-width: 240px;
-      max-height: 320px;
-      overflow: auto;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      padding: 10px;
-      z-index: 1000;
+      position: absolute; top: calc(100% + 6px); left: 0;
+      min-width: 240px; max-height: 320px; overflow: auto;
+      background: #fff; border: 1px solid #ddd; border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 10px; z-index: 1000;
       display: none;
     }
-    .filter-dropdown.open .filter-menu {
-      display: block;
-    }
+    .filter-dropdown.open .filter-menu { display: block; }
     .filter-search {
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 6px 8px;
-      font-size: 13px;
-      margin-bottom: 8px;
-      outline: none;
+      width: 100%; border: 1px solid #ccc; border-radius: 8px;
+      padding: 6px 8px; font-size: 13px; margin-bottom: 8px; outline: none;
       box-sizing: border-box;
     }
-    .option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 4px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .option:hover {
-      background: #f5f5f5;
-    }
+    .option { display:flex; align-items:center; gap:8px; padding:6px 4px; border-radius:6px; cursor:pointer; }
+    .option:hover { background:#f5f5f5; }
 
-    /* Pulsante reset in linea con i dropdown */
+    /* Inline reset button */
     .btn-clear {
-      border: 1px solid #bbb;
-      background: #fff;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
+      border: 1px solid #bbb; background: #fff; padding: 8px 12px;
+      border-radius: 10px; cursor: pointer; font-size: 14px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     }
-    .btn-clear:hover { background: #f0f0f0; }
+    .btn-clear:hover { background:#f0f0f0; }
 
     .results-info {
-      margin: 16px 0; /* uguale sopra e sotto */
+      margin: 16px 0;
       font-size: 14px;
       color: #555;
       text-align: center;
@@ -100,25 +99,28 @@
     }
 
     /* Search full-width */
-    .search-container {
-      width: 100%;
-      margin: 16px 0;
-    }
+    .search-container { width: 100%; margin: 16px 0; }
     #searchInput {
-      width: 100%;
-      max-width: 100%;
-      box-sizing: border-box;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      border: 1px solid #bbb;
-      font-size: 16px;
+      width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.75rem 1rem;
+      border-radius: 8px; border: 1px solid #bbb; font-size: 16px;
     }
-    #searchInput:focus {
-      outline: none;
-      border-color: #007BFF;
-      box-shadow: 0 0 0 3px rgba(0,123,255,.2);
-    }
+    #searchInput:focus { outline: none; border-color: #007BFF; box-shadow: 0 0 0 3px rgba(0,123,255,.2); }
   </style>
+
+  <!-- JSON-LD: WebSite + SearchAction -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"AniMMUnity",
+    "url":"https://animmunity.github.io/",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://animmunity.github.io/?q={search_term_string}",
+      "query-input":"required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -135,10 +137,10 @@
       <input type="text" id="searchInput" placeholder="Search for an Anime..."/>
     </div>
 
-    <!-- 🔽 DROPDOWN FILTERS + Reset sulla stessa linea -->
+    <!-- 🔽 DROPDOWN FILTERS + Reset on the same row -->
     <div class="filters-bar" id="filtersBar">
-      <!-- i bottoni vengono creati via JS -->
-      <button id="clearFilters" class="btn-clear">Reset filtri</button>
+      <!-- created via JS -->
+      <button id="clearFilters" class="btn-clear">Reset filters</button>
     </div>
     <span class="results-info" id="resultsInfo"></span>
 
@@ -149,8 +151,16 @@
   <!-- Footer -->
   <div id="footer-placeholder"></div>
 
+  <!-- Noscript fallback -->
+  <noscript>
+    <div style="max-width:900px;margin:20px auto;background:#fff;border-radius:12px;padding:16px">
+      <p><strong>JavaScript is disabled.</strong> Enable it to use search and filters.</p>
+      <p>Dataset: <a href="https://animmunity.github.io/data/anime.csv">anime.csv</a></p>
+    </div>
+  </noscript>
+
   <script>
-    // Carica header/footer
+    // ===== Header/Footer =====
     fetch("header.html").then(r => r.text()).then(d => {
       document.getElementById("header-placeholder").innerHTML = d;
       const toggle = document.querySelector('.menu-toggle');
@@ -161,12 +171,28 @@
       document.getElementById("footer-placeholder").innerHTML = d;
     });
 
+    // ===== Preloader (robust) =====
+    function hidePreloader() {
+      const pre = document.getElementById("preloader");
+      if (!pre) return;
+      pre.style.opacity = "0";
+      pre.style.pointerEvents = "none";
+      setTimeout(() => pre.remove(), 500);
+    }
+    window.addEventListener('load', hidePreloader);
+    setTimeout(hidePreloader, 8000); // safety timeout
+
+    // ===== App state =====
     const ITEMS_PER_PAGE = 20;
     let rawData = [];
     let animeData = [];
     let currentPage = 1;
 
-    // Fields we filter on
+    // Pre-fill query from ?q= for SEO sitelinks search box
+    const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
+    if (urlQ) window.__initialQuery = urlQ;
+
+    // Filter facets
     const facets = [
       { key: 'demographics', label: 'Demographics' },
       { key: 'themes',       label: 'Themes' },
@@ -175,14 +201,10 @@
       { key: 'producers',    label: 'Producers' },
       { key: 'studios',      label: 'Studios' },
     ];
-
-    // Option sets
     const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-
-    // Current selections (Set per performance)
     const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
 
-    // Parse list fields come "['Aniplex','Square Enix']"
+    // Parse list fields like "['Aniplex','Square Enix']"
     function parseList(value) {
       if (!value) return [];
       let s = String(value).trim();
@@ -192,6 +214,7 @@
         const arr = JSON.parse(s);
         return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
       } catch {
+        // Fallback naive parser
         return s.replace(/^\[|\]$/g, "")
                 .split(",")
                 .map(x => x.replace(/^['"\s]+|['"\s]+$/g, ""))
@@ -206,8 +229,6 @@
     // Build dropdowns
     function buildDropdowns() {
       const bar = document.getElementById('filtersBar');
-
-      // Inseriamo i dropdown PRIMA del pulsante Reset
       const resetBtn = document.getElementById('clearFilters');
 
       facets.forEach(({key, label}) => {
@@ -223,21 +244,19 @@
         const menu = document.createElement('div');
         menu.className = 'filter-menu';
         menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Cerca ${label}..." data-search-for="${key}">
+          <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
           <div class="options" data-options-for="${key}"></div>
         `;
 
-        // Fill options
-        const optionsBox = menu.querySelector(`[data-options-for="${key}"]`);
+        const optionsBox = menu.querySelector(\`[data-options-for="\${key}"]\`);
         const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
-
         values.forEach(val => {
           const row = document.createElement('label');
           row.className = 'option';
-          row.innerHTML = `
-            <input type="checkbox" data-facet="${key}" value="${val}">
-            <span>${val}</span>
-          `;
+          row.innerHTML = \`
+            <input type="checkbox" data-facet="\${key}" value="\${val}">
+            <span>\${val}</span>
+          \`;
           optionsBox.appendChild(row);
         });
 
@@ -248,12 +267,12 @@
             if (dd !== wrapper) dd.classList.remove('open');
           });
           wrapper.classList.toggle('open');
-          const search = menu.querySelector(`[data-search-for="${key}"]`);
+          const search = menu.querySelector(\`[data-search-for="\${key}"]\`);
           if (search) setTimeout(()=> search.focus(), 0);
         });
 
         // Search inside dropdown
-        menu.querySelector(`[data-search-for="${key}"]`).addEventListener('input', (e) => {
+        menu.querySelector(\`[data-search-for="\${key}"]\`).addEventListener('input', (e) => {
           const q = e.target.value.toLowerCase();
           optionsBox.querySelectorAll('.option').forEach(opt => {
             const text = opt.textContent.toLowerCase();
@@ -288,7 +307,7 @@
     function updateCounts() {
       facets.forEach(({key}) => {
         const n = selections[key].size;
-        const pill = document.querySelector(`.count[data-count-for="${key}"]`);
+        const pill = document.querySelector(\`.count[data-count-for="\${key}"]\`);
         if (!pill) return;
         if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
         else { pill.style.display = 'none'; pill.textContent = '0'; }
@@ -303,7 +322,7 @@
     function animeMatchesFilters(anime, q) {
       if (q && !getTextMatchHaystack(anime).includes(q)) return false;
 
-      // AND tra filtri diversi, OR all'interno del singolo filtro
+      // AND across facets, OR inside a single facet
       const orMatch = (selSet, fieldArr) => {
         if (!selSet || selSet.size === 0) return true;
         if (!fieldArr || fieldArr.length === 0) return false;
@@ -321,7 +340,7 @@
       const filtered = animeData.filter(a => animeMatchesFilters(a, q));
 
       const info = document.getElementById("resultsInfo");
-      info.textContent = `${filtered.length} risultati`;
+      info.textContent = \`\${filtered.length} results\`;
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       page = Math.min(page, totalPages);
@@ -334,13 +353,13 @@
       for (const anime of pageItems) {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = `
-          <a href="anime?id=${anime.anime_id}">
-            <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" 
+        card.innerHTML = \`
+          <a href="anime?id=\${anime.anime_id}">
+            <img loading="lazy" src="\${anime.main_picture}" alt="\${anime.title}"
               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
-            <h3>${anime.title}</h3>
+            <h3>\${anime.title}</h3>
           </a>
-        `;
+        \`;
         grid.appendChild(card);
       }
 
@@ -386,12 +405,16 @@
       }
     }
 
-    // Eventi base
+    // Events
     document.getElementById("searchInput").addEventListener("input", e => {
       renderPage(1, e.target.value);
+      // Update ?q= (UX + aligns with SearchAction)
+      const q = e.target.value.trim();
+      const u = new URL(location.href);
+      if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+      history.replaceState(null, "", u.toString());
     });
 
-    // Reset filtri (sulla stessa linea)
     document.getElementById("clearFilters").addEventListener("click", () => {
       facets.forEach(({key}) => selections[key].clear());
       document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
@@ -399,9 +422,9 @@
       renderPage(1, document.getElementById("searchInput").value);
     });
 
-    // Carica CSV
+    // Load CSV
     fetch("https://animmunity.github.io/data/anime.csv")
-      .then(r => r.text())
+      .then(r => { if (!r.ok) throw new Error(\`HTTP \${r.status}\`); return r.text(); })
       .then(csvText => {
         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
         rawData = parsed.data;
@@ -410,7 +433,7 @@
           fillOptionSetsFromRow(row);
           return {
             anime_id: String(row.anime_id || "").trim(),
-            title: row.title?.trim() || "Senza titolo",
+            title: row.title?.trim() || "Untitled",
             title_english: row.title_english?.trim() || "",
             title_japanese: row.title_japanese?.trim() || "",
             main_picture: (row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg")) ||
@@ -424,20 +447,27 @@
           };
         });
 
-        // Costruisci dropdown adesso che abbiamo le opzioni
         buildDropdowns();
 
-        // Render iniziale
-        renderPage();
-
-        // Nascondi preloader
-        const preloader = document.getElementById("preloader");
-        if (preloader) {
-          preloader.style.opacity = "0";
-          preloader.style.pointerEvents = "none";
-          setTimeout(() => preloader.remove(), 500);
+        // Pre-fill search from ?q=
+        const input = document.getElementById('searchInput');
+        if (window.__initialQuery && input) {
+          input.value = window.__initialQuery;
+          renderPage(1, window.__initialQuery);
+        } else {
+          renderPage();
         }
-      });
+      })
+      .catch(err => {
+        console.error("Failed to load CSV:", err);
+        const grid = document.getElementById("animeGrid");
+        if (grid) {
+          grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">
+            Error loading data. Please try again later.
+          </div>`;
+        }
+      })
+      .finally(() => hidePreloader());
   </script>
 </body>
 </html>
