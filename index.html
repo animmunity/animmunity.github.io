@@ -258,7 +258,7 @@
               if (dd !== wrapper) dd.classList.remove('open');
             });
             wrapper.classList.toggle('open');
-            const search = menu.querySelector(\`[data-search-for="\${key}"]\`);
+            const search = menu.querySelector(`[data-search-for="${key}"]`);
             if (search) setTimeout(() => search.focus(), 0);
           });
 
