@@ -280,7 +280,7 @@
         });
 
         // Search inside dropdown
-        menu.querySelector(\`[data-search-for="\${key}"]\`).addEventListener('input', (e) => {
+        menu.querySelector(`[data-search-for="${key}"]`).addEventListener('input', (e) => {
           const q = e.target.value.toLowerCase();
           optionsBox.querySelectorAll('.option').forEach(opt => {
             const text = opt.textContent.toLowerCase();
@@ -315,7 +315,7 @@
     function updateCounts() {
       facets.forEach(({key}) => {
         const n = selections[key].size;
-        const pill = document.querySelector(\`.count[data-count-for="\${key}"]\`);
+        const pill = document.querySelector(`.count[data-count-for="${key}"]`);
         if (!pill) return;
         if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
         else { pill.style.display = 'none'; pill.textContent = '0'; }
