@@ -108,8 +108,9 @@
     /* Card images: prevent CLS and keep ratio */
     .anime-grid .card img {
       width: 100%;
-      aspect-ratio: 2 / 3;
-      object-fit: cover;
+      height: auto;        /* Mantiene le proporzioni originali */
+      max-width: 100%;     /* Non supera il contenitore */
+      object-fit: contain; /* Mostra l'immagine intera, con eventuali bande */
       border-radius: 8px;
       display: block;
     }
