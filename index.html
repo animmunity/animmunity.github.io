@@ -202,7 +202,7 @@
         const menu = document.createElement('div');
         menu.className = 'filter-menu';
         menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Cerca ${label}..." data-search-for="${key}">
+          <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
           <div class="options" data-options-for="${key}"></div>
         `;
 
@@ -300,7 +300,7 @@
       const filtered = animeData.filter(a => animeMatchesFilters(a, q));
 
       const info = document.getElementById("resultsInfo");
-      info.textContent = `${filtered.length} risultati`;
+      info.textContent = `${filtered.length} Anime Found`;
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       page = Math.min(page, totalPages);
