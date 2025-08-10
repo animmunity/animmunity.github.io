@@ -255,15 +255,16 @@
           <div class="options" data-options-for="${key}"></div>
         `;
 
-        const optionsBox = menu.querySelector(\`[data-options-for="\${key}"]\`);
+        const optionsBox = menu.querySelector(`[data-options-for="${key}"]`);
         const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
+
         values.forEach(val => {
           const row = document.createElement('label');
           row.className = 'option';
-          row.innerHTML = \`
-            <input type="checkbox" data-facet="\${key}" value="\${val}">
-            <span>\${val}</span>
-          \`;
+          row.innerHTML = `
+            <input type="checkbox" data-facet="${key}" value="${val}">
+            <span>${val}</span>
+          `;
           optionsBox.appendChild(row);
         });
 
