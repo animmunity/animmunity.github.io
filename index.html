@@ -1,52 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <!-- Basic -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AniMMUnity – Browse & Filter Anime by Genres, Themes, Studios and More</title>
-  <meta name="description" content="Explore and filter thousands of anime. Search by title or refine by genres, themes, demographics, studios, producers and licensors.">
+  <title>AniMMUnity – Anime List</title>
 
-  <!-- Canonical -->
-  <link rel="canonical" href="https://animmunity.github.io/">
-  <meta name="robots" content="index,follow">
-
-  <!-- Favicons (replace with your files if you have them) -->
-  <link rel="icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <!-- Social / Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="AniMMUnity">
-  <meta property="og:title" content="AniMMUnity – Anime List with Powerful Filters">
-  <meta property="og:description" content="Search and filter anime by genres, themes, demographics, studios, producers and licensors.">
-  <meta property="og:url" content="https://animmunity.github.io/">
-  <meta property="og:image" content="https://animmunity.github.io/assets/cover-default.jpg">
-  <meta property="og:image:alt" content="AniMMUnity – Anime discovery">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <!-- Performance hints for fonts (if you use Google Fonts in header/footer) -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-
-  <!-- Styles and libraries -->
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-
-  <!-- Structured Data: WebSite + SearchAction -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"WebSite",
-    "name":"AniMMUnity",
-    "url":"https://animmunity.github.io/",
-    "potentialAction":{
-      "@type":"SearchAction",
-      "target":"https://animmunity.github.io/?q={search_term_string}",
-      "query-input":"required name=search_term_string"
-    }
-  }
-  </script>
 
   <style>
     /* --- Dropdown Filters UI --- */
@@ -54,10 +14,12 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 16px 0;
+      margin: 16px 0; /* uguale sopra e sotto */
       align-items: center;
     }
-    .filter-dropdown { position: relative; }
+    .filter-dropdown {
+      position: relative;
+    }
     .filter-btn {
       display: inline-flex;
       align-items: center;
@@ -92,7 +54,9 @@
       z-index: 1000;
       display: none;
     }
-    .filter-dropdown.open .filter-menu { display: block; }
+    .filter-dropdown.open .filter-menu {
+      display: block;
+    }
     .filter-search {
       width: 100%;
       border: 1px solid #ccc;
@@ -111,9 +75,11 @@
       border-radius: 6px;
       cursor: pointer;
     }
-    .option:hover { background: #f5f5f5; }
+    .option:hover {
+      background: #f5f5f5;
+    }
 
-    /* Reset button inline */
+    /* Pulsante reset in linea con i dropdown */
     .btn-clear {
       border: 1px solid #bbb;
       background: #fff;
@@ -126,15 +92,18 @@
     .btn-clear:hover { background: #f0f0f0; }
 
     .results-info {
-      margin: 16px 0;
+      margin: 16px 0; /* uguale sopra e sotto */
       font-size: 14px;
       color: #555;
       text-align: center;
       display: block;
     }
 
-    /* Full-width search */
-    .search-container { width: 100%; margin: 16px 0; }
+    /* Search full-width */
+    .search-container {
+      width: 100%;
+      margin: 16px 0;
+    }
     #searchInput {
       width: 100%;
       max-width: 100%;
@@ -153,21 +122,8 @@
 </head>
 <body>
 
-  <!-- Preloader -->
+  <!-- 🔄 Preloader -->
   <div id="preloader"><div class="spinner"></div></div>
-
-  <!-- Noscript fallback (SEO-friendly) -->
-  <noscript>
-    <div style="max-width:1100px;margin:16px auto;background:#fff;border-radius:12px;padding:16px;">
-      <h2>Popular Anime (preview)</h2>
-      <p>Enable JavaScript to use search and filters. Here are some popular titles:</p>
-      <ul>
-        <li><a href="anime/Fullmetal_Alchemist__Brotherhood">Fullmetal Alchemist: Brotherhood</a></li>
-        <li><a href="anime/Hunter_x_Hunter_2011">Hunter x Hunter (2011)</a></li>
-        <li><a href="anime/Steins_Gate">Steins;Gate</a></li>
-      </ul>
-    </div>
-  </noscript>
 
   <!-- Header -->
   <div id="header-placeholder"></div>
@@ -175,17 +131,15 @@
   <main class="anime-main">
     <h1 class="page-title" style="text-align: center;">Anime List</h1>
 
-    <!-- Search (form writes ?q= to URL for SearchAction consistency) -->
-    <form class="search-container" action="/" method="get">
-      <input type="text" id="searchInput" name="q" placeholder="Search for an Anime..."/>
-    </form>
-
-    <!-- Filters + Reset on the same row -->
-    <div class="filters-bar" id="filtersBar">
-      <!-- dropdowns created via JS -->
-      <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search for an Anime..."/>
     </div>
 
+    <!-- 🔽 DROPDOWN FILTERS + Reset sulla stessa linea -->
+    <div class="filters-bar" id="filtersBar">
+      <!-- i bottoni vengono creati via JS -->
+      <button id="clearFilters" class="btn-clear">Reset filtri</button>
+    </div>
     <span class="results-info" id="resultsInfo"></span>
 
     <div id="animeGrid" class="anime-grid"></div>
@@ -196,7 +150,7 @@
   <div id="footer-placeholder"></div>
 
   <script>
-    // Load header/footer
+    // Carica header/footer
     fetch("header.html").then(r => r.text()).then(d => {
       document.getElementById("header-placeholder").innerHTML = d;
       const toggle = document.querySelector('.menu-toggle');
@@ -212,15 +166,7 @@
     let animeData = [];
     let currentPage = 1;
 
-    // Read ?q= at load (SEO & shareable searches)
-    const urlParams = new URLSearchParams(location.search);
-    const initialQuery = (urlParams.get('q') || '').trim();
-    if (initialQuery) {
-      const input = document.getElementById('searchInput');
-      input.value = initialQuery;
-    }
-
-    // Facets
+    // Fields we filter on
     const facets = [
       { key: 'demographics', label: 'Demographics' },
       { key: 'themes',       label: 'Themes' },
@@ -229,10 +175,14 @@
       { key: 'producers',    label: 'Producers' },
       { key: 'studios',      label: 'Studios' },
     ];
+
+    // Option sets
     const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+
+    // Current selections (Set per performance)
     const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
 
-    // Parse list fields like "['Aniplex','Square Enix']"
+    // Parse list fields come "['Aniplex','Square Enix']"
     function parseList(value) {
       if (!value) return [];
       let s = String(value).trim();
@@ -253,8 +203,11 @@
       facets.forEach(({key}) => parseList(row[key]).forEach(v => optionSets[key].add(v)));
     }
 
+    // Build dropdowns
     function buildDropdowns() {
       const bar = document.getElementById('filtersBar');
+
+      // Inseriamo i dropdown PRIMA del pulsante Reset
       const resetBtn = document.getElementById('clearFilters');
 
       facets.forEach(({key, label}) => {
@@ -270,11 +223,12 @@
         const menu = document.createElement('div');
         menu.className = 'filter-menu';
         menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
+          <input class="filter-search" type="text" placeholder="Cerca ${label}..." data-search-for="${key}">
           <div class="options" data-options-for="${key}"></div>
         `;
 
-        const optionsBox = menu.querySelector(\`[data-options-for="\${key}"]\`);
+        // Fill options
+        const optionsBox = menu.querySelector(`[data-options-for="${key}"]`);
         const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
 
         values.forEach(val => {
@@ -287,17 +241,19 @@
           optionsBox.appendChild(row);
         });
 
+        // Toggle open/close
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
             if (dd !== wrapper) dd.classList.remove('open');
           });
           wrapper.classList.toggle('open');
-          const search = menu.querySelector(\`[data-search-for="\${key}"]\`);
+          const search = menu.querySelector(`[data-search-for="${key}"]`);
           if (search) setTimeout(()=> search.focus(), 0);
         });
 
-        menu.querySelector(\`[data-search-for="\${key}"]\`).addEventListener('input', (e) => {
+        // Search inside dropdown
+        menu.querySelector(`[data-search-for="${key}"]`).addEventListener('input', (e) => {
           const q = e.target.value.toLowerCase();
           optionsBox.querySelectorAll('.option').forEach(opt => {
             const text = opt.textContent.toLowerCase();
@@ -310,10 +266,12 @@
         bar.insertBefore(wrapper, resetBtn);
       });
 
+      // Close on outside click
       document.addEventListener('click', () => {
         document.querySelectorAll('.filter-dropdown.open').forEach(dd => dd.classList.remove('open'));
       });
 
+      // Checkbox change → update selections + render
       document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
         chk.addEventListener('change', () => {
           const facet = chk.dataset.facet;
@@ -330,7 +288,7 @@
     function updateCounts() {
       facets.forEach(({key}) => {
         const n = selections[key].size;
-        const pill = document.querySelector(\`.count[data-count-for="\${key}"]\`);
+        const pill = document.querySelector(`.count[data-count-for="${key}"]`);
         if (!pill) return;
         if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
         else { pill.style.display = 'none'; pill.textContent = '0'; }
@@ -344,12 +302,15 @@
 
     function animeMatchesFilters(anime, q) {
       if (q && !getTextMatchHaystack(anime).includes(q)) return false;
+
+      // AND tra filtri diversi, OR all'interno del singolo filtro
       const orMatch = (selSet, fieldArr) => {
         if (!selSet || selSet.size === 0) return true;
         if (!fieldArr || fieldArr.length === 0) return false;
         for (const val of selSet) if (fieldArr.includes(val)) return true;
         return false;
       };
+
       return facets.every(({key}) => orMatch(selections[key], anime[key]));
     }
 
@@ -360,7 +321,7 @@
       const filtered = animeData.filter(a => animeMatchesFilters(a, q));
 
       const info = document.getElementById("resultsInfo");
-      info.textContent = `${filtered.length} results`;
+      info.textContent = `${filtered.length} risultati`;
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       page = Math.min(page, totalPages);
@@ -373,12 +334,10 @@
       for (const anime of pageItems) {
         const card = document.createElement("div");
         card.className = "card";
-        // Keep existing graphics/structure; add safe width/height (won't change layout)
         card.innerHTML = `
-          <a href="anime?id=${anime.anime_id}" title="Open ${anime.title}">
-            <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}"
-                 width="300" height="260"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
+          <a href="anime?id=${anime.anime_id}">
+            <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}" 
+              onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
             <h3>${anime.title}</h3>
           </a>
         `;
@@ -386,27 +345,6 @@
       }
 
       renderPagination(totalPages, page);
-
-      // --------- SEO: dynamic JSON-LD ItemList for the visible items ----------
-      (function(){
-        const listJson = {
-          "@context":"https://schema.org",
-          "@type":"ItemList",
-          "itemListElement": pageItems.map((a, i)=>({
-            "@type":"ListItem",
-            "position": (start + i + 1),
-            "url": `https://animmunity.github.io/anime?id=${a.anime_id}`
-          }))
-        };
-        let ld = document.getElementById('ld-itemlist');
-        if (!ld) {
-          ld = document.createElement('script');
-          ld.id = 'ld-itemlist';
-          ld.type = 'application/ld+json';
-          document.head.appendChild(ld);
-        }
-        ld.textContent = JSON.stringify(listJson);
-      })();
     }
 
     function renderPagination(totalPages, current) {
@@ -420,12 +358,6 @@
         btn.addEventListener("click", () => {
           currentPage = pageNum;
           renderPage(pageNum, document.getElementById("searchInput").value);
-          // reflect page in URL without reload (optional)
-          const u = new URL(location.href);
-          u.searchParams.set('page', pageNum);
-          const qVal = document.getElementById('searchInput').value;
-          if (qVal) u.searchParams.set('q', qVal); else u.searchParams.delete('q');
-          history.replaceState(null, "", u.toString());
         });
         return btn;
       };
@@ -454,17 +386,12 @@
       }
     }
 
-    // Live search
+    // Eventi base
     document.getElementById("searchInput").addEventListener("input", e => {
       renderPage(1, e.target.value);
-      // reflect q in URL without reload
-      const u = new URL(location.href);
-      const val = e.target.value.trim();
-      if (val) u.searchParams.set('q', val); else u.searchParams.delete('q');
-      history.replaceState(null, "", u.toString());
     });
 
-    // Reset filters
+    // Reset filtri (sulla stessa linea)
     document.getElementById("clearFilters").addEventListener("click", () => {
       facets.forEach(({key}) => selections[key].clear());
       document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
@@ -472,7 +399,7 @@
       renderPage(1, document.getElementById("searchInput").value);
     });
 
-    // Load CSV
+    // Carica CSV
     fetch("https://animmunity.github.io/data/anime.csv")
       .then(r => r.text())
       .then(csvText => {
@@ -483,7 +410,7 @@
           fillOptionSetsFromRow(row);
           return {
             anime_id: String(row.anime_id || "").trim(),
-            title: row.title?.trim() || "Untitled",
+            title: row.title?.trim() || "Senza titolo",
             title_english: row.title_english?.trim() || "",
             title_japanese: row.title_japanese?.trim() || "",
             main_picture: (row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg")) ||
@@ -497,13 +424,13 @@
           };
         });
 
-        // Build dropdowns after options computed
+        // Costruisci dropdown adesso che abbiamo le opzioni
         buildDropdowns();
 
-        // Initial render (seed with ?q= if present)
-        renderPage(1, initialQuery);
+        // Render iniziale
+        renderPage();
 
-        // Hide preloader
+        // Nascondi preloader
         const preloader = document.getElementById("preloader");
         if (preloader) {
           preloader.style.opacity = "0";
