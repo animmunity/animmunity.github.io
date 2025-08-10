@@ -44,7 +44,7 @@
   <link rel="dns-prefetch" href="//fonts.googleapis.com">
 
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
 
   <style>
     /* --- Dropdown Filters UI --- */
@@ -348,7 +348,7 @@
       const filtered = animeData.filter(a => animeMatchesFilters(a, q));
 
       const info = document.getElementById("resultsInfo");
-      info.textContent = \`\${filtered.length} results\`;
+      info.textContent = `${filtered.length} results`;
 
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       page = Math.min(page, totalPages);
@@ -361,13 +361,13 @@
       for (const anime of pageItems) {
         const card = document.createElement("div");
         card.className = "card";
-        card.innerHTML = \`
-          <a href="anime?id=\${anime.anime_id}">
-            <img loading="lazy" src="\${anime.main_picture}" alt="\${anime.title}"
+        card.innerHTML = `
+          <a href="anime?id=${anime.anime_id}">
+            <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}"
               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
-            <h3>\${anime.title}</h3>
+            <h3>${anime.title}</h3>
           </a>
-        \`;
+        `;
         grid.appendChild(card);
       }
 
@@ -432,7 +432,7 @@
 
     // Load CSV
     fetch("https://animmunity.github.io/data/anime.csv")
-      .then(r => { if (!r.ok) throw new Error(\`HTTP \${r.status}\`); return r.text(); })
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
       .then(csvText => {
         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
         rawData = parsed.data;
