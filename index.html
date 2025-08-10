@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AniMMunity – Anime List</title>
+  <title>AniMMUnity – Anime List</title>
 
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -15,6 +15,7 @@
       flex-wrap: wrap;
       gap: 10px;
       margin: 10px 0 4px 0;
+      align-items: center;
     }
     .filter-dropdown {
       position: relative;
@@ -76,21 +77,19 @@
     .option:hover {
       background: #f5f5f5;
     }
-    .filters-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
+
+    /* Pulsante reset in linea con i dropdown */
     .btn-clear {
       border: 1px solid #bbb;
       background: #fff;
       padding: 8px 12px;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
     }
     .btn-clear:hover { background: #f0f0f0; }
+
     .results-info {
       margin-top: 6px;
       font-size: 14px;
@@ -115,14 +114,12 @@
       <input type="text" id="searchInput" placeholder="Search for an anime..."/>
     </div>
 
-    <!-- 🔽 DROPDOWN FILTERS -->
+    <!-- 🔽 DROPDOWN FILTERS + Reset sulla stessa linea -->
     <div class="filters-bar" id="filtersBar">
       <!-- i bottoni vengono creati via JS -->
-    </div>
-    <div class="filters-actions">
       <button id="clearFilters" class="btn-clear">Reset filtri</button>
-      <span class="results-info" id="resultsInfo"></span>
     </div>
+    <span class="results-info" id="resultsInfo"></span>
 
     <div id="animeGrid" class="anime-grid"></div>
     <div id="pagination"></div>
@@ -188,7 +185,9 @@
     // Build dropdowns
     function buildDropdowns() {
       const bar = document.getElementById('filtersBar');
-      bar.innerHTML = '';
+
+      // Inseriamo i dropdown PRIMA del pulsante Reset
+      const resetBtn = document.getElementById('clearFilters');
 
       facets.forEach(({key, label}) => {
         const wrapper = document.createElement('div');
@@ -212,7 +211,6 @@
         const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
 
         values.forEach(val => {
-          const id = `${key}-${val.replace(/\s+/g,'_')}`;
           const row = document.createElement('label');
           row.className = 'option';
           row.innerHTML = `
@@ -229,7 +227,6 @@
             if (dd !== wrapper) dd.classList.remove('open');
           });
           wrapper.classList.toggle('open');
-          // focus search
           const search = menu.querySelector(`[data-search-for="${key}"]`);
           if (search) setTimeout(()=> search.focus(), 0);
         });
@@ -245,7 +242,7 @@
 
         wrapper.appendChild(btn);
         wrapper.appendChild(menu);
-        bar.appendChild(wrapper);
+        bar.insertBefore(wrapper, resetBtn);
       });
 
       // Close on outside click
@@ -283,10 +280,9 @@
     }
 
     function animeMatchesFilters(anime, q) {
-      // text query
       if (q && !getTextMatchHaystack(anime).includes(q)) return false;
 
-      // facets: AND tra filtri diversi, OR all'interno del singolo filtro
+      // AND tra filtri diversi, OR all'interno del singolo filtro
       const orMatch = (selSet, fieldArr) => {
         if (!selSet || selSet.size === 0) return true;
         if (!fieldArr || fieldArr.length === 0) return false;
@@ -374,10 +370,9 @@
       renderPage(1, e.target.value);
     });
 
+    // Reset filtri (sulla stessa linea)
     document.getElementById("clearFilters").addEventListener("click", () => {
-      // svuota selections
       facets.forEach(({key}) => selections[key].clear());
-      // deseleziona tutte le checkbox UI
       document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
       updateCounts();
       renderPage(1, document.getElementById("searchInput").value);
@@ -391,7 +386,6 @@
         rawData = parsed.data;
 
         animeData = rawData.map(row => {
-          // riempi set opzioni
           fillOptionSetsFromRow(row);
           return {
             anime_id: String(row.anime_id || "").trim(),
