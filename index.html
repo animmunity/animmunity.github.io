@@ -71,7 +71,7 @@
       min-width: 240px; max-height: 320px; overflow: auto;
       background: #fff; border: 1px solid #ddd; border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 10px; z-index: 1000;
-      display: none;
+      display: none; max-width: 92vw; /* evita overflow su schermi piccoli */
     }
     .filter-dropdown.open .filter-menu { display: block; }
     .filter-search {
@@ -160,323 +160,332 @@
   </noscript>
 
   <script>
-    // ===== Header/Footer =====
-    fetch("header.html").then(r => r.text()).then(d => {
-      document.getElementById("header-placeholder").innerHTML = d;
-      const toggle = document.querySelector('.menu-toggle');
-      const headerInner = document.querySelector('.header-inner');
-      if (toggle && headerInner) toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
-    });
-    fetch("footer.html").then(r => r.text()).then(d => {
-      document.getElementById("footer-placeholder").innerHTML = d;
-    });
+    // ------- Preloader helper (idempotente) -------
+    function hidePreloader() {
+      var pre = document.getElementById("preloader");
+      if (!pre) return;
+      pre.style.opacity = "0";
+      pre.style.pointerEvents = "none";
+      setTimeout(function () {
+        if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
+      }, 500);
+    }
 
-    // ===== Preloader (robust) =====
-  function hidePreloader() {
-    var pre = document.getElementById("preloader");
-    if (!pre) return;
-    pre.style.opacity = "0";
-    pre.style.pointerEvents = "none";
-    setTimeout(function () {
-      if (pre && pre.parentNode) pre.parentNode.removeChild(pre);
-    }, 500);
-  }
+    // Esegui tutto quando il DOM è pronto
+    document.addEventListener("DOMContentLoaded", function () {
+      // ===== App state =====
+      const ITEMS_PER_PAGE = 20;
+      let rawData = [];
+      let animeData = [];
+      let currentPage = 1;
 
-  // 1) On full load (all assets)
-  window.addEventListener("load", hidePreloader);
+      // Pre-fill query from ?q= for SEO sitelinks search box
+      const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
+      if (urlQ) window.__initialQuery = urlQ;
 
-  // 2) Also after DOM is ready (in case some asset hangs)
-  document.addEventListener("DOMContentLoaded", function () {
-    setTimeout(hidePreloader, 1200);
+      // Filter facets
+      const facets = [
+        { key: 'demographics', label: 'Demographics' },
+        { key: 'themes',       label: 'Themes' },
+        { key: 'genres',       label: 'Genres' },
+        { key: 'licensors',    label: 'Licensors' },
+        { key: 'producers',    label: 'Producers' },
+        { key: 'studios',      label: 'Studios' },
+      ];
+      const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+      const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
 
-    // ===== App state =====
-    const ITEMS_PER_PAGE = 20;
-    let rawData = [];
-    let animeData = [];
-    let currentPage = 1;
-
-    // Pre-fill query from ?q= for SEO sitelinks search box
-    const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
-    if (urlQ) window.__initialQuery = urlQ;
-
-    // Filter facets
-    const facets = [
-      { key: 'demographics', label: 'Demographics' },
-      { key: 'themes',       label: 'Themes' },
-      { key: 'genres',       label: 'Genres' },
-      { key: 'licensors',    label: 'Licensors' },
-      { key: 'producers',    label: 'Producers' },
-      { key: 'studios',      label: 'Studios' },
-    ];
-    const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-    const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-
-    // Parse list fields like "['Aniplex','Square Enix']"
-    function parseList(value) {
-      if (!value) return [];
-      let s = String(value).trim();
-      if (s === "[]" || s === "") return [];
-      try {
-        if (s.includes("'") && !s.includes('"')) s = s.replace(/'/g, '"');
-        const arr = JSON.parse(s);
-        return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
-      } catch {
-        // Fallback naive parser
-        return s.replace(/^\[|\]$/g, "")
-                .split(",")
-                .map(x => x.replace(/^['"\s]+|['"\s]+$/g, ""))
-                .filter(Boolean);
+      // Parse list fields like "['Aniplex','Square Enix']"
+      function parseList(value) {
+        if (!value) return [];
+        let s = String(value).trim();
+        if (s === "[]" || s === "") return [];
+        try {
+          if (s.includes("'") && !s.includes('"')) s = s.replace(/'/g, '"');
+          const arr = JSON.parse(s);
+          return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
+        } catch {
+          // Fallback naive parser
+          return s.replace(/^\[|\]$/g, "")
+                  .split(",")
+                  .map(x => x.replace(/^['"\s]+|['"\s]+$/g, ""))
+                  .filter(Boolean);
+        }
       }
-    }
 
-    function fillOptionSetsFromRow(row) {
-      facets.forEach(({key}) => parseList(row[key]).forEach(v => optionSets[key].add(v)));
-    }
+      function fillOptionSetsFromRow(row) {
+        facets.forEach(({key}) => parseList(row[key]).forEach(v => optionSets[key].add(v)));
+      }
 
-    // Build dropdowns
-    function buildDropdowns() {
-      const bar = document.getElementById('filtersBar');
-      const resetBtn = document.getElementById('clearFilters');
+      // Build dropdowns
+      function buildDropdowns() {
+        const bar = document.getElementById('filtersBar');
+        const resetBtn = document.getElementById('clearFilters');
 
-      facets.forEach(({key, label}) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'filter-dropdown';
-        wrapper.dataset.key = key;
+        facets.forEach(({key, label}) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'filter-dropdown';
+          wrapper.dataset.key = key;
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'filter-btn';
-        btn.innerHTML = `<span>${label}</span> <span class="count" data-count-for="${key}" style="display:none;">0</span>`;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'filter-btn';
+          btn.innerHTML = `<span>${label}</span> <span class="count" data-count-for="${key}" style="display:none;">0</span>`;
 
-        const menu = document.createElement('div');
-        menu.className = 'filter-menu';
-        menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
-          <div class="options" data-options-for="${key}"></div>
-        `;
-
-        const optionsBox = menu.querySelector(`[data-options-for="${key}"]`);
-        const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
-
-        values.forEach(val => {
-          const row = document.createElement('label');
-          row.className = 'option';
-          row.innerHTML = `
-            <input type="checkbox" data-facet="${key}" value="${val}">
-            <span>${val}</span>
+          const menu = document.createElement('div');
+          menu.className = 'filter-menu';
+          menu.innerHTML = `
+            <input class="filter-search" type="text" placeholder="Search ${label}..." data-search-for="${key}">
+            <div class="options" data-options-for="${key}"></div>
           `;
-          optionsBox.appendChild(row);
-        });
 
-        // Toggle open/close
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
-            if (dd !== wrapper) dd.classList.remove('open');
+          const optionsBox = menu.querySelector(\`[data-options-for="\${key}"]\`);
+          const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
+          values.forEach(val => {
+            const row = document.createElement('label');
+            row.className = 'option';
+            row.innerHTML = \`
+              <input type="checkbox" data-facet="\${key}" value="\${val}">
+              <span>\${val}</span>
+            \`;
+            optionsBox.appendChild(row);
           });
-          wrapper.classList.toggle('open');
-          const search = menu.querySelector(`[data-search-for="${key}"]`);
-          if (search) setTimeout(() => search.focus(), 0);
+
+          // Toggle open/close
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
+              if (dd !== wrapper) dd.classList.remove('open');
+            });
+            wrapper.classList.toggle('open');
+            const search = menu.querySelector(\`[data-search-for="\${key}"]\`);
+            if (search) setTimeout(() => search.focus(), 0);
+          });
+
+          // Search inside dropdown
+          menu.querySelector(\`[data-search-for="\${key}"]\`).addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            menu.querySelectorAll('.option').forEach(opt => {
+              const text = opt.textContent.toLowerCase();
+              opt.style.display = text.includes(q) ? '' : 'none';
+            });
+          });
+
+          wrapper.appendChild(btn);
+          wrapper.appendChild(menu);
+          bar.insertBefore(wrapper, resetBtn);
         });
 
-        // Search inside dropdown
-        menu.querySelector(`[data-search-for="${key}"]`).addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase();
-          optionsBox.querySelectorAll('.option').forEach(opt => {
-            const text = opt.textContent.toLowerCase();
-            opt.style.display = text.includes(q) ? '' : 'none';
+        // Close on outside click / Esc
+        document.addEventListener('click', () => {
+          document.querySelectorAll('.filter-dropdown.open').forEach(dd => dd.classList.remove('open'));
+        });
+        document.addEventListener('keydown', (e)=>{
+          if (e.key === 'Escape') {
+            document.querySelectorAll('.filter-dropdown.open').forEach(dd => dd.classList.remove('open'));
+          }
+        });
+
+        // Checkbox change → update selections + render
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const facet = chk.dataset.facet;
+            if (chk.checked) selections[facet].add(chk.value);
+            else selections[facet].delete(chk.value);
+            updateCounts();
+            renderPage(1, document.getElementById('searchInput').value);
           });
         });
 
-        wrapper.appendChild(btn);
-        wrapper.appendChild(menu);
-        bar.insertBefore(wrapper, resetBtn);
-      });
-
-      // Close on outside click
-      document.addEventListener('click', () => {
-        document.querySelectorAll('.filter-dropdown.open').forEach(dd => dd.classList.remove('open'));
-      });
-
-      // Checkbox change → update selections + render
-      document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
-        chk.addEventListener('change', () => {
-          const facet = chk.dataset.facet;
-          if (chk.checked) selections[facet].add(chk.value);
-          else selections[facet].delete(chk.value);
-          updateCounts();
-          renderPage(1, document.getElementById('searchInput').value);
-        });
-      });
-
-      updateCounts();
-    }
-
-    function updateCounts() {
-      facets.forEach(({key}) => {
-        const n = selections[key].size;
-        const pill = document.querySelector(`.count[data-count-for="${key}"]`);
-        if (!pill) return;
-        if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
-        else { pill.style.display = 'none'; pill.textContent = '0'; }
-      });
-    }
-
-    function getTextMatchHaystack(anime) {
-      return [anime.title, anime.title_english, anime.title_japanese]
-              .filter(Boolean).join(' ').toLowerCase();
-    }
-
-    function animeMatchesFilters(anime, q) {
-      if (q && !getTextMatchHaystack(anime).includes(q)) return false;
-
-      // AND across facets, OR inside a single facet
-      const orMatch = (selSet, fieldArr) => {
-        if (!selSet || selSet.size === 0) return true;
-        if (!fieldArr || fieldArr.length === 0) return false;
-        for (const val of selSet) if (fieldArr.includes(val)) return true;
-        return false;
-      };
-
-      return facets.every(({key}) => orMatch(selections[key], anime[key]));
-    }
-
-    function renderPage(page = 1, query = "") {
-      const grid = document.getElementById("animeGrid");
-      const q = (query || "").toLowerCase();
-
-      const filtered = animeData.filter(a => animeMatchesFilters(a, q));
-
-      const info = document.getElementById("resultsInfo");
-      info.textContent = `${filtered.length} results`;
-
-      const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-      page = Math.min(page, totalPages);
-      currentPage = page;
-
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
-
-      grid.innerHTML = "";
-      for (const anime of pageItems) {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <a href="anime?id=${anime.anime_id}">
-            <img loading="lazy" src="${anime.main_picture}" alt="${anime.title}"
-              onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
-            <h3>${anime.title}</h3>
-          </a>
-        `;
-        grid.appendChild(card);
+        updateCounts();
       }
 
-      renderPagination(totalPages, page);
-    }
-
-    function renderPagination(totalPages, current) {
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-
-      const createButton = (text, pageNum, isActive = false) => {
-        const btn = document.createElement("button");
-        btn.textContent = text;
-        if (isActive) btn.classList.add("active");
-        btn.addEventListener("click", () => {
-          currentPage = pageNum;
-          renderPage(pageNum, document.getElementById("searchInput").value);
+      function updateCounts() {
+        facets.forEach(({key}) => {
+          const n = selections[key].size;
+          const pill = document.querySelector(\`.count[data-count-for="\${key}"]\`);
+          if (!pill) return;
+          if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
+          else { pill.style.display = 'none'; pill.textContent = '0'; }
         });
-        return btn;
-      };
-
-      const addEllipsis = () => {
-        const dots = document.createElement("span");
-        dots.textContent = "...";
-        dots.style.margin = "0 4px";
-        pagination.appendChild(dots);
-      };
-
-      if (totalPages <= 10) {
-        for (let i = 1; i <= totalPages; i++) {
-          pagination.appendChild(createButton(i, i, i === current));
-        }
-      } else {
-        pagination.appendChild(createButton(1, 1, current === 1));
-        if (current > 3) addEllipsis();
-        const start = Math.max(2, current - 1);
-        const end = Math.min(totalPages - 1, current + 1);
-        for (let i = start; i <= end; i++) {
-          pagination.appendChild(createButton(i, i, i === current));
-        }
-        if (current < totalPages - 2) addEllipsis();
-        pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
       }
-    }
 
-    // Events
-    document.getElementById("searchInput").addEventListener("input", e => {
-      renderPage(1, e.target.value);
-      // Update ?q= (UX + aligns with SearchAction)
-      const q = e.target.value.trim();
-      const u = new URL(location.href);
-      if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-      history.replaceState(null, "", u.toString());
-    });
+      function getTextMatchHaystack(anime) {
+        return [anime.title, anime.title_english, anime.title_japanese]
+                .filter(Boolean).join(' ').toLowerCase();
+      }
 
-    document.getElementById("clearFilters").addEventListener("click", () => {
-      facets.forEach(({key}) => selections[key].clear());
-      document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
-      updateCounts();
-      renderPage(1, document.getElementById("searchInput").value);
-    });
+      function animeMatchesFilters(anime, q) {
+        if (q && !getTextMatchHaystack(anime).includes(q)) return false;
+        // AND across facets, OR inside a single facet
+        const orMatch = (selSet, fieldArr) => {
+          if (!selSet || selSet.size === 0) return true;
+          if (!fieldArr || fieldArr.length === 0) return false;
+          for (const val of selSet) if (fieldArr.includes(val)) return true;
+          return false;
+        };
+        return facets.every(({key}) => orMatch(selections[key], anime[key]));
+      }
 
-    // Load CSV
-    fetch("https://animmunity.github.io/data/anime.csv")
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-      .then(csvText => {
-        const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-        rawData = parsed.data;
-
-        animeData = rawData.map(row => {
-          fillOptionSetsFromRow(row);
-          return {
-            anime_id: String(row.anime_id || "").trim(),
-            title: row.title?.trim() || "Untitled",
-            title_english: row.title_english?.trim() || "",
-            title_japanese: row.title_japanese?.trim() || "",
-            main_picture: (row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg")) ||
-                          "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg",
-            demographics: parseList(row.demographics),
-            themes:       parseList(row.themes),
-            genres:       parseList(row.genres),
-            licensors:    parseList(row.licensors),
-            producers:    parseList(row.producers),
-            studios:      parseList(row.studios),
-          };
-        });
-
-        buildDropdowns();
-
-        // Pre-fill search from ?q=
-        const input = document.getElementById('searchInput');
-        if (window.__initialQuery && input) {
-          input.value = window.__initialQuery;
-          renderPage(1, window.__initialQuery);
-        } else {
-          renderPage();
-        }
-      })
-      .catch(err => {
-        console.error("Failed to load CSV:", err);
+      function renderPage(page = 1, query = "") {
         const grid = document.getElementById("animeGrid");
-        if (grid) {
-          grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">
-            Error loading data. Please try again later.
-          </div>`;
+        const q = (query || "").toLowerCase();
+
+        const filtered = animeData.filter(a => animeMatchesFilters(a, q));
+
+        const info = document.getElementById("resultsInfo");
+        info.textContent = \`\${filtered.length} results\`;
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+        page = Math.min(page, totalPages);
+        currentPage = page;
+
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+        grid.innerHTML = "";
+        for (const anime of pageItems) {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = \`
+            <a href="anime?id=\${anime.anime_id}">
+              <img loading="lazy" src="\${anime.main_picture}" alt="\${anime.title}"
+                onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
+              <h3>\${anime.title}</h3>
+            </a>
+          \`;
+          grid.appendChild(card);
         }
-      })
-      .finally(() => hidePreloader());
-    }); 
+
+        renderPagination(totalPages, page);
+      }
+
+      function renderPagination(totalPages, current) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const createButton = (text, pageNum, isActive = false) => {
+          const btn = document.createElement("button");
+          btn.textContent = text;
+          if (isActive) btn.classList.add("active");
+          btn.addEventListener("click", () => {
+            currentPage = pageNum;
+            renderPage(pageNum, document.getElementById("searchInput").value);
+          });
+          return btn;
+        };
+
+        const addEllipsis = () => {
+          const dots = document.createElement("span");
+          dots.textContent = "...";
+          dots.style.margin = "0 4px";
+          pagination.appendChild(dots);
+        };
+
+        if (totalPages <= 10) {
+          for (let i = 1; i <= totalPages; i++) {
+            pagination.appendChild(createButton(i, i, i === current));
+          }
+        } else {
+          pagination.appendChild(createButton(1, 1, current === 1));
+          if (current > 3) addEllipsis();
+          const start = Math.max(2, current - 1);
+          const end = Math.min(totalPages - 1, current + 1);
+          for (let i = start; i <= end; i++) {
+            pagination.appendChild(createButton(i, i, i === current));
+          }
+          if (current < totalPages - 2) addEllipsis();
+          pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
+        }
+      }
+
+      // Events
+      document.getElementById("searchInput").addEventListener("input", e => {
+        renderPage(1, e.target.value);
+        // Update ?q= (UX + aligns with SearchAction)
+        const q = e.target.value.trim();
+        const u = new URL(location.href);
+        if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+        history.replaceState(null, "", u.toString());
+      });
+
+      document.getElementById("clearFilters").addEventListener("click", () => {
+        facets.forEach(({key}) => selections[key].clear());
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
+        updateCounts();
+        renderPage(1, document.getElementById("searchInput").value);
+      });
+
+      // ====== CARICAMENTI PARALLELI (header, footer, CSV) ======
+      const headerP = fetch("header.html")
+        .then(r => r.ok ? r.text() : "")
+        .then(html => {
+          if (html) document.getElementById("header-placeholder").innerHTML = html;
+          const toggle = document.querySelector('.menu-toggle');
+          const headerInner = document.querySelector('.header-inner');
+          if (toggle && headerInner) {
+            toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
+          }
+        })
+        .catch(() => { /* ignora errori header */ });
+
+      const footerP = fetch("footer.html")
+        .then(r => r.ok ? r.text() : "")
+        .then(html => {
+          if (html) document.getElementById("footer-placeholder").innerHTML = html;
+        })
+        .catch(() => { /* ignora errori footer */ });
+
+      const dataP = fetch("https://animmunity.github.io/data/anime.csv")
+        .then(r => { if (!r.ok) throw new Error(\`HTTP \${r.status}\`); return r.text(); })
+        .then(csvText => {
+          const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+          rawData = parsed.data;
+
+          animeData = rawData.map(row => {
+            fillOptionSetsFromRow(row);
+            return {
+              anime_id: String(row.anime_id || "").trim(),
+              title: row.title?.trim() || "Untitled",
+              title_english: row.title_english?.trim() || "",
+              title_japanese: row.title_japanese?.trim() || "",
+              main_picture: (row.main_picture?.trim().replace(/([a-z])\.jpg$/, "l.jpg")) ||
+                            "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg",
+              demographics: parseList(row.demographics),
+              themes:       parseList(row.themes),
+              genres:       parseList(row.genres),
+              licensors:    parseList(row.licensors),
+              producers:    parseList(row.producers),
+              studios:      parseList(row.studios),
+            };
+          });
+
+          buildDropdowns();
+
+          // Pre-fill search from ?q=
+          const input = document.getElementById('searchInput');
+          if (window.__initialQuery && input) {
+            input.value = window.__initialQuery;
+            renderPage(1, window.__initialQuery);
+          } else {
+            renderPage();
+          }
+        })
+        .catch(err => {
+          console.error("Failed to load CSV:", err);
+          const grid = document.getElementById("animeGrid");
+          if (grid) {
+            grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">
+              Error loading data. Please try again later.
+            </div>`;
+          }
+        });
+
+      // Nascondi il preloader SOLO quando tutto è pronto
+      Promise.all([headerP, footerP, dataP]).finally(() => {
+        hidePreloader();
+      });
+    });
   </script>
 </body>
 </html>
