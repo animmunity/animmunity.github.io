@@ -180,7 +180,7 @@
       if (embedUrl) {
         html += `
           <div class="anime-section">
-            <h3>Trailer</h3>
+            <h2>Trailer</h2>
             <iframe src="${embedUrl}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
           </div>`;
       }
@@ -206,7 +206,7 @@
           sectionHtmlParts.push(`<p><strong>${columnLabels[field] || field}:</strong> ${safe(value)}</p>`);
         }
         if (sectionHtmlParts.length) {
-          html += `<div class="anime-section"><h3>${sectionName}</h3>${sectionHtmlParts.join('')}</div>`;
+          html += `<div class="anime-section"><h2>${sectionName}</h2>${sectionHtmlParts.join('')}</div>`;
         }
       }
       return html;
