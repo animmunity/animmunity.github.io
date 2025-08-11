@@ -35,139 +35,152 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
-  <style>
-    /* =====================
-       NOVA WHITE UI — Fresh, airy, tactile
-       (JS invariato, markup aggiornato)
-       ===================== */
-    :root{
-      /* Palette */
-      --bg: #f6f7fb;              /* sfondo pagina chiaro */
-      --ink: #0f172a;             /* testo principale */
-      --muted: #5b6478;           /* testo attenuato */
-      --panel: #ffffff;           /* superfici */
-      --soft: #f0f2f8;            /* superfici secondarie */
-      --border: #e6e9f2;          /* bordi */
-      --primary: #4f46e5;         /* indaco */
-      --primary-ink: #3532b3;
-      --accent: #06b6d4;          /* ciano */
-      --success: #16a34a;         /* verde */
-      --danger: #ef4444;          /* rosso */
-      --warning: #f59e0b;         /* ambra */
+<style>
+  /* =====================
+     NOVA WHITE UI — Fresh, airy, tactile
+     (JS invariato, markup aggiornato)
+     ===================== */
+  :root{
+    /* Palette */
+    --bg: #f6f7fb;              /* sfondo pagina chiaro */
+    --ink: #0f172a;             /* testo principale */
+    --muted: #5b6478;           /* testo attenuato */
+    --panel: #ffffff;           /* superfici */
+    --soft: #f0f2f8;            /* superfici secondarie */
+    --border: #e6e9f2;          /* bordi */
+    --primary: #4f46e5;         /* indaco */
+    --primary-ink: #3532b3;
+    --accent: #06b6d4;          /* ciano */
+    --success: #16a34a;         /* verde */
+    --danger: #ef4444;          /* rosso */
+    --warning: #f59e0b;         /* ambra */
 
-      /* Raggi e ombre */
-      --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
-      --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
-      --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
+    /* Raggi e ombre */
+    --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
+    --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
+    --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
 
-      /* Gradiente brand */
-      --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
-              radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
-    }
+    /* Gradiente brand */
+    --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+            radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+  }
 
-    *{box-sizing:border-box}
-    html, body{height:100%}
-    body{
-      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--ink); background: var(--bg);
-      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale;
-      background-image: var(--grad);
-      background-attachment: fixed;
-    }
+  *{box-sizing:border-box}
+  html, body{height:100%}
+  body{
+    margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--ink); background: var(--bg);
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale;
+    background-image: var(--grad);
+    background-attachment: fixed; /* verrà disattivato in mobile */
+  }
 
-    a{color:var(--primary); text-decoration: none}
-    a:hover{ text-decoration: underline }
+  a{color:var(--primary); text-decoration: none}
+  a:hover{ text-decoration: underline }
 
-    /* ===== Topbar ===== */
-    .topbar{
-      position: sticky; top:0; z-index: 50;
-      backdrop-filter: saturate(130%) blur(10px);
-      background: rgba(255,255,255,.75);
-      border-bottom: 1px solid var(--border);
-    }
-    .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
-    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
-    .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
-    .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
+  /* ===== Topbar (se non usi l'header custom, puoi rimuovere questi stili) ===== */
+  .topbar{
+    position: sticky; top:0; z-index: 50;
+    backdrop-filter: saturate(130%) blur(10px);
+    background: rgba(255,255,255,.75);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
+  .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
+  .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
 
-    /* ===== Container principale ===== */
-    .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
+  /* ===== Container principale ===== */
+  .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
 
-    .layout{
-      display:grid; grid-template-columns: 360px 1fr; gap: 24px;
-    }
-    @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
+  .layout{
+    display:grid; grid-template-columns: 360px 1fr; gap: 24px;
+  }
+  @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
 
-    /* ===== Aside sticky (poster + info chiave) ===== */
-    .aside{
-      position: sticky; top: 84px; align-self: start;
-      display: grid; gap:16px;
-    }
+  /* ===== Aside sticky (poster + info chiave) ===== */
+  .aside{
+    position: sticky; top: 84px; align-self: start;
+    display: grid; gap:16px;
+  }
 
-    .poster{
-      border-radius: var(--r-lg); overflow:hidden; background: var(--panel);
-      border:1px solid var(--border); box-shadow: var(--shadow-2);
-    }
-    .poster img{ width:100%; display:block; aspect-ratio: 3/4; object-fit: cover; }
+  .poster{
+    position: relative; z-index: 1;            /* evita che sembri “dietro” in mobile */
+    border-radius: var(--r-lg); overflow:hidden; background: var(--panel);
+    border:1px solid var(--border); box-shadow: var(--shadow-2);
+  }
+  .poster img{ width:100%; display:block; aspect-ratio: 3/4; object-fit: cover; }
 
-    .pill{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.8rem; padding:8px 12px;
-      border-radius:999px; border:1px solid var(--border); background: var(--soft); color:#334155; }
-    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pill{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.8rem; padding:8px 12px;
+    border-radius:999px; border:1px solid var(--border); background: var(--soft); color:#334155; }
+  .pills{ display:flex; gap:8px; flex-wrap:wrap; }
 
-    .stat-card{
-      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-      padding: 14px; box-shadow: var(--shadow-1);
-    }
-    .stat-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size:.95rem; }
-    .stat-row p{ margin:0; color:var(--muted); }
-    .stat-row strong{ color:var(--ink); }
+  .stat-card{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+    padding: 14px; box-shadow: var(--shadow-1);
+  }
+  .stat-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size:.95rem; }
+  .stat-row p{ margin:0; color:var(--muted); }
+  .stat-row strong{ color:var(--ink); }
 
-    /* ===== Main content ===== */
-    .main{
-      display:grid; gap: 18px;
-    }
+  /* ===== Main content ===== */
+  .main{
+    display:grid; gap: 18px;
+  }
 
-    .hero{
-      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-      box-shadow: var(--shadow-2); padding: 18px; position: relative; overflow: clip;
-    }
-    .hero::after{
-      content:""; position:absolute; inset:auto -20% -50% -20%; height: 180px; background:
-      radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%);
-    }
-    .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
-    .sub{ color: var(--muted); font-size: .95rem; }
+  .hero{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-2); padding: 18px; position: relative; overflow: clip;
+  }
+  .hero::after{
+    content:""; position:absolute; inset:auto -20% -50% -20%; height: 180px; background:
+    radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%);
+  }
+  .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
+  .sub{ color: var(--muted); font-size: .95rem; }
 
-    .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 10px; }
-    .chip{ background: #eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius: 999px; font-size:.8rem; }
+  .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 10px; }
+  .chip{ background: #eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius: 999px; font-size:.8rem; }
 
-    .panel{
-      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-      box-shadow: var(--shadow-1); padding: 16px;
-    }
-    .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
+  .panel{
+    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-1); padding: 16px;
+  }
+  .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
 
-    .grid-kv{
-      display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 16px;
-    }
-    .grid-kv p{ margin:0; }
-    .grid-kv strong{ color: var(--ink); }
-    .desc{ line-height:1.8; color:#1f2937; }
+  .grid-kv{
+    display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 16px;
+  }
+  .grid-kv p{ margin:0; }
+  .grid-kv strong{ color: var(--ink); }
+  .desc{ line-height:1.8; color:#1f2937; }
 
-    iframe{ width:100%; height: 400px; border:0; border-radius: var(--r-md); background: var(--soft); border:1px solid var(--border); }
+  iframe{ width:100%; height: 400px; border:0; border-radius: var(--r-md); background: var(--soft); border:1px solid var(--border); }
 
-    .nav-prevnext{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-    .link-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius: 12px; border:1px solid var(--border); background: var(--panel); box-shadow: var(--shadow-1); }
-    .link-btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
+  .nav-prevnext{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .link-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius: 12px; border:1px solid var(--border); background: var(--panel); box-shadow: var(--shadow-1); }
+  .link-btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
 
-    /* ===== Loading & Error ===== */
-    .center{ text-align:center; padding: 48px 0; color: var(--muted); }
-    .error{ color: var(--danger); }
+  /* ===== Loading & Error ===== */
+  .center{ text-align:center; padding: 48px 0; color: var(--muted); }
+  .error{ color: var(--danger); }
 
-    /* ===== Entrance motion ===== */
-    @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
-    .hero, .panel, .poster, .stat-card{ animation: pop .35s ease both }
-  </style>
+  /* ===== Entrance motion ===== */
+  @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
+  .hero, .panel, .poster, .stat-card{ animation: pop .35s ease both }
+
+  /* ======= FIX RESPONSIVE: abilita lo scroll e rimuovi effetti che “bloccano” ======= */
+  /* 1) In mobile disattiva sticky: tutto scorre normalmente */
+  @media (max-width: 980px) {
+    .aside { position: static; top: auto; }
+    .hero { overflow: visible; } /* evita clipping che può sembrare “dietro” */
+  }
+
+  /* 2) Evita glitch di background fisso su iOS/Android */
+  @media (max-width: 980px), (hover: none) and (pointer: coarse) {
+    body { background-attachment: scroll; }
+  }
+</style>
 </head>
 <body>
 
