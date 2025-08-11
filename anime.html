@@ -1,178 +1,178 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Anime Detail</title>
-  <link rel="stylesheet" href="/styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- Will be overwritten dynamically -->
+  <title>Anime Detail — AniMMUnity</title>
+  <meta name="description" content="Anime detail page with trailer, information, studios, genres and full metadata on AniMMUnity.">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph / Twitter (filled via JS) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
+  <link id="canonicalLink" rel="canonical" href="">
+
+  <!-- JSON-LD placeholders -->
+  <script id="ld-breadcrumbs" type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}
+  </script>
+  <script id="ld-entity" type="application/ld+json">
+  {"@context":"https://schema.org","@type":"CreativeWork"}
+  </script>
+
+  <!-- Assets -->
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
   <style>
-    body { font-family: 'Nunito Sans', sans-serif; background:#f9f9f9; margin:0 }
-    .anime-container { max-width: 900px; margin: 80px auto; background:#fff; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,.1); padding:30px }
-    .anime-header { display:flex; gap:30px; flex-wrap:wrap; align-items:flex-start }
-    .anime-image { width:100%; max-width:300px; border-radius:8px; object-fit:cover }
-    .anime-details { flex:1; min-width:280px }
-    h1 { margin:0 0 10px 0 }
-    h3 { margin-top:40px; color:#444 }
-    .anime-meta { margin-bottom:10px; font-size:.95em; color:#666 }
-    .anime-section, .anime-description { margin-top:20px; line-height:1.6; position:relative }
-    iframe { width:100%; height:315px; border:none; border-radius:8px }
-    .description-short { overflow:hidden; max-height:200px }
-    .read-more-btn { display:inline-block; margin-top:10px; color:#007bff; cursor:pointer; font-size:.95em }
-    .error { text-align:center; margin:100px 0; font-size:1.1rem; color:red }
-    #loading { text-align:center; padding:40px 0; color:#666 }
-
-    /* =======================
-       FIX: tutto scrollabile
-       ======================= */
-    html, body {
-      height: auto !important;
-      overflow: auto !important;
+    :root {
+      --bg: #f9f9fb;
+      --card: #ffffff;
+      --text: #222;
+      --muted: #666;
+      --border: #eee;
+      --brand: #0de3ad;
+      --brand-ink: #0a9f7c;
+      --shadow: 0 4px 20px rgba(0,0,0,.06);
+      --shadow-soft: 0 2px 12px rgba(0,0,0,.05);
+      --radius: 16px;
     }
-
-    /* Sblocca header/footer e contenitori interni */
-    #header, #footer,
-    #content, .anime-container, .anime-header {
-      position: static !important;
-      top: auto !important;
-      right: auto !important;
-      bottom: auto !important;
-      left: auto !important;
-      inset: auto !important;
-      transform: none !important;
-    }
-
-    /* (Opzionale) se un layout globale impone height fissa */
-    #content, .anime-container {
-      min-height: auto !important;
-      height: auto !important;
-      overflow: visible !important;
-    }
+    body { font-family: 'Nunito Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
+    .anime-container { max-width: 1100px; margin: 40px auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 28px; }
+    .anime-header { display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .anime-image { width: 100%; max-width: 320px; border-radius: 12px; object-fit: contain; background: #fff; box-shadow: var(--shadow-soft); }
+    .anime-details { flex: 1; min-width: 280px; }
+    .anime-details h1 { margin: 0 0 8px 0; font-size: 2rem; color: #111; line-height: 1.2; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #f3fdf9; color: var(--brand-ink); font-weight: 600; font-size: 0.85rem; border: 1px solid #c7f3e5; margin-right: 8px; }
+    .anime-meta { margin: 8px 0; font-size: 0.95rem; color: var(--muted); }
+    h2 { font-size: 1.4rem; margin-top: 28px; margin-bottom: 12px; color: #222; border-left: 4px solid var(--brand); padding-left: 10px; }
+    .anime-section, .anime-description { margin-top: 12px; line-height: 1.7; }
+    .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 16px; }
+    .kv p { margin: 0; }
+    .kv strong { color: #333; }
+    iframe { width: 100%; height: 360px; border: none; border-radius: 12px; box-shadow: var(--shadow-soft); }
+    .nav-prevnext { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
+    .nav-prevnext a { display: inline-block; padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; text-decoration: none; font-size: 0.95rem; color: #333; transition: all .2s ease; }
+    .nav-prevnext a:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .error { text-align: center; margin: 100px 0; font-size: 1.1rem; color: #b00020; }
+    #loading { text-align: center; padding: 40px 0; color: var(--muted); font-size: 1rem; }
   </style>
 </head>
 <body>
   <div id="header"></div>
-  <div id="content" class="anime-container">
-    <div id="loading">Loading...</div>
-  </div>
+
+  <main id="content" class="anime-container" role="main" aria-live="polite">
+    <div id="loading">Loading…</div>
+  </main>
+
   <div id="footer"></div>
 
   <script>
-    // === Etichette leggibili ===
-    const columnLabels = {
-      anime_id: "Anime ID", title: "Title", type: "Type", score: "Score",
-      scored_by: "Number of Ratings", status: "Status", episodes: "Episodes",
-      start_date: "Start Date", end_date: "End Date", source: "Source Material",
-      members: "Member Count", favorites: "Favorites Count", episode_duration: "Episode Duration",
-      total_duration: "Total Duration", rating: "Content Rating", sfw: "Safe for Work",
-      approved: "Approved", created_at: "Created At", updated_at: "Updated At",
-      start_year: "Start Year", start_season: "Start Season", real_start_date: "Real Start Date",
-      real_end_date: "Real End Date", broadcast_day: "Broadcast Day", broadcast_time: "Broadcast Time",
-      genres: "Genres", themes: "Themes", demographics: "Demographics",
-      studios: "Studios", producers: "Producers", licensors: "Licensors",
-      synopsis: "Synopsis", background: "Background Information",
-      main_picture: "Main Image", url: "Official URL", trailer_url: "Trailer URL",
-      title_english: "English Title", title_japanese: "Japanese Title",
-      title_synonyms: "Alternative Titles", anime_url: "Official URL"
+    // ===== Utils =====
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
+    const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
+    const parseArray = (str) => {
+      if (!str) return [];
+      try { const arr = JSON.parse(str); return Array.isArray(arr) ? arr : [String(str)]; }
+      catch { return String(str).replace(/^\[|\]$/g,'').split(',').map(s=>s.replace(/^['"\s]+|['"\s]+$/g,'').trim()).filter(Boolean); }
     };
-
-    // === Sezioni organizzate ===
-    const sections = {
-      "Identity and Titles": ["title", "title_english", "title_japanese", "title_synonyms"],
-      "Classification and Ratings": ["type", "score", "scored_by", "status", "rating", "sfw"],
-      "Episodes and Duration": ["episodes", "episode_duration", "total_duration"],
-      "Dates and Broadcast Period": ["start_date", "end_date", "real_start_date", "real_end_date", "start_year", "start_season", "broadcast_day", "broadcast_time"],
-      "Origin and Production": ["source", "studios", "producers", "licensors"],
-      "Popularity and Insight": ["members", "favorites", "approved", "genres", "themes", "demographics"],
-      "Content and Media": ["synopsis", "background", "trailer_url"],
-      "Technical Metadata": ["created_at", "updated_at"]
-    };
-
-    // Carica header e footer (percorsi assoluti)
-    fetch("/header.html").then(r => r.text()).then(t => {
-      document.getElementById("header").innerHTML = t;
-      unstick();
-    }).catch(()=>{});
-    fetch("/footer.html").then(r => r.text()).then(t => {
-      document.getElementById("footer").innerHTML = t;
-      unstick();
-    }).catch(()=>{});
-
-    // === Parametri: ID o friendly slug ===
-    const params = new URLSearchParams(window.location.search);
-    const animeId = (params.get("id") || "").trim();
-    const slugFromQuery = (params.get("slug") || "").trim();
-
-    function getSlugFromPath() {
-      const parts = window.location.pathname.split("/").filter(Boolean);
-      const animeIdx = parts.indexOf("anime");
-      return (animeIdx !== -1 && parts.length > animeIdx + 1) ? parts[animeIdx + 1] : "";
-    }
-    const slugFromPath = getSlugFromPath();
-
-    // Slug dalla URL MAL (ultimo segmento)
-    function getMalSlug(malUrl) {
-      try {
-        const u = new URL(malUrl);
-        const parts = u.pathname.split('/').filter(Boolean);
-        return parts[parts.length - 1] || "";
-      } catch { return ""; }
-    }
-
-    // Usa PapaParse per leggere CSV
-    function parseCSVWithPapa(text) {
-      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-      return parsed.data || [];
-    }
-
-    // Format multiline text
-    function formatMultiline(text) {
-      if (!text) return "—";
-      return String(text)
-        .replace(/\r\n|\r|\n/g, "<br>")
-        .replace(/""/g, '"')
-        .replace(/^"|"$/g, "");
-    }
-
-    // Parsare array se in JSON (e.g. "["Action","Drama"]")
-    function parseArray(str) {
-      if (!str) return "—";
-      try {
-        const arr = JSON.parse(str);
-        return Array.isArray(arr) ? arr.join(", ") : String(str);
-      } catch {
-        return String(str);
-      }
-    }
-
-    function safe(val) {
-      return (val === null || val === undefined || val === "") ? "—" : String(val);
-    }
-
-    function toYouTubeEmbed(url) {
+    const toYouTubeEmbed = (url) => {
       if (!url) return null;
       try {
         if (url.includes("/watch?v=")) return url.replace("watch?v=", "embed/");
         if (url.includes("youtu.be/")) return url.replace("youtu.be/", "www.youtube.com/embed/");
-        if (url.includes("/embed/")) return url; // già embed
+        if (url.includes("/embed/")) return url;
       } catch {}
-      return null; // non-YouTube o non valido
+      return null;
+    };
+    const getSlugFromPath = () => {
+      const parts = location.pathname.split("/").filter(Boolean);
+      const i = parts.indexOf("anime"); return (i!==-1 && parts[i+1]) ? parts[i+1] : "";
+    };
+    const getMalSlug = (malUrl) => {
+      try { const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean); return p[p.length-1]||""; } catch { return ""; }
+    };
+    const buildPrettyUrl = (anime) => `${location.origin}/anime/${getMalSlug(anime.url)}`;
+    const schemaTypeFromType = (t) => {
+      const v = String(t||'').toLowerCase();
+      if (v.includes('movie')) return 'Movie';
+      if (v.includes('tv')) return 'TVSeries';
+      if (v.includes('ova') || v.includes('ona')) return 'CreativeWorkSeries';
+      return 'CreativeWork';
+    };
+
+    // Header/Footer
+    fetch("header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
+    fetch("footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+
+    // Labels/Sections
+    const columnLabels = {
+      anime_id:"Anime ID", title:"Title", type:"Type", score:"Score", scored_by:"Ratings Count",
+      status:"Status", episodes:"Episodes", start_date:"Start Date", end_date:"End Date",
+      source:"Source", members:"Members", favorites:"Favorites",
+      episode_duration:"Episode Duration", total_duration:"Total Duration", rating:"Content Rating", sfw:"SFW",
+      approved:"Approved", created_at:"Created At", updated_at:"Updated At", start_year:"Start Year",
+      start_season:"Start Season", real_start_date:"Real Start Date", real_end_date:"Real End Date",
+      broadcast_day:"Broadcast Day", broadcast_time:"Broadcast Time", genres:"Genres", themes:"Themes", demographics:"Demographics",
+      studios:"Studios", producers:"Producers", licensors:"Licensors", synopsis:"Synopsis", background:"Background",
+      main_picture:"Main Image", url:"Source URL", trailer_url:"Trailer URL", title_english:"English Title",
+      title_japanese:"Japanese Title", title_synonyms:"Alternative Titles"
+    };
+
+    const sections = {
+      "Identity & Titles": ["title","title_english","title_japanese","title_synonyms"],
+      "Classification & Ratings": ["type","score","scored_by","status","rating","sfw"],
+      "Episodes & Duration": ["episodes","episode_duration","total_duration"],
+      "Dates & Broadcast": ["start_date","end_date","real_start_date","real_end_date","start_year","start_season","broadcast_day","broadcast_time"],
+      "Origin & Production": ["source","studios","producers","licensors"],
+      "Popularity & Insight": ["members","favorites","approved","genres","themes","demographics"],
+      "Technical": ["created_at","updated_at"]
+    };
+
+    function formatMultiline(text) {
+      if (!text) return "—";
+      const stripped = String(text).replace(/\[Written by MAL Rewrite\]$/,'');
+      return esc(stripped).replace(/\r\n|\r|\n/g, "<br>");
     }
 
-    // Genera dettaglio anime
-    function generateAnimeDetails(anime) {
-      const synopsisFormatted = formatMultiline(String(anime.synopsis || "").replace(/\[Written by MAL Rewrite\]$/g, ""));
+    function renderDetails(anime) {
+      const genresList = parseArray(anime.genres).join(", ") || "—";
+      const studiosList = parseArray(anime.studios).join(", ") || "—";
+      const imgSrc = (anime.main_picture && anime.main_picture.trim())
+        ? anime.main_picture
+        : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
       let html = `
         <div class="anime-header">
-          <img class="anime-image" src="${safe(anime.main_picture)}" alt="${safe(anime.title)}" onerror="this.style.display='none'" />
+          <img class="anime-image" src="${esc(imgSrc)}" alt="${esc(anime.title || anime.title_english || 'Anime cover')}"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
           <div class="anime-details">
-            <h1>${safe(anime.title_english) !== '—' ? safe(anime.title_english) : safe(anime.title)}</h1>
-            <div class="anime-meta">🗓 ${safe(anime.start_date)} — ${anime.end_date ? safe(anime.end_date) : "In corso"}</div>
-            <div class="anime-meta">🎬 Type: ${safe(anime.type)} — 🎥 Episodes: ${safe(anime.episodes)}</div>
-            <div class="anime-meta">⭐ Score: ${safe(anime.score)} (${safe(anime.scored_by)} voti)</div>
-            <div class="anime-meta">📺 Studio: ${safe(anime.studios)}</div>
-            <div class="anime-meta">🎭 Genres: ${parseArray(anime.genres)}</div>
+            <div>
+              <span class="badge">${esc(safe(anime.type))}</span>
+              ${anime.rating ? `<span class="badge">${esc(safe(anime.rating))}</span>` : ''}
+            </div>
+            <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
+            <div class="anime-meta">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
+            <div class="anime-meta">🎥 Episodes: ${esc(safe(anime.episodes))} · ⭐ Score: ${esc(safe(anime.score))} (${esc(safe(anime.scored_by))} ratings)</div>
+            <div class="anime-meta">📺 Studio: ${esc(studiosList)}</div>
+            <div class="anime-meta">🎭 Genres: ${esc(genresList)}</div>
           </div>
         </div>`;
 
@@ -181,111 +181,174 @@
         html += `
           <div class="anime-section">
             <h2>Trailer</h2>
-            <iframe src="${embedUrl}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="${esc(embedUrl)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Trailer"></iframe>
           </div>`;
       }
 
       html += `
         <div class="anime-description">
-          <h2>Description</h2>
-          <p>${synopsisFormatted}</p>
+          <h2>Synopsis</h2>
+          <p>${formatMultiline(anime.synopsis)}</p>
         </div>`;
 
-      // Altre sezioni
+      // Key-value sections
       for (const [sectionName, fields] of Object.entries(sections)) {
-        let sectionHtmlParts = [];
-        for (const field of fields) {
-          if (["synopsis", "background", "main_picture", "trailer_url"].includes(field)) continue;
-          let value = anime[field];
-          if (value === null || value === undefined || value === "") continue;
-          if (typeof value === 'string' && value.trim() === '[]') continue;
-
-          if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
-            try { value = JSON.parse(value).join(', '); } catch {}
+        const parts = [];
+        for (const f of fields) {
+          let v = anime[f];
+          if (v===null || v===undefined || v==='' || (typeof v==='string' && v.trim()==='[]')) continue;
+          if (typeof v === 'string' && v.startsWith('[') && v.endsWith(']')) {
+            try { v = JSON.parse(v).join(', '); } catch {}
           }
-          sectionHtmlParts.push(`<p><strong>${columnLabels[field] || field}:</strong> ${safe(value)}</p>`);
+          parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(v))}</p>`);
         }
-        if (sectionHtmlParts.length) {
-          html += `<div class="anime-section"><h2>${sectionName}</h2>${sectionHtmlParts.join('')}</div>`;
+        if (parts.length) {
+          html += `<div class="anime-section"><h2>${esc(sectionName)}</h2><div class="kv">${parts.join('')}</div></div>`;
         }
       }
+
       return html;
     }
 
-    // Carica CSV e mostra i dati
-    fetch("/data/anime.csv")
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.text();
-      })
-      .then(csvText => {
-        const data = parseCSVWithPapa(csvText).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
-        let anime = null;
+    function setDynamicMeta(anime) {
+      const title = (anime.title_english || anime.title || "Anime").trim();
+      const desc = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
+      const url = buildPrettyUrl(anime);
+      const img = (anime.main_picture && anime.main_picture.trim())
+        ? anime.main_picture
+        : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
-        if (animeId) {
-          anime = data.find(a => a.anime_id === animeId);
-        } else {
-          const slug = slugFromQuery || slugFromPath;
-          if (slug) {
-            anime = data.find(a => getMalSlug(a.url) === slug);
+      // Title & Description
+      document.title = `${title} — AniMMUnity`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', desc);
+
+      // Canonical
+      const can = document.getElementById('canonicalLink');
+      if (can) can.href = url;
+
+      // OG/Twitter
+      const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
+      set('meta[property="og:title"]', title);
+      set('meta[property="og:description"]', desc);
+      set('meta[property="og:url"]', url);
+      set('meta[property="og:image"]', img);
+      set('meta[name="twitter:title"]', title);
+      set('meta[name="twitter:description"]', desc);
+      set('meta[name="twitter:image"]', img);
+
+      // Breadcrumbs
+      const bc = {
+        "@context":"https://schema.org",
+        "@type":"BreadcrumbList",
+        "itemListElement":[
+          {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
+          {"@type":"ListItem","position":2,"name":"Anime List","item":`${location.origin}/`},
+          {"@type":"ListItem","position":3,"name":title,"item":url}
+        ]
+      };
+      document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
+
+      // Entity (TVSeries/Movie/CreativeWork)
+      const schemaType = schemaTypeFromType(anime.type);
+      const entity = {
+        "@context":"https://schema.org",
+        "@type": schemaType,
+        "name": title,
+        "url": url,
+        "image": img,
+        "genre": parseArray(anime.genres),
+        "inLanguage": "ja",
+        "numberOfEpisodes": Number(anime.episodes) || undefined,
+        "datePublished": anime.start_date || undefined,
+        "dateEnded": anime.end_date || undefined,
+        "productionCompany": parseArray(anime.studios).length ? {
+          "@type":"Organization",
+          "name": parseArray(anime.studios).join(", ")
+        } : undefined,
+        "aggregateRating": (anime.score && anime.scored_by) ? {
+          "@type":"AggregateRating",
+          "ratingValue": String(anime.score),
+          "ratingCount": Number(anime.scored_by)
+        } : undefined,
+        "description": desc
+      };
+      const embedUrl = toYouTubeEmbed(anime.trailer_url);
+      if (embedUrl) {
+        entity.trailer = {
+          "@type":"VideoObject",
+          "name": `${title} — Trailer`,
+          "embedUrl": embedUrl,
+          "thumbnailUrl": img
+        };
+      }
+      document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+    }
+
+    // Prev/Next (alphabetical)
+    function renderPrevNext(navRoot, data, current) {
+      const byTitle = [...data].sort((a,b) => (a.title||'').localeCompare(b.title||''));
+      const idx = byTitle.findIndex(a => a.anime_id === current.anime_id);
+      const prev = idx > 0 ? byTitle[idx-1] : null;
+      const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
+      if (!prev && !next) return;
+
+      const wrap = document.createElement('div');
+      wrap.className = 'nav-prevnext';
+      wrap.innerHTML = `
+        <div>${prev ? `<a href="/anime/${esc(getMalSlug(prev.url))}">← ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+        <div>${next ? `<a href="/anime/${esc(getMalSlug(next.url))}">${esc(next.title || next.title_english || 'Next')} →</a>` : ''}</div>
+      `;
+      navRoot.appendChild(wrap);
+    }
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const animeId = (params.get("id")||"").trim();
+      const slugFromQuery = (params.get("slug")||"").trim();
+      const slugFromPath = getSlugFromPath();
+
+      fetch("data/anime.csv")
+        .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+        .then(csv => {
+          const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id||'').trim() }));
+
+          let anime = null;
+          if (animeId) {
+            anime = data.find(a => a.anime_id === animeId);
+          } else {
+            const slug = slugFromQuery || slugFromPath;
+            if (slug) anime = data.find(a => getMalSlug(a.url) === slug);
           }
-        }
 
-        const contentEl = document.getElementById("content");
-        if (!anime) {
-          const msg = animeId ? `ID: ${animeId}` : `Slug: ${slugFromQuery || slugFromPath || '—'}`;
-          contentEl.innerHTML = `<div class="error">Anime Not Found<br>${msg}</div>`;
-          return;
-        }
+          const contentEl = document.getElementById("content");
+          if (!anime) {
+            const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
+            contentEl.innerHTML = `<div class="error">Anime not found<br>${msg}</div>`;
+            return;
+          }
 
-        // Canonical verso la friendly URL /anime/<slug>
-        const canonical = document.createElement('link');
-        canonical.rel = 'canonical';
-        canonical.href = `https://animmunity.github.io/anime/${getMalSlug(anime.url)}`;
-        document.head.appendChild(canonical);
-
-        // URL pulito in barra se siamo arrivati con ?slug= o /anime/?slug=
-        if (!animeId && (slugFromQuery || slugFromPath)) {
+          // Pretty URL + Canonical
           const pretty = "/anime/" + getMalSlug(anime.url);
-          if (location.pathname !== pretty) {
+          if (!animeId && (slugFromQuery || slugFromPath) && (location.pathname !== pretty)) {
             history.replaceState(null, "", pretty);
           }
-        }
+          const c = document.getElementById("canonicalLink");
+          if (c) c.href = location.origin + pretty;
 
-        contentEl.innerHTML = generateAnimeDetails(anime);
-        unstick(); // dopo render, assicurati che nulla sia sticky
-      })
-      .catch(error => {
-        document.getElementById("content").innerHTML = `<div class="error">Error Loading: ${error?.message || error}</div>`;
-      })
-      .finally(() => {
-        const loading = document.getElementById('loading');
-        if (loading) loading.remove();
-      });
-
-    // --- Funzione che forza tutto a non-sticky/fixed ---
-    function unstick() {
-      document.documentElement.style.overflow = 'auto';
-      document.body.style.overflow = 'auto';
-      const selectors = ['#header', '#footer', '#content', '.anime-container', '.anime-header'];
-      selectors.forEach(sel => {
-        const el = document.querySelector(sel);
-        if (!el) return;
-        const cs = getComputedStyle(el);
-        if (cs.position === 'fixed' || cs.position === 'sticky') {
-          el.style.position = 'static';
-          el.style.top = 'auto';
-          el.style.right = 'auto';
-          el.style.bottom = 'auto';
-          el.style.left = 'auto';
-          el.style.inset = 'auto';
-          el.style.transform = 'none';
-        }
-        el.style.overflow = 'visible';
-        el.style.height = 'auto';
-        el.style.minHeight = 'auto';
-      });
-    }
+          // Render + SEO
+          contentEl.innerHTML = renderDetails(anime);
+          setDynamicMeta(anime);
+          renderPrevNext(contentEl, data, anime);
+        })
+        .catch(err => {
+          document.getElementById("content").innerHTML = `<div class="error">Load error: ${esc(err?.message || err)}</div>`;
+        })
+        .finally(() => {
+          const loading = document.getElementById("loading"); if (loading) loading.remove();
+        });
+    });
   </script>
 </body>
 </html>
