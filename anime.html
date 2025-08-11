@@ -428,7 +428,7 @@ function renderDetails(anime) {
     function setDynamicMeta(anime) {
       const title = (anime.title_english || anime.title || "Anime").trim();
       const desc = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
-      const url = buildPrettyUrl(anime);
+      const url = `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`; // 👈 qui
       const img = (anime.main_picture && anime.main_picture.trim())
         ? anime.main_picture
         : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
@@ -551,13 +551,18 @@ fetch("/data/anime.csv")
       return;
     }
 
-    // Pretty URL + Canonical
-    const pretty = "/anime/" + getMalSlug(anime.url);
-    if (!animeId && (slugFromQuery || slugFromPath) && (location.pathname !== pretty)) {
-      history.replaceState(null, "", pretty);
-    }
-    const c = document.getElementById("canonicalLink");
-    if (c) c.href = location.origin + pretty;
+// Canonical coerente con la sitemap (URL con query)
+const slug = getMalSlug(anime.url);
+const canonical = `${location.origin}/anime.html?slug=${slug}`;
+
+// Non forzare più l'URL "pretty" in barra
+// Se l'utente è arrivato da /anime/<slug>, opzionale normalizzare alla query:
+if (location.pathname.startsWith("/anime/") && !location.search.includes("slug=")) {
+  history.replaceState(null, "", `/anime.html?slug=${encodeURIComponent(slug)}`);
+}
+
+const c = document.getElementById("canonicalLink");
+if (c) c.href = canonical;
 
     // Render + SEO
     contentEl.innerHTML = renderDetails(anime);
