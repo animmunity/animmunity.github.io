@@ -44,7 +44,7 @@
   <link rel="dns-prefetch" href="//i.ytimg.com">
   
   <!-- 🚀 Preload del CSV (usa percorso assoluto per sicurezza) -->
-  <link rel="preload" href="/data/anime.csv" as="fetch">
+  <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv">
 
 <style>
   /* =====================
@@ -466,28 +466,30 @@ function renderDetails(anime) {
 
       // Entity (TVSeries/Movie/CreativeWork)
       const schemaType = schemaTypeFromType(anime.type);
-      const entity = {
-        "@context":"https://schema.org",
-        "@type": schemaType,
-        "name": title,
-        "url": url,
-        "image": img,
-        "genre": parseArray(anime.genres),
-        "inLanguage": "ja",
-        "numberOfEpisodes": Number(anime.episodes) || undefined,
-        "datePublished": anime.start_date || undefined,
-        "dateEnded": anime.end_date || undefined,
-        "productionCompany": parseArray(anime.studios).length ? {
-          "@type":"Organization",
-          "name": parseArray(anime.studios).join(", ")
-        } : undefined,
-        "aggregateRating": (anime.score && anime.scored_by) ? {
-          "@type":"AggregateRating",
-          "ratingValue": String(anime.score),
-          "ratingCount": Number(anime.scored_by)
-        } : undefined,
-        "description": desc
-      };
+       const entity = {
+         "@context":"https://schema.org",
+         "@type": schemaType,
+         "name": title,
+         "url": url,
+         "image": img,
+         "genre": parseArray(anime.genres),
+         "inLanguage": "ja",
+         "numberOfEpisodes": Number(anime.episodes) || undefined,
+         "datePublished": anime.start_date || undefined,
+         "dateEnded": anime.end_date || undefined,
+         "dateModified": anime.updated_at || undefined,
+         "sameAs": anime.url || undefined,
+         "productionCompany": parseArray(anime.studios).length ? {
+           "@type":"Organization",
+           "name": parseArray(anime.studios).join(", ")
+         } : undefined,
+         "aggregateRating": (anime.score && anime.scored_by) ? {
+           "@type":"AggregateRating",
+           "ratingValue": String(anime.score),
+           "ratingCount": Number(anime.scored_by)
+         } : undefined,
+         "description": desc
+       };
       const embedUrl = toYouTubeEmbed(anime.trailer_url);
       if (embedUrl) {
         entity.trailer = {
