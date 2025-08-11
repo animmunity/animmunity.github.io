@@ -475,8 +475,8 @@ function renderDetails(anime) {
       if (!prev && !next) return;
 
       navRoot.innerHTML = `
-        <div>${prev ? `<a class="link-btn" href="/anime/${esc(getMalSlug(prev.url))}">← ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
-        <div>${next ? `<a class="link-btn" href="/anime/${esc(getMalSlug(next.url))}">${esc(next.title || next.title_english || 'Next')} →</a>` : ''}</div>
+        <div>${prev ? `<a class="link-btn" href="/anime/${esc(getMalSlug(prev.url))}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+        <div>${next ? `<a class="link-btn" href="/anime/${esc(getMalSlug(next.url))}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
       `;
     }
 
