@@ -576,34 +576,6 @@ window.addEventListener('DOMContentLoaded', () => {
       dataRendered = true; tryHidePreloader();
     })
     .finally(() => document.getElementById("loading")?.remove());
-});
-
-// Canonical coerente con la sitemap (URL con query)
-const slug = getMalSlug(anime.url);
-
-// Non forzare più l'URL "pretty" in barra
-// Se l'utente è arrivato da /anime/<slug>, opzionale normalizzare alla query:
-if (location.pathname.startsWith("/anime/") && !location.search.includes("slug=")) {
-  history.replaceState(null, "", `/anime.html?slug=${encodeURIComponent(slug)}`);
-}
-
-    // Render + SEO
-    contentEl.innerHTML = renderDetails(anime);
-    setDynamicMeta(anime);
-    const navRoot = contentEl.querySelector('.nav-prevnext');
-    if (navRoot) renderPrevNext(navRoot, data, anime);
-
-    dataRendered = true; // ✅ segnala fine caricamento dati
-    tryHidePreloader();
-  })
-  .catch(err => {
-    document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
-    dataRendered = true; // ✅ segnala fine caricamento anche in errore
-    tryHidePreloader();
-  })
-  .finally(() => {
-    const loading = document.getElementById("loading");
-    if (loading) loading.remove();
   });
 });
   </script>
