@@ -429,7 +429,7 @@ function renderDetails(anime) {
     function setDynamicMeta(anime) {
       const title = (anime.title_english || anime.title || "Anime").trim();
       const desc = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
-      const url = `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`; // 👈 qui
+      const url = `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`;
       const img = (anime.main_picture && anime.main_picture.trim())
         ? anime.main_picture
         : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
@@ -561,9 +561,6 @@ const canonical = `${location.origin}/anime.html?slug=${slug}`;
 if (location.pathname.startsWith("/anime/") && !location.search.includes("slug=")) {
   history.replaceState(null, "", `/anime.html?slug=${encodeURIComponent(slug)}`);
 }
-
-const c = document.getElementById("canonicalLink");
-if (c) c.href = canonical;
 
     // Render + SEO
     contentEl.innerHTML = renderDetails(anime);
