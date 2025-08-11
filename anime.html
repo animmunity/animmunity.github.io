@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <!-- Will be overwritten dynamically -->
   <title>Anime Detail — AniMMUnity</title>
   <meta name="description" content="Anime detail page with trailer, information, studios, genres and full metadata on AniMMUnity.">
 
@@ -28,50 +27,148 @@
   <link id="canonicalLink" rel="canonical" href="">
 
   <!-- JSON-LD placeholders -->
-  <script id="ld-breadcrumbs" type="application/ld+json">
-  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}
-  </script>
-  <script id="ld-entity" type="application/ld+json">
-  {"@context":"https://schema.org","@type":"CreativeWork"}
-  </script>
+  <script id="ld-breadcrumbs" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}</script>
+  <script id="ld-entity" type="application/ld+json">{"@context":"https://schema.org","@type":"CreativeWork"}</script>
 
   <!-- Assets -->
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
   <style>
-    :root {
-      --bg: #f9f9fb;
-      --card: #ffffff;
-      --text: #222;
-      --muted: #666;
-      --border: #eee;
-      --brand: #0de3ad;
-      --brand-ink: #0a9f7c;
-      --shadow: 0 4px 20px rgba(0,0,0,.06);
-      --shadow-soft: 0 2px 12px rgba(0,0,0,.05);
-      --radius: 16px;
+    /* =====================
+       Modern Aura Theme
+       (solo CSS: funzioni JS invariate)
+       ===================== */
+    :root{
+      --bg: #0b0d12;           /* sfondo profondo */
+      --surface: #10131a;      /* pannelli */
+      --card: #11161d;         /* card principale */
+      --elev: #0e1117;         /* superfici sopraelevate */
+      --text: #e8ecf2;         /* testo principale */
+      --muted: #a9b1bd;        /* testo attenuato */
+      --border: #1f2530;       /* bordi sottili */
+      --brand: #75ffbe;        /* brand mint */
+      --brand-ink: #0a9f7c;    /* brand scuro */
+      --accent: #68b6ff;       /* accento blu */
+      --danger: #ff6482;       /* errori */
+      --shadow: 0 10px 40px rgba(0,0,0,.35);
+      --shadow-soft: 0 8px 24px rgba(0,0,0,.25);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --grad: linear-gradient(135deg, rgba(117,255,190,.22), rgba(104,182,255,.18) 55%, rgba(255,100,130,.18));
     }
-    body { font-family: 'Nunito Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; }
-    .anime-container { max-width: 1100px; margin: 40px auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px 28px; }
-    .anime-header { display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-    .anime-image { width: 100%; max-width: 320px; border-radius: 12px; object-fit: contain; background: #fff; box-shadow: var(--shadow-soft); }
-    .anime-details { flex: 1; min-width: 280px; }
-    .anime-details h1 { margin: 0 0 8px 0; font-size: 2rem; color: #111; line-height: 1.2; }
-    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #f3fdf9; color: var(--brand-ink); font-weight: 600; font-size: 0.85rem; border: 1px solid #c7f3e5; margin-right: 8px; }
-    .anime-meta { margin: 8px 0; font-size: 0.95rem; color: var(--muted); }
-    h2 { font-size: 1.4rem; margin-top: 28px; margin-bottom: 12px; color: #222; border-left: 4px solid var(--brand); padding-left: 10px; }
-    .anime-section, .anime-description { margin-top: 12px; line-height: 1.7; }
-    .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 16px; }
-    .kv p { margin: 0; }
-    .kv strong { color: #333; }
-    iframe { width: 100%; height: 360px; border: none; border-radius: 12px; box-shadow: var(--shadow-soft); }
-    .nav-prevnext { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; flex-wrap: wrap; }
-    .nav-prevnext a { display: inline-block; padding: 10px 16px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; text-decoration: none; font-size: 0.95rem; color: #333; transition: all .2s ease; }
-    .nav-prevnext a:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
-    .error { text-align: center; margin: 100px 0; font-size: 1.1rem; color: #b00020; }
-    #loading { text-align: center; padding: 40px 0; color: var(--muted); font-size: 1rem; }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      font-family: 'Nunito Sans', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1000px 600px at 10% -10%, rgba(104,182,255,.12), transparent 60%),
+        radial-gradient(800px 500px at 100% 10%, rgba(117,255,190,.10), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Header / Footer slots */
+    #header, #footer { backdrop-filter: saturate(120%) blur(10px); }
+
+    /* Container */
+    .anime-container{
+      max-width: 1200px;
+      margin: 48px auto;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00)), var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .anime-container::before{
+      content: "";
+      position:absolute; inset: -1px; z-index:0; pointer-events:none;
+      background: var(--grad);
+      filter: blur(30px) saturate(120%);
+      opacity: .35;
+      mask: radial-gradient(600px 280px at 20% 0%, #000 20%, transparent 60%)
+            radial-gradient(400px 220px at 95% 5%, #000 15%, transparent 60%);
+    }
+    .anime-container > * { position: relative; z-index: 1; }
+
+    /* Header area */
+    .anime-header{
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 28px;
+      align-items: start;
+      padding-bottom: 22px;
+      border-bottom: 1px dashed var(--border);
+    }
+    @media (max-width: 900px){ .anime-header{ grid-template-columns: 1fr; } }
+
+    .anime-image{
+      width: 100%; max-width: 100%; aspect-ratio: 3/4; object-fit: cover;
+      border-radius: var(--radius-sm);
+      background: radial-gradient(80% 60% at 50% 35%, rgba(117,255,190,.10), rgba(104,182,255,.08)) #0c1118;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .anime-details{ min-width: 280px; }
+    .anime-details h1{
+      margin: 8px 0 10px;
+      font-size: clamp(1.6rem, 2.1vw + 1rem, 2.35rem);
+      line-height: 1.15;
+      letter-spacing: 0.2px;
+      text-shadow: 0 1px 0 rgba(0,0,0,.25);
+    }
+
+    .badge{ display:inline-flex; align-items:center; gap:8px;
+      padding: 6px 12px; border-radius: 999px; font-weight: 700; font-size:.85rem;
+      background: rgba(117,255,190,.14); color: #c8ffee; border: 1px solid rgba(117,255,190,.35);
+      margin:0 10px 8px 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .badge[data-variant="rating"]{ background: rgba(104,182,255,.12); border-color: rgba(104,182,255,.35); color:#cfe7ff; }
+
+    .anime-meta{ margin: 6px 0; font-size: 0.98rem; color: var(--muted); }
+
+    h2{ font-size: 1.15rem; margin: 26px 0 12px; color: var(--text); letter-spacing: .3px;
+        position: relative; display: inline-flex; align-items: center; gap: 10px; }
+    h2::before{ content:""; width: 10px; height: 10px; border-radius: 3px;
+        background: conic-gradient(from 0deg, var(--brand), var(--accent), var(--danger), var(--brand));
+        box-shadow: 0 0 0 3px rgba(117,255,190,.12), 0 0 0 7px rgba(104,182,255,.06);
+    }
+
+    .anime-section, .anime-description{ margin-top: 12px; line-height: 1.75; color: #dfe6ef; }
+
+    .kv{ display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+         gap: 12px 18px; padding: 14px; border: 1px dashed var(--border); border-radius: var(--radius-sm);
+         background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00)); }
+    .kv p{ margin:0; font-size:.97rem; }
+    .kv strong{ color:#f2f5f9; font-weight:800; }
+
+    iframe{ width:100%; height: 380px; border: none; border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-soft); background:#0a0f15; border:1px solid var(--border); }
+
+    .nav-prevnext{ display:flex; justify-content:space-between; gap:12px; margin-top:30px; flex-wrap:wrap; }
+    .nav-prevnext a{ display:inline-flex; align-items:center; gap:10px; padding:10px 14px; border:1px solid var(--border);
+        border-radius: 12px; text-decoration:none; font-size:.95rem; color:#eaf2ff; background: #0c121a;
+        transition: transform .15s ease, background .2s ease, border-color .2s ease; }
+    .nav-prevnext a:hover{ background: #0f1621; transform: translateY(-1px); border-color: rgba(117,255,190,.35); }
+
+    .error{ text-align:center; margin: 100px 0; font-size: 1.05rem; color: var(--danger); }
+    #loading{ text-align:center; padding: 40px 0; color: var(--muted); font-size: 1rem; }
+
+    /* Chips for lists (genres, studios) inside header meta */
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .chip{ padding:6px 10px; border-radius: 999px; border:1px solid var(--border); background:#0b1118; color:#c9d7e6; font-size:.85rem; }
+
+    /* Link reset for cover click (if ever added) */
+    a{ color: #cfe7ff; }
   </style>
 </head>
 <body>
@@ -85,13 +182,13 @@
 
   <script>
     // ===== Utils =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
     const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
     const parseArray = (str) => {
       if (!str) return [];
       try { const arr = JSON.parse(str); return Array.isArray(arr) ? arr : [String(str)]; }
-      catch { return String(str).replace(/^\[|\]$/g,'').split(',').map(s=>s.replace(/^['"\s]+|['"\s]+$/g,'').trim()).filter(Boolean); }
+      catch { return String(str).replace(/^\[|\]$/g,'').split(',').map(s=>s.replace(/^[\'"\s]+|[\'"\s]+$/g,'').trim()).filter(Boolean); }
     };
     const toYouTubeEmbed = (url) => {
       if (!url) return null;
@@ -153,8 +250,10 @@
     }
 
     function renderDetails(anime) {
-      const genresList = parseArray(anime.genres).join(", ") || "—";
-      const studiosList = parseArray(anime.studios).join(", ") || "—";
+      const genresArr = parseArray(anime.genres);
+      const studiosArr = parseArray(anime.studios);
+      const genresList = genresArr.join(", ") || "—";
+      const studiosList = studiosArr.join(", ") || "—";
       const imgSrc = (anime.main_picture && anime.main_picture.trim())
         ? anime.main_picture
         : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
@@ -166,13 +265,14 @@
           <div class="anime-details">
             <div>
               <span class="badge">${esc(safe(anime.type))}</span>
-              ${anime.rating ? `<span class="badge">${esc(safe(anime.rating))}</span>` : ''}
+              ${anime.rating ? `<span class="badge" data-variant="rating">${esc(safe(anime.rating))}</span>` : ''}
             </div>
             <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
             <div class="anime-meta">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
             <div class="anime-meta">🎥 Episodes: ${esc(safe(anime.episodes))} · ⭐ Score: ${esc(safe(anime.score))} (${esc(safe(anime.scored_by))} ratings)</div>
             <div class="anime-meta">📺 Studio: ${esc(studiosList)}</div>
             <div class="anime-meta">🎭 Genres: ${esc(genresList)}</div>
+            ${genresArr.length ? `<div class="chips">${genresArr.map(g=>`<span class='chip'>${esc(g)}</span>`).join('')}</div>`:''}
           </div>
         </div>`;
 
