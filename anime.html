@@ -509,10 +509,13 @@ function renderDetails(anime) {
       const prev = idx > 0 ? byTitle[idx-1] : null;
       const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
       if (!prev && !next) return;
-
+    
+      const slugPrev = prev ? getMalSlug(prev.url) : null;
+      const slugNext = next ? getMalSlug(next.url) : null;
+    
       navRoot.innerHTML = `
-        <div>${prev ? `<a class="link-btn" href="/anime/${esc(getMalSlug(prev.url))}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
-        <div>${next ? `<a class="link-btn" href="/anime/${esc(getMalSlug(next.url))}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
+        <div>${prev ? `<a class="link-btn" href="/anime.html?slug=${esc(slugPrev)}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+        <div>${next ? `<a class="link-btn" href="/anime.html?slug=${esc(slugNext)}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
       `;
     }
 
