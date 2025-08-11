@@ -374,7 +374,13 @@ function renderDetails(anime) {
         ${toYouTubeEmbed(anime.trailer_url) ? `
         <section class="panel" aria-label="Trailer">
           <h2>Trailer</h2>
-          <iframe src="${esc(toYouTubeEmbed(anime.trailer_url))}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Trailer"></iframe>
+          <iframe
+            src="${esc(toYouTubeEmbed(anime.trailer_url))}"
+            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            title="Trailer"></iframe>
         </section>`: ''}
 
         <section class="panel" aria-label="Synopsis">
