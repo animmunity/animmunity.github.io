@@ -303,74 +303,93 @@ setTimeout(() => hidePreloader(), 8000);
       return esc(stripped).replace(/\r\n|\r|\n/g, "<br>");
     }
 
-    function renderDetails(anime) {
-      const genresArr = parseArray(anime.genres);
-      const studiosArr = parseArray(anime.studios);
-      const genresList = genresArr.join(", ") || "—";
-      const studiosList = studiosArr.join(", ") || "—";
-      const imgSrc = (anime.main_picture && anime.main_picture.trim())
-        ? anime.main_picture
-        : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
+function renderDetails(anime) {
+  const genresArr = parseArray(anime.genres);
+  const studiosArr = parseArray(anime.studios);
+  const genresList = genresArr.join(", ") || "—";
+  const studiosList = studiosArr.join(", ") || "—";
+  const imgSrc = (anime.main_picture && anime.main_picture.trim())
+    ? anime.main_picture
+    : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
-      let html = `
-        <div class="layout">
-          <aside class="aside" aria-label="Poster and primary facts">
-            <figure class="poster">
-              <img src="${esc(imgSrc)}" alt="${esc(anime.title || anime.title_english || 'Anime cover')}"
-                   onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'" />
-            </figure>
-            <div class="pills">
-              <span class="pill">${esc(safe(anime.type))}</span>
-              ${anime.rating ? `<span class="pill">${esc(safe(anime.rating))}</span>` : ''}
-            </div>
-            <div class="stat-card" aria-label="Quick stats">
-              <div class="stat-row">
-                <p>Score</p><strong>${esc(safe(anime.score))}</strong>
-                <p>Ratings</p><strong>${esc(safe(anime.scored_by))}</strong>
-                <p>Episodes</p><strong>${esc(safe(anime.episodes))}</strong>
-                <p>Status</p><strong>${esc(safe(anime.status))}</strong>
-              </div>
-            </div>
-          </aside>
-
-          <section class="main">
-            <header class="hero">
-              <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
-              <div class="sub">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
-              <div class="sub">📺 Studio: ${esc(studiosList)}</div>
-              <div class="chips" role="list">${genresArr.map(g=>`<span class='chip' role='listitem'>${esc(g)}</span>`).join('')}</div>
-            </header>
-
-            ${toYouTubeEmbed(anime.trailer_url) ? `
-            <section class="panel" aria-label="Trailer">
-              <h2>Trailer</h2>
-              <iframe src="${esc(toYouTubeEmbed(anime.trailer_url))}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Trailer"></iframe>
-            </section>`: ''}
-
-            <section class="panel" aria-label="Synopsis">
-              <h2>Synopsis</h2>
-              <p class="desc">${formatMultiline(anime.synopsis)}</p>
-            </section>
-
-            ${Object.entries(sections).map(([name, fields])=>{
-              const parts = [];
-              for (const f of fields) {
-                let v = anime[f];
-                if (v===null || v===undefined || v==='' || (typeof v==='string' && v.trim()==='[]')) continue;
-                if (typeof v === 'string' && v.startsWith('[') && v.endsWith(']')) {
-                  try { v = JSON.parse(v).join(', '); } catch {}
-                }
-                parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(v))}</p>`);
-              }
-              return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
-            }).join('')}
-
-            <nav class="nav-prevnext" aria-label="Previous/Next"></nav>
-          </section>
-        </div>`;
-
-      return html;
+  // Helper: normalizza qualsiasi valore potenzialmente "lista in stringa"
+  const prettyValue = (val) => {
+    if (val === null || val === undefined || val === "") return "—";
+    // Se è una stringa tipo "['A','B']" prova a parsare
+    if (typeof val === "string" && val.trim().startsWith("[") && val.trim().endsWith("]")) {
+      const arr = parseArray(val);
+      if (Array.isArray(arr) && arr.length) return arr.join(", ");
+      // fallback pulizia semplice
+      return val.replace(/^\[|\]$/g, "").replace(/['"]/g, "").trim() || "—";
     }
+    return String(val);
+  };
+
+  let html = `
+    <div class="layout">
+      <aside class="aside" aria-label="Poster and primary facts">
+        <figure class="poster">
+          <img src="${esc(imgSrc)}" alt="${esc(anime.title || anime.title_english || 'Anime cover')}"
+               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'" />
+        </figure>
+        <div class="pills">
+          <span class="pill">${esc(safe(anime.type))}</span>
+          ${anime.rating ? `<span class="pill">${esc(safe(anime.rating))}</span>` : ''}
+        </div>
+        <div class="stat-card" aria-label="Quick stats">
+          <div class="stat-row">
+            <p>Score</p><strong>${esc(safe(anime.score))}</strong>
+            <p>Ratings</p><strong>${esc(safe(anime.scored_by))}</strong>
+            <p>Episodes</p><strong>${esc(safe(anime.episodes))}</strong>
+            <p>Status</p><strong>${esc(safe(anime.status))}</strong>
+          </div>
+        </div>
+      </aside>
+
+      <section class="main">
+        <header class="hero">
+          <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
+          <div class="sub">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
+          <div class="sub">📺 Studio: ${esc(studiosList)}</div>
+          <div class="chips" role="list">${genresArr.map(g=>`<span class='chip' role='listitem'>${esc(g)}</span>`).join('')}</div>
+        </header>
+
+        ${toYouTubeEmbed(anime.trailer_url) ? `
+        <section class="panel" aria-label="Trailer">
+          <h2>Trailer</h2>
+          <iframe src="${esc(toYouTubeEmbed(anime.trailer_url))}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Trailer"></iframe>
+        </section>`: ''}
+
+        <section class="panel" aria-label="Synopsis">
+          <h2>Synopsis</h2>
+          <p class="desc">${formatMultiline(anime.synopsis)}</p>
+        </section>
+
+        ${Object.entries(sections).map(([name, fields])=>{
+          const parts = [];
+          for (const f of fields) {
+            let v = anime[f];
+
+            // salta valori vuoti/lista vuota
+            if (v === null || v === undefined || v === '' || (typeof v === 'string' && v.trim() === '[]')) continue;
+
+            // formatta liste come "A, B, C"
+            if (typeof v === 'string' && v.trim().startsWith('[') && v.trim().endsWith(']')) {
+              const arr = parseArray(v);
+              v = (Array.isArray(arr) && arr.length) ? arr.join(', ') : v.replace(/^\[|\]$/g,'').replace(/['"]/g,'').trim();
+            }
+
+            parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(prettyValue(v)))}</p>`);
+          }
+          return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
+        }).join('')}
+
+        <nav class="nav-prevnext" aria-label="Previous/Next"></nav>
+      </section>
+    </div>`;
+
+  return html;
+}
 
     function setDynamicMeta(anime) {
       const title = (anime.title_english || anime.title || "Anime").trim();
