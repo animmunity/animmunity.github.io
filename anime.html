@@ -267,7 +267,8 @@
     const getMalSlug = (malUrl) => {
       try { const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean); return p[p.length-1]||""; } catch { return ""; }
     };
-    const buildPrettyUrl = (anime) => `${location.origin}/anime/${getMalSlug(anime.url)}`;
+    const buildPrettyUrl = (anime) =>
+  `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`;
     const schemaTypeFromType = (t) => {
       const v = String(t||'').toLowerCase();
       if (v.includes('movie')) return 'Movie';
