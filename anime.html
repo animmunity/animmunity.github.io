@@ -180,10 +180,29 @@
   @media (max-width: 980px), (hover: none) and (pointer: coarse) {
     body { background-attachment: scroll; }
   }
+
+  /* Preloader (come index) */
+#preloader{
+  position: fixed; inset: 0; background: #ffffff;
+  display: grid; place-items: center;
+  transition: opacity .4s ease; z-index: 9999;
+}
+.spinner{
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 4px solid #e3e3e3; border-top-color: #007BFF;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 </style>
 </head>
 <body>
 
+<!-- 🔄 Preloader -->
+<div id="preloader" aria-hidden="true">
+  <div class="spinner" role="status" aria-label="Loading"></div>
+</div>
+  
   <div id="header"></div>
 
   <div class="shell">
@@ -232,6 +251,27 @@
     // Header/Footer
     fetch("header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
     fetch("footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+
+    // ===== Preloader lifecycle (uguale all'index) =====
+let assetsLoaded = false;
+let dataRendered = false;
+
+function hidePreloader() {
+  const pre = document.getElementById("preloader");
+  if (!pre) return;
+  pre.style.opacity = "0";
+  pre.style.pointerEvents = "none";
+  setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
+}
+function tryHidePreloader() {
+  if (assetsLoaded && dataRendered) hidePreloader();
+}
+
+// Quando tutte le risorse (font, immagini, ecc.) sono caricate
+window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
+
+// Safety net (se qualcosa resta appeso, chiudi comunque)
+setTimeout(() => hidePreloader(), 8000);
 
     // Labels/Sections
     const columnLabels = {
@@ -428,47 +468,57 @@
       const slugFromQuery = (params.get("slug")||"").trim();
       const slugFromPath = getSlugFromPath();
 
-      fetch("data/anime.csv")
-        .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-        .then(csv => {
-          const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id||'').trim() }));
+fetch("data/anime.csv")
+  .then(r => { 
+    if (!r.ok) throw new Error(`HTTP ${r.status}`); 
+    return r.text(); 
+  })
+  .then(csv => {
+    const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
 
-          let anime = null;
-          if (animeId) {
-            anime = data.find(a => a.anime_id === animeId);
-          } else {
-            const slug = slugFromQuery || slugFromPath;
-            if (slug) anime = data.find(a => getMalSlug(a.url) === slug);
-          }
+    let anime = null;
+    if (animeId) {
+      anime = data.find(a => a.anime_id === animeId);
+    } else {
+      const slug = slugFromQuery || slugFromPath;
+      if (slug) anime = data.find(a => getMalSlug(a.url) === slug);
+    }
 
-          const contentEl = document.getElementById("content");
-          if (!anime) {
-            const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
-            contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
-            return;
-          }
+    const contentEl = document.getElementById("content");
+    if (!anime) {
+      const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
+      contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
+      dataRendered = true; // ✅ segnala fine caricamento dati
+      tryHidePreloader();
+      return;
+    }
 
-          // Pretty URL + Canonical
-          const pretty = "/anime/" + getMalSlug(anime.url);
-          if (!animeId && (slugFromQuery || slugFromPath) && (location.pathname !== pretty)) {
-            history.replaceState(null, "", pretty);
-          }
-          const c = document.getElementById("canonicalLink");
-          if (c) c.href = location.origin + pretty;
+    // Pretty URL + Canonical
+    const pretty = "/anime/" + getMalSlug(anime.url);
+    if (!animeId && (slugFromQuery || slugFromPath) && (location.pathname !== pretty)) {
+      history.replaceState(null, "", pretty);
+    }
+    const c = document.getElementById("canonicalLink");
+    if (c) c.href = location.origin + pretty;
 
-          // Render + SEO
-          contentEl.innerHTML = renderDetails(anime);
-          setDynamicMeta(anime);
-          const navRoot = contentEl.querySelector('.nav-prevnext');
-          if (navRoot) renderPrevNext(navRoot, data, anime);
-        })
-        .catch(err => {
-          document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
-        })
-        .finally(() => {
-          const loading = document.getElementById("loading"); if (loading) loading.remove();
-        });
-    });
+    // Render + SEO
+    contentEl.innerHTML = renderDetails(anime);
+    setDynamicMeta(anime);
+    const navRoot = contentEl.querySelector('.nav-prevnext');
+    if (navRoot) renderPrevNext(navRoot, data, anime);
+
+    dataRendered = true; // ✅ segnala fine caricamento dati
+    tryHidePreloader();
+  })
+  .catch(err => {
+    document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
+    dataRendered = true; // ✅ segnala fine caricamento anche in errore
+    tryHidePreloader();
+  })
+  .finally(() => {
+    const loading = document.getElementById("loading");
+    if (loading) loading.remove();
+  });
   </script>
 </body>
 </html>
