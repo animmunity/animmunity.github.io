@@ -1,33 +1,45 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>Loading…</title>
-  <meta name="robots" content="noindex">
+  <meta name="robots" content="noindex,follow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>
     (function () {
-      // es: /anime/Fullmetal_Alchemist__Brotherhood
+      // Example pretty URL: /anime/Fullmetal_Alchemist__Brotherhood
       var path = location.pathname.replace(/^\/|\/$/g, "");
       var parts = path.split("/");
 
       var animeIdx = parts.indexOf("anime");
       if (animeIdx !== -1 && parts.length > animeIdx + 1) {
         var slug = parts[animeIdx + 1];
-        // reindirizza alla pagina file-based
+        // redirect to the file-based page
         location.replace("/anime.html?slug=" + encodeURIComponent(slug));
         return;
       }
 
-      // (Opzionale) supporta anche /<slug> alla root:
+      // (Optional) support /<slug> at the root:
       // if (parts.length === 1 && parts[0]) {
       //   location.replace("/anime.html?slug=" + encodeURIComponent(parts[0]));
       //   return;
       // }
 
-      // altri 404 → home
+      // any other 404 → home
       location.replace("/");
     })();
   </script>
+  <style>
+    html,body{height:100%}
+    body{margin:0; display:grid; place-items:center; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; color:#111}
+    .wrap{text-align:center; padding:24px}
+    .sub{color:#666; margin-top:8px}
+  </style>
 </head>
-<body>Loading…</body>
+<body>
+  <div class="wrap">
+    <h1>Loading…</h1>
+    <p class="sub">If nothing happens, <a href="/">go back to the home page</a>.</p>
+  </div>
+</body>
 </html>
