@@ -180,9 +180,23 @@
   @media (max-width: 980px), (hover: none) and (pointer: coarse) {
     body { background-attachment: scroll; }
   }
+
+  /* ===== Preloader (uguale all'index) ===== */
+  #preloader{
+    position: fixed; inset: 0; background: #ffffff; display: grid; place-items: center;
+    transition: opacity .4s ease; z-index: 9999;
+  }
+  .spinner{
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 4px solid #e3e3e3; border-top-color: #007BFF; animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+  <!-- 🔄 Preloader -->
+  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
   <div id="header"></div>
 
@@ -196,13 +210,13 @@
 
   <script>
     // ===== Utils =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const esc = (s='') => String(s).replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\\'':'&#39;'}[m]));
     const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
     const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
     const parseArray = (str) => {
       if (!str) return [];
       try { const arr = JSON.parse(str); return Array.isArray(arr) ? arr : [String(str)]; }
-      catch { return String(str).replace(/^\[|\]$/g,'').split(',').map(s=>s.replace(/^[\'"\s]+|[\'"\s]+$/g,'').trim()).filter(Boolean); }
+      catch { return String(str).replace(/^\\[|\\]$/g,'').split(',').map(s=>s.replace(/^[\\'\"\\s]+|[\\'\"\\s]+$/g,'').trim()).filter(Boolean); }
     };
     const toYouTubeEmbed = (url) => {
       if (!url) return null;
@@ -232,6 +246,26 @@
     // Header/Footer
     fetch("header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
     fetch("footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+
+    // ===== Preloader lifecycle (come index) =====
+    let assetsLoaded = false;
+    let dataRendered = false;
+
+    function hidePreloader() {
+      const pre = document.getElementById("preloader");
+      if (!pre) return;
+      pre.style.opacity = "0";
+      pre.style.pointerEvents = "none";
+      setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
+    }
+    function tryHidePreloader() {
+      if (assetsLoaded && dataRendered) hidePreloader();
+    }
+
+    // Quando tutte le risorse sono caricate
+    window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
+    // Safety net
+    setTimeout(() => hidePreloader(), 8000);
 
     // Labels/Sections
     const columnLabels = {
@@ -445,6 +479,8 @@
           if (!anime) {
             const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
             contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
+            dataRendered = true;    // ✅ segnala fine rendering (anche in “not found”)
+            tryHidePreloader();
             return;
           }
 
@@ -461,9 +497,14 @@
           setDynamicMeta(anime);
           const navRoot = contentEl.querySelector('.nav-prevnext');
           if (navRoot) renderPrevNext(navRoot, data, anime);
+
+          dataRendered = true;      // ✅ pagina pronta
+          tryHidePreloader();       // ✅ chiude se anche assetsLoaded è true
         })
         .catch(err => {
           document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
+          dataRendered = true;      // ✅ anche in errore chiudiamo il preloader
+          tryHidePreloader();
         })
         .finally(() => {
           const loading = document.getElementById("loading"); if (loading) loading.remove();
