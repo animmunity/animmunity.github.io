@@ -277,8 +277,8 @@
     };
 
     // Header/Footer
-    fetch("header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
-    fetch("footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+    fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
+    fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
 
     // ===== Preloader lifecycle (uguale all'index) =====
 let assetsLoaded = false;
@@ -521,7 +521,7 @@ function renderDetails(anime) {
       const slugFromQuery = (params.get("slug")||"").trim();
       const slugFromPath = getSlugFromPath();
 
-fetch("data/anime.csv")
+fetch("/data/anime.csv")
   .then(r => { 
     if (!r.ok) throw new Error(`HTTP ${r.status}`); 
     return r.text(); 
