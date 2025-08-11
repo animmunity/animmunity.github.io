@@ -486,8 +486,8 @@ function renderDetails(anime) {
          } : undefined,
          "aggregateRating": (anime.score && anime.scored_by) ? {
            "@type":"AggregateRating",
-           "ratingValue": String(anime.score),
-           "ratingCount": Number(anime.scored_by)
+            "ratingValue": Number(anime.score),
+            "ratingCount": Number(anime.scored_by)
          } : undefined,
          "description": desc
        };
@@ -554,7 +554,6 @@ fetch("/data/anime.csv")
 
 // Canonical coerente con la sitemap (URL con query)
 const slug = getMalSlug(anime.url);
-const canonical = `${location.origin}/anime.html?slug=${slug}`;
 
 // Non forzare più l'URL "pretty" in barra
 // Se l'utente è arrivato da /anime/<slug>, opzionale normalizzare alla query:
