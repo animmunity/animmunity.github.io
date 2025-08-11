@@ -264,9 +264,19 @@
       const parts = location.pathname.split("/").filter(Boolean);
       const i = parts.indexOf("anime"); return (i!==-1 && parts[i+1]) ? parts[i+1] : "";
     };
-    const getMalSlug = (malUrl) => {
-      try { const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean); return p[p.length-1]||""; } catch { return ""; }
-    };
+const getMalSlug = (malUrl) => {
+  try {
+    const u = new URL(malUrl);
+    const p = u.pathname.split('/').filter(Boolean);
+    const seg = p[p.length - 1] || "";
+    return decodeURIComponent(seg); // decode dell’ultimo segmento
+  } catch {
+    return "";
+  }
+};
+
+const normalizeSlug = (s) => decodeURIComponent(String(s || "")).trim();
+    
     const buildPrettyUrl = (anime) =>
   `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`;
     const schemaTypeFromType = (t) => {
@@ -426,13 +436,16 @@ function renderDetails(anime) {
   return html;
 }
 
-    function setDynamicMeta(anime) {
-      const title = (anime.title_english || anime.title || "Anime").trim();
-      const desc = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
-      const url = `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`;
-      const img = (anime.main_picture && anime.main_picture.trim())
-        ? anime.main_picture
-        : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
+function setDynamicMeta(anime) {
+  const title = (anime.title_english || anime.title || "Anime").trim();
+  const desc  = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
+
+  const rawSlug = getMalSlug(anime.url);
+  const url     = `${location.origin}/anime.html?slug=${encodeURIComponent(rawSlug)}`; // ✅ encode
+
+  const img = (anime.main_picture && anime.main_picture.trim())
+    ? anime.main_picture
+    : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
       // Title & Description
       document.title = `${title} — AniMMUnity`;
@@ -504,53 +517,66 @@ function renderDetails(anime) {
     }
 
     // Prev/Next (alphabetical)
-    function renderPrevNext(navRoot, data, current) {
-      const byTitle = [...data].sort((a,b) => (a.title||'').localeCompare(b.title||''));
-      const idx = byTitle.findIndex(a => a.anime_id === current.anime_id);
-      const prev = idx > 0 ? byTitle[idx-1] : null;
-      const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
-      if (!prev && !next) return;
-    
-      const slugPrev = prev ? getMalSlug(prev.url) : null;
-      const slugNext = next ? getMalSlug(next.url) : null;
-    
-      navRoot.innerHTML = `
-        <div>${prev ? `<a class="link-btn" href="/anime.html?slug=${esc(slugPrev)}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
-        <div>${next ? `<a class="link-btn" href="/anime.html?slug=${esc(slugNext)}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
-      `;
-    }
+function renderPrevNext(navRoot, data, current) {
+  const byTitle = [...data].sort((a,b) => (a.title||'').localeCompare(b.title||''));
+  const idx = byTitle.findIndex(a => a.anime_id === current.anime_id);
+  const prev = idx > 0 ? byTitle[idx-1] : null;
+  const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
+  if (!prev && !next) return;
+
+  const hrefPrev = prev ? `/anime.html?slug=${encodeURIComponent(getMalSlug(prev.url))}` : '';
+  const hrefNext = next ? `/anime.html?slug=${encodeURIComponent(getMalSlug(next.url))}` : '';
+
+  navRoot.innerHTML = `
+    <div>${prev ? `<a class="link-btn" href="${hrefPrev}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+    <div>${next ? `<a class="link-btn" href="${hrefNext}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
+  `;
+}
 
     // Boot
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = new URLSearchParams(location.search);
-      const animeId = (params.get("id")||"").trim();
-      const slugFromQuery = (params.get("slug")||"").trim();
-      const slugFromPath = getSlugFromPath();
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const animeId = (params.get("id")||"").trim();
+  const slugFromQuery = normalizeSlug(params.get("slug"));
+  const slugFromPath  = normalizeSlug(getSlugFromPath());
 
-fetch("/data/anime.csv")
-  .then(r => { 
-    if (!r.ok) throw new Error(`HTTP ${r.status}`); 
-    return r.text(); 
-  })
-  .then(csv => {
-    const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
+  fetch("/data/anime.csv")
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    .then(csv => {
+      const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
 
-    let anime = null;
-    if (animeId) {
-      anime = data.find(a => a.anime_id === animeId);
-    } else {
-      const slug = slugFromQuery || slugFromPath;
-      if (slug) anime = data.find(a => getMalSlug(a.url) === slug);
-    }
+      let anime = null;
+      if (animeId) {
+        anime = data.find(a => a.anime_id === animeId);
+      } else {
+        const wanted = slugFromQuery || slugFromPath;
+        if (wanted) {
+          anime = data.find(a => normalizeSlug(getMalSlug(a.url)) === wanted);
+        }
+      }
 
-    const contentEl = document.getElementById("content");
-    if (!anime) {
-      const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
-      contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
-      dataRendered = true; // ✅ segnala fine caricamento dati
-      tryHidePreloader();
-      return;
-    }
+      const contentEl = document.getElementById("content");
+      if (!anime) {
+        const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
+        contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
+        dataRendered = true; tryHidePreloader();
+        return;
+      }
+
+      // (niente canonical qui: lo setta setDynamicMeta)
+      contentEl.innerHTML = renderDetails(anime);
+      setDynamicMeta(anime);
+      const navRoot = contentEl.querySelector('.nav-prevnext');
+      if (navRoot) renderPrevNext(navRoot, data, anime);
+
+      dataRendered = true; tryHidePreloader();
+    })
+    .catch(err => {
+      document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
+      dataRendered = true; tryHidePreloader();
+    })
+    .finally(() => document.getElementById("loading")?.remove());
+});
 
 // Canonical coerente con la sitemap (URL con query)
 const slug = getMalSlug(anime.url);
