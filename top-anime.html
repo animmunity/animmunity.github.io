@@ -167,10 +167,8 @@
     .thumb{width:72px;height:100px}
   }
 
-  /* Numero sopra, centrato e grande su mobile */
+/* Numero sopra, centrato e grande su mobile */
 @media (max-width: 720px){
-  .rank{ padding: 10px 16px; }  /* un filo più di padding per numeri lunghi */
-}
   .rank-card{
     display: flex;
     flex-direction: column;
@@ -181,7 +179,7 @@
     order: -1;
     margin-bottom: 10px;
     font-size: 1.6rem;
-    padding: 8px 14px;
+    padding: 10px 16px; /* un filo più di padding per numeri lunghi */
     background: var(--soft);
     color: var(--primary-ink);
     border-radius: 12px;
@@ -190,6 +188,8 @@
     align-items: center;
     min-width: 64px; /* minima larghezza */
     min-height: 64px; /* minima altezza */
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
   .thumb-wrap{
     order: 0;
@@ -215,9 +215,9 @@
   .meta h3{-webkit-line-clamp:3}
 }
 
-  @media (max-width: 520px){
-    .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
-  }
+@media (max-width: 520px){
+  .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
+}
 </style>
 </head>
 <body>
