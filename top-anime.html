@@ -1,0 +1,312 @@
+<!-- top-anime.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Top Anime • AniMMunity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Ranked list of top anime with filters for metric, genre, and year." />
+  <link rel="stylesheet" href="styles.css" />
+  <!-- PapaParse for robust CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <style>
+    /* Minimal page-scoped polish in case styles.css lacks some bits */
+    .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+    .controls { display: grid; gap: .75rem; grid-template-columns: repeat(6, minmax(0,1fr)); align-items: end; }
+    .controls .wide { grid-column: span 2; }
+    .controls label { font-size: .9rem; opacity: .85; display:block; margin-bottom:.25rem; }
+    .controls select, .controls input { width: 100%; padding: .6rem .7rem; border-radius: .6rem; border: 1px solid #333; background: #0b1324; color: #fff; }
+    .btn { padding: .7rem 1rem; border-radius: .7rem; border: 1px solid #00ffcc33; background: #00ffcc; color: #0e1726; font-weight: 700; cursor: pointer; }
+    .list { margin-top: 1rem; display: grid; gap: .8rem; }
+    .card { display:flex; gap:1rem; background:#060818; border:1px solid #1a1a1a; border-radius: .9rem; padding: .8rem; align-items:center; }
+    .rank { font-size:1.2rem; min-width: 2ch; text-align: right; opacity:.9; }
+    .thumb { width:84px; height:120px; border-radius:.6rem; object-fit:cover; background:#111; flex:0 0 auto; }
+    .meta { flex:1; min-width:0; }
+    .title { font-weight:700; margin:0 0 .25rem; }
+    .sub { font-size:.9rem; opacity:.8; }
+    .badges { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.35rem; }
+    .badge { font-size:.78rem; padding:.25rem .45rem; border-radius:.6rem; border:1px solid #2a2a2a; }
+    .score { background:#142; border-color:#2f6; }
+    .pop { background:#122; border-color:#2af; }
+    .ep { background:#211; border-color:#f55; }
+    .pill { background:#0b1324; }
+    .muted { opacity:.75; }
+    @media (max-width: 820px) {
+      .controls { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <main class="container">
+    <h1>Top Anime</h1>
+    <p class="muted">Rank your anime list by score, popularity, members, or episodes. Filter by year and genre.</p>
+
+    <section class="controls" id="controls">
+      <div>
+        <label for="metric">Metric</label>
+        <select id="metric">
+          <!-- populated dynamically from numeric columns -->
+        </select>
+      </div>
+
+      <div>
+        <label for="order">Order</label>
+        <select id="order">
+          <option value="desc">Highest first</option>
+          <option value="asc">Lowest first</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="limit">Top N</label>
+        <input id="limit" type="number" min="1" value="50" />
+      </div>
+
+      <div class="wide">
+        <label for="genre">Genre</label>
+        <select id="genre" multiple size="4" title="Hold Ctrl/Cmd to multi-select"></select>
+      </div>
+
+      <div>
+        <label for="yearFrom">Year from</label>
+        <input id="yearFrom" type="number" placeholder="e.g. 2010" />
+      </div>
+
+      <div>
+        <label for="yearTo">Year to</label>
+        <input id="yearTo" type="number" placeholder="e.g. 2025" />
+      </div>
+
+      <div>
+        <button class="btn" id="applyBtn">Apply</button>
+      </div>
+    </section>
+
+    <section class="list" id="list"></section>
+  </main>
+
+  <div id="footer-placeholder"></div>
+
+  <script>
+    // Load shared header/footer like your index.html
+    fetch('header.html').then(r => r.text()).then(t => document.getElementById('header-placeholder').innerHTML = t);
+    fetch('footer.html').then(r => r.text()).then(t => document.getElementById('footer-placeholder').innerHTML = t);
+
+    const CSV_URL = 'data/anime.csv';
+    const listEl = document.getElementById('list');
+    const metricEl = document.getElementById('metric');
+    const orderEl = document.getElementById('order');
+    const limitEl = document.getElementById('limit');
+    const genreEl = document.getElementById('genre');
+    const yearFromEl = document.getElementById('yearFrom');
+    const yearToEl = document.getElementById('yearTo');
+    const applyBtn = document.getElementById('applyBtn');
+
+    let rows = [];
+    let numericColumns = [];
+    let allGenres = new Set();
+
+    // Utility: get safely with fallbacks
+    function val(row, ...keys) {
+      for (const k of keys) {
+        if (k in row && row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];
+      }
+      return '';
+    }
+    function toNum(v) {
+      if (v === null || v === undefined) return NaN;
+      const n = Number(String(v).replace(',', '.'));
+      return isNaN(n) ? NaN : n;
+    }
+
+    function detectNumericColumns(sample) {
+      const candidates = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k]) === 0);
+      // Prefer common names first
+      const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
+      const ordered = [...new Set([...preferred, ...candidates])];
+      return ordered.filter(k => candidates.includes(k));
+    }
+
+    function collectGenresAndYears(data) {
+      allGenres.clear();
+      let minYear = Infinity, maxYear = -Infinity;
+      data.forEach(row => {
+        // genres candidates
+        const g = val(row, 'genres', 'genre', 'tags', 'themes');
+        if (g) {
+          String(g).split(/[,|/;]+/).map(s => s.trim()).filter(Boolean).forEach(x => allGenres.add(x));
+        }
+        // year candidates
+        const y = toNum(val(row, 'year', 'start_year', 'aired_from_year', 'startDateYear'));
+        if (!isNaN(y)) {
+          if (y < minYear) minYear = y;
+          if (y > maxYear) maxYear = y;
+        }
+      });
+      // Fill genre select
+      genreEl.innerHTML = '';
+      [...allGenres].sort((a,b)=>a.localeCompare(b)).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.textContent = g;
+        genreEl.appendChild(opt);
+      });
+      // Suggest year placeholders
+      if (minYear !== Infinity) yearFromEl.placeholder = minYear;
+      if (maxYear !== -Infinity) yearToEl.placeholder = maxYear;
+    }
+
+    function renderList(data, metric, order, limit) {
+      listEl.innerHTML = '';
+      data.slice(0, limit).forEach((row, idx) => {
+        const title = val(row, 'title', 'name', 'anime', 'series_title');
+        const img = val(row, 'main_picture', 'image_url', 'image', 'pic', 'poster');
+        const year = val(row, 'year', 'start_year', 'aired_from_year', 'startDateYear');
+        const genres = val(row, 'genres', 'genre', 'tags', 'themes');
+        const episodes = val(row, 'episodes', 'ep', 'eps');
+        const scoreVal = toNum(val(row, 'score','rating','score_mean'));
+        const popularity = toNum(val(row, 'popularity','members','watchers','user_count','favorites'));
+        const metricVal = toNum(row[metric]);
+
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="rank">${idx+1}.</div>
+          <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/84x120?text=Anime'}" alt="${title}">
+          <div class="meta">
+            <h3 class="title">${title || 'Untitled'}</h3>
+            <div class="sub">${year ? year : ''}${year && genres ? ' • ' : ''}${genres ? genres : ''}</div>
+            <div class="badges">
+              ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
+              ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
+              ${episodes ? `<span class="badge ep">Ep: ${episodes}</span>` : ''}
+              <span class="badge pill">Metric: ${metric} = ${isNaN(metricVal) ? '—' : metricVal}</span>
+            </div>
+          </div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function applyFilters() {
+      const metric = metricEl.value;
+      const order = orderEl.value;
+      const limit = Math.max(1, Number(limitEl.value) || 50);
+      const selectedGenres = [...genreEl.selectedOptions].map(o => o.value);
+      const yFrom = toNum(yearFromEl.value);
+      const yTo = toNum(yearToEl.value);
+
+      let data = rows.slice();
+
+      // Filter by genre(s)
+      if (selectedGenres.length) {
+        data = data.filter(r => {
+          const g = String(val(r,'genres','genre','tags','themes')).toLowerCase();
+          return selectedGenres.every(s => g.includes(String(s).toLowerCase()));
+        });
+      }
+      // Filter by year range
+      data = data.filter(r => {
+        const y = toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
+        if (isNaN(y)) return true; // keep if no year info
+        if (!isNaN(yFrom) && y < yFrom) return false;
+        if (!isNaN(yTo) && y > yTo) return false;
+        return true;
+      });
+
+      // Sort by metric (desc default)
+      data.sort((a,b) => {
+        const av = toNum(a[metric]);
+        const bv = toNum(b[metric]);
+        if (isNaN(av) && isNaN(bv)) return 0;
+        if (isNaN(av)) return 1;
+        if (isNaN(bv)) return -1;
+        return order === 'asc' ? av - bv : bv - av;
+      });
+
+      renderList(data, metric, order, limit);
+
+      // Update URL params for shareability
+      const params = new URLSearchParams(window.location.search);
+      params.set('metric', metric);
+      params.set('order', order);
+      params.set('limit', String(limit));
+      if (selectedGenres.length) params.set('genres', selectedGenres.join(','));
+      else params.delete('genres');
+      if (yearFromEl.value) params.set('from', yearFromEl.value); else params.delete('from');
+      if (yearToEl.value) params.set('to', yearToEl.value); else params.delete('to');
+      history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+    }
+
+    function hydrateFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const m = params.get('metric');
+      const o = params.get('order');
+      const lim = params.get('limit');
+      const gs = params.get('genres');
+      const yf = params.get('from');
+      const yt = params.get('to');
+      if (o) orderEl.value = o;
+      if (lim) limitEl.value = lim;
+      if (yf) yearFromEl.value = yf;
+      if (yt) yearToEl.value = yt;
+      // genres set later once options exist
+      return { m, gs };
+    }
+
+    function initControlsAndRender() {
+      // Pick default metric: prefer 'score' else first numeric
+      let defaultMetric = numericColumns.find(c => ['score','rating','score_mean'].includes(c)) || numericColumns[0];
+      // URL hydration
+      const { m, gs } = hydrateFromURL();
+      // Fill metric dropdown
+      metricEl.innerHTML = '';
+      numericColumns.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+        metricEl.appendChild(opt);
+      });
+      metricEl.value = m && numericColumns.includes(m) ? m : defaultMetric;
+
+      // If URL had genres, preselect them
+      if (gs) {
+        const wanted = gs.split(',').map(s => s.trim());
+        [...genreEl.options].forEach(opt => { if (wanted.includes(opt.value)) opt.selected = true; });
+      }
+
+      applyFilters();
+    }
+
+    // Load CSV
+    window.addEventListener('DOMContentLoaded', () => {
+      Papa.parse(CSV_URL, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: (res) => {
+          rows = res.data;
+
+          // Detect numeric columns from a non-empty sample row
+          const sample = rows.find(r => Object.values(r).some(v => v !== ''));
+          numericColumns = sample ? detectNumericColumns(sample) : [];
+
+          // Ensure we have something to sort on
+          if (!numericColumns.length) {
+            numericColumns = ['score']; // fallback key; page still renders
+            rows = rows.map(r => ({ ...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0 }));
+          }
+
+          collectGenresAndYears(rows);
+          initControlsAndRender();
+        },
+        error: (err) => {
+          listEl.innerHTML = `<div class="card">Error loading CSV: ${err?.message || err}</div>`;
+        }
+      });
+
+      applyBtn.addEventListener('click', applyFilters);
+    });
+  </script>
+</body>
+</html>
