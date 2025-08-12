@@ -220,496 +220,490 @@
   </noscript>
 
   <script>
-  // ===== Utilities =====
-  const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-  const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
-  const fallbackImage = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
-  const safeMainPicture = (pic) => (pic && String(pic).trim()) || fallbackImage;
+    // ===== Utilities =====
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
+    const fallbackImage = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
-  const parseList = (value) => {
-    if (!value) return [];
-    let s = String(value).trim();
-    if (s === "[]" || s === "") return [];
-    try {
-      if (s.includes("'") && !s.includes('"')) s = s.replace(/'/g, '"');
-      const arr = JSON.parse(s);
-      return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
-    } catch {
-      return s.replace(/^\[|\]$/g, "")
-              .split(",")
-              .map(x => x.replace(/^[\'"\s]+|[\'"\s]+$/g, ""))
-              .filter(Boolean);
-    }
-  };
+    const safeMainPicture = (pic) => {
+      const p = (pic || '').trim();
+      return p || fallbackImage;
+    };
 
-  const parseAuthors = (str) => {
-    if (!str) return [];
-    let s = String(str).trim();
-    try {
-      const arr = JSON.parse(s);
-      return Array.isArray(arr) ? arr.map(a => [a.first_name, a.last_name, a.role].filter(Boolean).join(' ').trim()).filter(Boolean) : [];
-    } catch {
+    // Parse list-like strings e.g. "['Action','Drama']" or JSON arrays
+    function parseList(value) {
+      if (!value) return [];
+      let s = String(value).trim();
+      if (s === "[]" || s === "") return [];
       try {
-        s = s.replace(/\b(id|first_name|last_name|role)\b/g, '"$1"').replace(/'/g, '"');
+        if (s.includes("'") && !s.includes('"')) s = s.replace(/'/g, '"');
+        const arr = JSON.parse(s);
+        return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
+      } catch {
+        return s.replace(/^\[|\]$/g, "")
+                .split(",")
+                .map(x => x.replace(/^[\'"\s]+|[\'"\s]+$/g, ""))
+                .filter(Boolean);
+      }
+    }
+
+    // Parse authors: can be JSON array of objects {first_name,last_name,role} or stringified w/ single quotes
+    function parseAuthors(str) {
+      if (!str) return [];
+      let s = String(str).trim();
+      try {
         const arr = JSON.parse(s);
         return Array.isArray(arr) ? arr.map(a => [a.first_name, a.last_name, a.role].filter(Boolean).join(' ').trim()).filter(Boolean) : [];
-      } catch { return [s]; }
-    }
-  };
-
-  const getMalSlug = (malUrl) => {
-    try { const u = new URL(malUrl); const parts = u.pathname.split('/').filter(Boolean); return decodeURIComponent(parts[parts.length-1]||''); }
-    catch { return ''; }
-  };
-
-  // ===== Header/Footer =====
-  fetch("header.html").then(r => r.text()).then(d => {
-    document.getElementById("header-placeholder").innerHTML = d;
-    const toggle = document.querySelector('.menu-toggle');
-    const headerInner = document.querySelector('.header-inner');
-    if (toggle && headerInner) toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
-  });
-  fetch("footer.html").then(r => r.text()).then(d => {
-    document.getElementById("footer-placeholder").innerHTML = d;
-  });
-
-  // ===== Preloader lifecycle =====
-  let assetsLoaded = false, dataRendered = false;
-  function hidePreloader(){ const pre=document.getElementById("preloader"); if(!pre) return; pre.style.opacity="0"; pre.style.pointerEvents="none"; setTimeout(()=> pre && pre.parentNode && pre.parentNode.removeChild(pre), 400); }
-  function tryHidePreloader(){ if (assetsLoaded && dataRendered) hidePreloader(); }
-  window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
-  setTimeout(() => hidePreloader(), 8000);
-
-  // ===== App (staged loading + caching) =====
-  document.addEventListener("DOMContentLoaded", function () {
-    const ITEMS_PER_PAGE = 20;
-    let currentPage = 1;
-    let mangaData = []; // lista visibile
-    let fullIndex = null; // dati completi (core + details + facet)
-
-    const CACHE_KEY = "manga_index_v2";       // bumpa versione se cambi struttura
-    const CACHE_FACETS = "manga_facets_v2";
-
-    const url = new URL(location.href);
-    const qParam = url.searchParams.get('q') || '';
-    const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
-    const searchInput = document.getElementById("searchInput");
-    if (qParam) searchInput.value = qParam;
-
-    // Facets
-    const facets = [
-      { key: 'demographics',  label: 'Demographics' },
-      { key: 'themes',        label: 'Themes' },
-      { key: 'genres',        label: 'Genres' },
-      { key: 'serializations',label: 'Serializations' },
-      { key: 'authors',       label: 'Authors' }
-    ];
-    const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-    const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-
-    function updateCounts() {
-      facets.forEach(({key}) => {
-        const n = selections[key].size;
-        const pill = document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
-        if (!pill) return;
-        pill.style.display = n > 0 ? 'inline-block' : 'none';
-        pill.textContent = n > 0 ? String(n) : '0';
-      });
+      } catch {
+        try {
+          s = s.replace(/\b(id|first_name|last_name|role)\b/g, '"$1"').replace(/'/g, '"');
+          const arr = JSON.parse(s);
+          return Array.isArray(arr) ? arr.map(a => [a.first_name, a.last_name, a.role].filter(Boolean).join(' ').trim()).filter(Boolean) : [];
+        } catch {
+          // fallback: return as single-value list
+          return [s];
+        }
+      }
     }
 
-    // Dropdowns
-    function buildDropdowns() {
-      const bar = document.getElementById('filtersBar');
-      const resetBtn = document.getElementById('clearFilters');
-      // rimuovi dropdown esistenti se ricostruisci
-      bar.querySelectorAll('.filter-dropdown').forEach(n => n.remove());
+    // Get MAL slug from details URL
+    function getMalSlug(malUrl) {
+      try {
+        const u = new URL(malUrl);
+        const parts = u.pathname.split('/').filter(Boolean);
+        return decodeURIComponent(parts[parts.length - 1] || '');
+      } catch { return ''; }
+    }
 
-      facets.forEach(({key, label}) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'filter-dropdown';
-        wrapper.dataset.key = key;
+    // ===== Header/Footer =====
+    fetch("header.html").then(r => r.text()).then(d => {
+      document.getElementById("header-placeholder").innerHTML = d;
+      const toggle = document.querySelector('.menu-toggle');
+      const headerInner = document.querySelector('.header-inner');
+      if (toggle && headerInner) toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
+    });
+    fetch("footer.html").then(r => r.text()).then(d => {
+      document.getElementById("footer-placeholder").innerHTML = d;
+    });
 
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'filter-btn';
-        btn.setAttribute('aria-haspopup', 'listbox');
-        btn.setAttribute('aria-expanded', 'false');
-        btn.innerHTML = `<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`;
+    // ===== Preloader lifecycle =====
+    let assetsLoaded = false;
+    let dataRendered = false;
 
-        const menu = document.createElement('div');
-        menu.className = 'filter-menu';
-        menu.innerHTML = `
-          <input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">
-          <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
-        `;
+    function hidePreloader() {
+      const pre = document.getElementById("preloader");
+      if (!pre) return;
+      pre.style.opacity = "0";
+      pre.style.pointerEvents = "none";
+      setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
+    }
+    function tryHidePreloader() {
+      if (assetsLoaded && dataRendered) hidePreloader();
+    }
+    window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
+    setTimeout(() => hidePreloader(), 8000); // safety net
 
-        const optionsBox = menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
-        const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
-        values.forEach(val => {
-          const row = document.createElement('label');
-          row.className = 'option';
-          const input = document.createElement('input');
-          input.type = 'checkbox';
-          input.setAttribute('data-facet', key);
-          input.value = val;
-          const span = document.createElement('span');
-          span.textContent = val;
-          row.appendChild(input); row.appendChild(span);
-          optionsBox.appendChild(row);
+    // ===== App =====
+    document.addEventListener("DOMContentLoaded", function () {
+      const ITEMS_PER_PAGE = 20;
+      let mangaData = [];
+      let currentPage = 1;
+
+      // Pre-fill query from ?q=
+      const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
+      if (urlQ) window.__initialQuery = urlQ;
+
+      // Facets for manga
+      const facets = [
+        { key: 'demographics',  label: 'Demographics' },
+        { key: 'themes',        label: 'Themes' },
+        { key: 'genres',        label: 'Genres' },
+        { key: 'serializations',label: 'Serializations' },
+        { key: 'authors',       label: 'Authors' }
+      ];
+      const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+      const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+
+      function fillOptionSetsFromRow(row) {
+        // list-like fields
+        parseList(row.demographics).forEach(v => optionSets.demographics.add(v));
+        parseList(row.themes).forEach(v => optionSets.themes.add(v));
+        parseList(row.genres).forEach(v => optionSets.genres.add(v));
+        parseList(row.serializations).forEach(v => optionSets.serializations.add(v));
+        parseAuthors(row.authors).forEach(v => optionSets.authors.add(v));
+      }
+
+      // Build dropdowns (identico alla pagina Anime)
+      function buildDropdowns() {
+        const bar = document.getElementById('filtersBar');
+        const resetBtn = document.getElementById('clearFilters');
+
+        facets.forEach(({key, label}) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'filter-dropdown';
+          wrapper.dataset.key = key;
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'filter-btn';
+          btn.setAttribute('aria-haspopup', 'listbox');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.innerHTML = `<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`;
+
+          const menu = document.createElement('div');
+          menu.className = 'filter-menu';
+          menu.innerHTML = `
+            <input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">
+            <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
+          `;
+
+          const optionsBox = menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
+          const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
+
+          values.forEach(val => {
+            const row = document.createElement('label');
+            row.className = 'option';
+            const input = document.createElement('input');
+            input.type = 'checkbox';
+            input.setAttribute('data-facet', key);
+            input.value = val;
+            const span = document.createElement('span');
+            span.textContent = val;
+            row.appendChild(input);
+            row.appendChild(span);
+            optionsBox.appendChild(row);
+          });
+
+          // Toggle open/close
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
+              if (dd !== wrapper) {
+                dd.classList.remove('open');
+                const b = dd.querySelector('.filter-btn');
+                if (b) b.setAttribute('aria-expanded', 'false');
+              }
+            });
+            const isOpen = wrapper.classList.toggle('open');
+            btn.setAttribute('aria-expanded', String(isOpen));
+            const search = menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`);
+            if (search) setTimeout(() => search.focus(), 0);
+          });
+
+          // Keep clicks inside menu
+          menu.addEventListener('click', (e) => e.stopPropagation());
+          // Close on Escape
+          menu.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              wrapper.classList.remove('open');
+              btn.setAttribute('aria-expanded', 'false');
+              btn.focus();
+            }
+          });
+
+          // Search inside dropdown
+          menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            optionsBox.querySelectorAll('.option').forEach(opt => {
+              const text = opt.textContent.toLowerCase();
+              opt.style.display = text.includes(q) ? '' : 'none';
+            });
+          });
+
+          wrapper.appendChild(btn);
+          wrapper.appendChild(menu);
+          bar.insertBefore(wrapper, resetBtn);
         });
 
-        // Toggle
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
-            if (dd !== wrapper) {
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.filter-dropdown')) {
+            document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
               dd.classList.remove('open');
               const b = dd.querySelector('.filter-btn');
               if (b) b.setAttribute('aria-expanded', 'false');
-            }
-          });
-          const isOpen = wrapper.classList.toggle('open');
-          btn.setAttribute('aria-expanded', String(isOpen));
-          const search = menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`);
-          if (search) setTimeout(() => search.focus(), 0);
-        });
+            });
+          }
+        }, { capture: true });
 
-        // Search inside dropdown
-        menu.addEventListener('click', (e) => e.stopPropagation());
-        menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input', (e) => {
-          const q = e.target.value.toLowerCase();
-          optionsBox.querySelectorAll('.option').forEach(opt => {
-            const text = opt.textContent.toLowerCase();
-            opt.style.display = text.includes(q) ? '' : 'none';
+        // Checkbox change → update selections + render
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const facet = chk.dataset.facet;
+            if (chk.checked) selections[facet].add(chk.value);
+            else selections[facet].delete(chk.value);
+            updateCounts();
+            renderPage(1, document.getElementById('searchInput').value);
           });
         });
 
-        wrapper.appendChild(btn);
-        wrapper.appendChild(menu);
-        bar.insertBefore(wrapper, resetBtn);
-      });
+        updateCounts();
+      }
 
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('.filter-dropdown')) {
-          document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
-            dd.classList.remove('open');
-            const b = dd.querySelector('.filter-btn');
-            if (b) b.setAttribute('aria-expanded', 'false');
-          });
-        }
-      }, { capture: true });
-
-      // Checkbox change
-      document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
-        chk.addEventListener('change', () => {
-          const facet = chk.dataset.facet;
-          if (chk.checked) selections[facet].add(chk.value);
-          else selections[facet].delete(chk.value);
-          updateCounts();
-          renderPage(1, searchInput.value);
+      function updateCounts() {
+        facets.forEach(({key}) => {
+          const n = selections[key].size;
+          const pill = document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
+          if (!pill) return;
+          if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
+          else { pill.style.display = 'none'; pill.textContent = '0'; }
         });
-      });
+      }
 
-      updateCounts();
-    }
+      function getTextMatchHaystack(manga) {
+        return [manga.title, manga.title_english, manga.title_japanese]
+                .filter(Boolean).join(' ').toLowerCase();
+      }
 
-    // Matching
-    const hay = (m) => [m.title, m.title_english, m.title_japanese].filter(Boolean).join(' ').toLowerCase();
-    const orMatch = (selSet, fieldArr) => {
-      if (!selSet || selSet.size === 0) return true;
-      if (!fieldArr || fieldArr.length === 0) return false;
-      for (const val of selSet) if (fieldArr.includes(val)) return true;
-      return false;
-    };
-    function matches(m, q) {
-      if (q && !hay(m).includes(q)) return false;
-      return ['demographics','themes','genres','serializations','authors'].every(k => orMatch(selections[k], m[k]));
-    }
+      function mangaMatchesFilters(manga, q) {
+        if (q && !getTextMatchHaystack(manga).includes(q)) return false;
 
-    // LD ItemList
-    function updateItemListLD(items) {
-      const script = document.getElementById('ld-itemlist');
-      const itemListElement = items.map((manga, idx) => ({
-        "@type":"ListItem",
-        "position": idx+1,
-        "url": manga._detailUrl,
-        "name": manga.title,
-        "image": manga.main_picture || undefined
-      }));
-      script.textContent = JSON.stringify({ "@context":"https://schema.org", "@type":"ItemList", itemListElement });
-    }
+        // AND across facets, OR inside a single facet
+        const orMatch = (selSet, fieldArr) => {
+          if (!selSet || selSet.size === 0) return true;
+          if (!fieldArr || fieldArr.length === 0) return false;
+          for (const val of selSet) if (fieldArr.includes(val)) return true;
+          return false;
+        };
 
-    function updateRelPrevNext(totalPages, current, query) {
-      const relPrev = document.getElementById('relPrev');
-      const relNext = document.getElementById('relNext');
-      const buildUrl = (p) => {
-        const u = new URL(location.href);
-        const q = (query || '').trim();
-        if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-        if (p > 1) u.searchParams.set('page', p); else u.searchParams.delete('page');
-        return u.toString();
-      };
-      relPrev.setAttribute('href', (current > 1) ? buildUrl(current - 1) : '');
-      relNext.setAttribute('href', (current < totalPages) ? buildUrl(current + 1) : '');
-    }
+        return facets.every(({key}) => orMatch(selections[key], manga[key]));
+      }
 
-    function renderPagination(totalPages, current) {
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-      const createButton = (text, pageNum, isActive = false) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent = text;
-        if (isActive) btn.classList.add("active");
-        btn.addEventListener("click", () => {
-          currentPage = pageNum;
-          renderPage(pageNum, searchInput.value);
+      // JSON-LD ItemList updater
+      function updateItemListLD(items) {
+        const script = document.getElementById('ld-itemlist');
+        const itemListElement = items.map((manga, idx) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "url": manga._detailUrl,
+          "name": manga.title,
+          "image": manga.main_picture || undefined
+        }));
+        const ld = { "@context":"https://schema.org", "@type":"ItemList", "itemListElement": itemListElement };
+        script.textContent = JSON.stringify(ld);
+      }
+
+      // Prev/Next rel links
+      function updateRelPrevNext(totalPages, current, query) {
+        const relPrev = document.getElementById('relPrev');
+        const relNext = document.getElementById('relNext');
+        const buildUrl = (p) => {
           const u = new URL(location.href);
-          const q = searchInput.value.trim();
+          const q = (query || '').trim();
           if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-          if (pageNum > 1) u.searchParams.set('page', pageNum); else u.searchParams.delete('page');
-          history.replaceState(null, "", u.toString());
-        });
-        return btn;
-      };
-      const addEllipsis = () => {
-        const dots = document.createElement("span");
-        dots.textContent = "...";
-        dots.style.margin = "0 4px";
-        pagination.appendChild(dots);
-      };
-
-      if (totalPages <= 10) {
-        for (let i=1;i<=totalPages;i++) pagination.appendChild(createButton(i, i, i===current));
-      } else {
-        pagination.appendChild(createButton(1, 1, current===1));
-        if (current > 3) addEllipsis();
-        const start = Math.max(2, current - 1);
-        const end = Math.min(totalPages - 1, current + 1);
-        for (let i=start;i<=end;i++) pagination.appendChild(createButton(i, i, i===current));
-        if (current < totalPages - 2) addEllipsis();
-        pagination.appendChild(createButton(totalPages, totalPages, current===totalPages));
-      }
-    }
-
-    function renderPage(page=1, query="") {
-      const grid = document.getElementById("mangaGrid");
-      const q = (query || "").toLowerCase();
-      const filtered = mangaData.filter(a => matches(a, q));
-
-      document.getElementById("resultsInfo").textContent = `${filtered.length} results`;
-
-      const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-      page = Math.min(page, totalPages);
-      currentPage = page;
-
-      const start = (page - 1) * ITEMS_PER_PAGE;
-      const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
-
-      grid.innerHTML = "";
-      for (const manga of pageItems) {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.setAttribute('itemscope','');
-        card.setAttribute('itemtype','https://schema.org/CreativeWork');
-
-        const a = document.createElement('a');
-        a.href = manga._detailUrl;
-        a.setAttribute('itemprop','url');
-
-        const img = document.createElement('img');
-        img.loading = "lazy";
-        img.decoding = "async";
-        img.src = manga.main_picture;
-        img.alt = manga.title ? `${manga.title} cover` : "Manga cover";
-        img.onerror = function(){ this.src = fallbackImage; };
-        img.setAttribute('itemprop','image');
-
-        const h3 = document.createElement('h3');
-        h3.textContent = manga.title;
-        h3.setAttribute('itemprop','name');
-
-        a.appendChild(img); a.appendChild(h3);
-        card.appendChild(a);
-        grid.appendChild(card);
+          if (p > 1) u.searchParams.set('page', p); else u.searchParams.delete('page');
+          return u.toString();
+        };
+        relPrev.setAttribute('href', (current > 1) ? buildUrl(current - 1) : '');
+        relNext.setAttribute('href', (current < totalPages) ? buildUrl(current + 1) : '');
       }
 
-      updateItemListLD(pageItems);
-      updateRelPrevNext(totalPages, page, searchInput.value);
-      renderPagination(totalPages, page);
-    }
+      function renderPage(page = 1, query = "") {
+        const grid = document.getElementById("mangaGrid");
+        const q = (query || "").toLowerCase();
 
-    // —— STAGE 1: prova cache completa
-    try {
-      const cachedIndex = sessionStorage.getItem(CACHE_KEY);
-      const cachedFacets = sessionStorage.getItem(CACHE_FACETS);
-      if (cachedIndex && cachedFacets) {
-        const { list } = JSON.parse(cachedIndex);
-        const facetObj = JSON.parse(cachedFacets);
-        mangaData = list;
-        // ripristina facets
-        Object.keys(facetObj).forEach(k => optionSets[k] = new Set(facetObj[k]));
-        buildDropdowns();
-        renderPage(Math.max(1, pageParam), qParam);
-        dataRendered = true; tryHidePreloader();
-        // aggiorna in background (non blocca UI)
-        enhanceInBackground();
-        return;
+        const filtered = mangaData.filter(a => mangaMatchesFilters(a, q));
+
+        const info = document.getElementById("resultsInfo");
+        info.textContent = `${filtered.length} results`;
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+        page = Math.min(page, totalPages);
+        currentPage = page;
+
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+        grid.innerHTML = "";
+        for (const manga of pageItems) {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.setAttribute('itemscope', '');
+          card.setAttribute('itemtype', 'https://schema.org/CreativeWork');
+
+          const a = document.createElement('a');
+          a.href = manga._detailUrl;
+          a.setAttribute('itemprop', 'url');
+
+          const img = document.createElement('img');
+          img.loading = "lazy";
+          img.src = manga.main_picture;
+          img.alt = manga.title ? `${manga.title} cover` : "Manga cover";
+          img.onerror = function(){ this.src = fallbackImage; };
+          img.setAttribute('itemprop', 'image');
+
+          const h3 = document.createElement('h3');
+          h3.textContent = manga.title;
+          h3.setAttribute('itemprop', 'name');
+
+          a.appendChild(img);
+          a.appendChild(h3);
+          card.appendChild(a);
+          grid.appendChild(card);
+        }
+
+        // JSON-LD ItemList per la pagina corrente
+        updateItemListLD(pageItems);
+        // Prev/Next rel
+        updateRelPrevNext(totalPages, page, document.getElementById("searchInput").value);
+        // Paginazione visiva
+        renderPagination(totalPages, page);
       }
-    } catch {}
 
-    // —— STAGE 2: render immediato solo con core.csv
-    fetch("https://animmunity.github.io/data/manga_core.csv")
-      .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-      .then(coreCsv => new Promise((resolve) => {
-        Papa.parse(coreCsv, { header:true, skipEmptyLines:true, worker:true, complete: (res)=> resolve(res.data) });
-      }))
-      .then(coreRows => {
-        // mappa minima per primo paint
+      function renderPagination(totalPages, current) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const createButton = (text, pageNum, isActive = false) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = text;
+          if (isActive) btn.classList.add("active");
+          btn.addEventListener("click", () => {
+            currentPage = pageNum;
+            renderPage(pageNum, document.getElementById("searchInput").value);
+            // Aggiorna URL
+            const u = new URL(location.href);
+            const q = document.getElementById("searchInput").value.trim();
+            if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+            if (pageNum > 1) u.searchParams.set('page', pageNum); else u.searchParams.delete('page');
+            history.replaceState(null, "", u.toString());
+          });
+          return btn;
+        };
+
+        const addEllipsis = () => {
+          const dots = document.createElement("span");
+          dots.textContent = "...";
+          dots.style.margin = "0 4px";
+          pagination.appendChild(dots);
+        };
+
+        if (totalPages <= 10) {
+          for (let i = 1; i <= totalPages; i++) {
+            pagination.appendChild(createButton(i, i, i === current));
+          }
+        } else {
+          pagination.appendChild(createButton(1, 1, current === 1));
+          if (current > 3) addEllipsis();
+          const start = Math.max(2, current - 1);
+          const end = Math.min(totalPages - 1, current + 1);
+          for (let i = start; i <= end; i++) {
+            pagination.appendChild(createButton(i, i, i === current));
+          }
+          if (current < totalPages - 2) addEllipsis();
+          pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
+        }
+      }
+
+      // Load CSVs (core + text parts), merge preferendo stringhe più lunghe
+      Promise.all([
+        fetch("https://animmunity.github.io/data/manga_core.csv").then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+        fetch("https://animmunity.github.io/data/manga_text_part1.csv").then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+        fetch("https://animmunity.github.io/data/manga_text_part2.csv").then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      ])
+      .then(([coreCsv, d1Csv, d2Csv]) => {
+        const coreRows = Papa.parse(coreCsv, { header: true, skipEmptyLines: true }).data.map(r => ({ ...r, manga_id: String(r.manga_id || '').trim() }));
+        const d1Rows   = Papa.parse(d1Csv,   { header: true, skipEmptyLines: true }).data.map(r => ({ ...r, manga_id: String(r.manga_id || '').trim() }));
+        const d2Rows   = Papa.parse(d2Csv,   { header: true, skipEmptyLines: true }).data.map(r => ({ ...r, manga_id: String(r.manga_id || '').trim() }));
+
+        // Build details map (id -> merged details)
+        const detailsMap = new Map();
+        for (const row of [...d1Rows, ...d2Rows]) {
+          if (!row.manga_id) continue;
+          const prev = detailsMap.get(row.manga_id) || {};
+          const merged = { ...prev };
+          for (const k of Object.keys(row)) {
+            const nv = row[k];
+            const ov = prev[k];
+            merged[k] = (!ov || String(nv || '').length > String(ov || '').length) ? nv : ov;
+          }
+          detailsMap.set(row.manga_id, merged);
+        }
+
+        // Compose list items
         mangaData = coreRows.map(core => {
-          const id = String(core.manga_id || '').trim();
-          const title = (core.title || "").trim();
-          const te = (core.title_english || "").trim();
-          const tj = (core.title_japanese || "").trim();
-          const img = safeMainPicture(core.main_picture);
-          const detailUrl = `${location.origin}/manga.html?id=${encodeURIComponent(id)}`;
+          const det = detailsMap.get(core.manga_id) || {};
+          const title = (core.title || det.title || "").trim();
+          const title_english = (core.title_english || det.title_english || "").trim();
+          const title_japanese = (core.title_japanese || det.title_japanese || "").trim();
+          const main_picture = safeMainPicture(det.main_picture || core.main_picture);
+
+          // filters data
+          const demographics = parseList(det.demographics || core.demographics);
+          const themes        = parseList(det.themes || core.themes);
+          const genres        = parseList(det.genres || core.genres);
+          const serializations= parseList(det.serializations || core.serializations);
+          const authors       = parseAuthors(det.authors || core.authors);
+
+          // Detail URL preference: slug from MAL url if present
+          const malSlug = det.url ? getMalSlug(det.url) : '';
+          const detailUrl = malSlug
+            ? `${location.origin}/manga.html?slug=${encodeURIComponent(malSlug)}`
+            : `${location.origin}/manga.html?id=${encodeURIComponent(core.manga_id)}`;
+
+          // fill facets option sets
+          fillOptionSetsFromRow({ demographics, themes, genres, serializations, authors });
+
           return {
-            manga_id: id,
+            manga_id: core.manga_id,
             title: title || "Untitled",
-            title_english: te,
-            title_japanese: tj,
-            main_picture: img,
-            demographics: [],
-            themes: [],
-            genres: [],
-            serializations: [],
-            authors: [],
+            title_english,
+            title_japanese,
+            main_picture,
+            demographics,
+            themes,
+            genres,
+            serializations,
+            authors,
             _detailUrl: detailUrl
           };
         });
 
-        // primo paint
-        renderPage(Math.max(1, pageParam), qParam);
-        dataRendered = true; tryHidePreloader();
+        buildDropdowns();
 
-        // costruisci facets e arricchisci in idle/background
-        (window.requestIdleCallback || window.setTimeout)(() => enhanceInBackground(coreRows), 1);
+        // Pre-fill search + page da URL
+        const input = document.getElementById('searchInput');
+        const url = new URL(location.href);
+        const qParam = url.searchParams.get('q') || '';
+        const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
+        if (qParam && input) input.value = qParam;
+        renderPage(Math.max(1, pageParam), qParam);
+
+        dataRendered = true;
+        tryHidePreloader();
       })
       .catch(err => {
-        console.error("Failed to load core CSV:", err);
+        console.error("Failed to load manga CSVs:", err);
         const grid = document.getElementById("mangaGrid");
         if (grid) {
           grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">
             Error loading data. Please try again later.
           </div>`;
         }
-        dataRendered = true; tryHidePreloader();
+        dataRendered = true;
+        tryHidePreloader();
       });
 
-    // —— STAGE 3: arricchimento + cache
-    function enhanceInBackground(preParsedCore = null) {
-      Promise.all([
-        // se abbiamo già core pre-parso, riusalo; altrimenti ricarica
-        preParsedCore ? Promise.resolve(preParsedCore)
-          : fetch("https://animmunity.github.io/data/manga_core.csv").then(r=>r.text()).then(t=>new Promise(res=>Papa.parse(t,{header:true,skipEmptyLines:true,worker:true,complete:(o)=>res(o.data)}))),
-        fetch("https://animmunity.github.io/data/manga_text_part1.csv").then(r=>r.text()),
-        fetch("https://animmunity.github.io/data/manga_text_part2.csv").then(r=>r.text())
-      ])
-      .then(([coreRows, d1Csv, d2Csv]) => Promise.all([
-        Promise.resolve(coreRows),
-        new Promise(res => Papa.parse(d1Csv, { header:true, skipEmptyLines:true, worker:true, complete:(o)=>res(o.data) })),
-        new Promise(res => Papa.parse(d2Csv, { header:true, skipEmptyLines:true, worker:true, complete:(o)=>res(o.data) })),
-      ]))
-      .then(([coreRows, d1Rows, d2Rows]) => {
-        // merge details
-        const detailsMap = new Map();
-        for (const r of [...d1Rows, ...d2Rows]) {
-          const id = String(r.manga_id || '').trim();
-          if (!id) continue;
-          const prev = detailsMap.get(id) || {};
-          const merged = { ...prev };
-          for (const k of Object.keys(r)) {
-            const nv = r[k], ov = prev[k];
-            merged[k] = (!ov || String(nv||'').length > String(ov||'').length) ? nv : ov;
-          }
-          detailsMap.set(id, merged);
-        }
+      // Events
+      const onSearchInput = (e) => {
+        renderPage(1, e.target.value);
+        // Update ?q= e ?page=
+        const q = e.target.value.trim();
+        const u = new URL(location.href);
+        if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+        u.searchParams.delete('page'); // reset page when searching
+        history.replaceState(null, "", u.toString());
+      };
+      document.getElementById("searchInput").addEventListener("input", debounce(onSearchInput, 250));
 
-        // rebuild index with facets
-        const nextOptionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-        const list = coreRows.map(core => {
-          const id = String(core.manga_id || '').trim();
-          const det = detailsMap.get(id) || {};
-          const title = (core.title || det.title || "").trim();
-          const te = (core.title_english || det.title_english || "").trim();
-          const tj = (core.title_japanese || det.title_japanese || "").trim();
-          const img = safeMainPicture(det.main_picture || core.main_picture);
-          const demographics = parseList(det.demographics || core.demographics);
-          const themes = parseList(det.themes || core.themes);
-          const genres = parseList(det.genres || core.genres);
-          const serializations = parseList(det.serializations || core.serializations);
-          const authors = parseAuthors(det.authors || core.authors);
-
-          demographics.forEach(v=>nextOptionSets.demographics.add(v));
-          themes.forEach(v=>nextOptionSets.themes.add(v));
-          genres.forEach(v=>nextOptionSets.genres.add(v));
-          serializations.forEach(v=>nextOptionSets.serializations.add(v));
-          authors.forEach(v=>nextOptionSets.authors.add(v));
-
-          const slug = det.url ? getMalSlug(det.url) : '';
-          const detailUrl = slug
-            ? `${location.origin}/manga.html?slug=${encodeURIComponent(slug)}`
-            : `${location.origin}/manga.html?id=${encodeURIComponent(id)}`;
-
-          return {
-            manga_id: id,
-            title: title || "Untitled",
-            title_english: te,
-            title_japanese: tj,
-            main_picture: img,
-            demographics, themes, genres, serializations, authors,
-            _detailUrl: detailUrl
-          };
-        });
-
-        // swap dataset in memoria
-        mangaData = list;
-
-        // salva facets & index in cache (per sessione)
-        try {
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify({ list }));
-          sessionStorage.setItem(CACHE_FACETS, JSON.stringify(Object.fromEntries(
-            Object.entries(nextOptionSets).map(([k,set]) => [k, Array.from(set)])
-          )));
-        } catch {}
-
-        // applica facets e UI filtri senza bloccare
-        Object.keys(nextOptionSets).forEach(k => optionSets[k] = nextOptionSets[k]);
-        buildDropdowns();
-        // re-render mantenendo query/pagina attuali
-        renderPage(currentPage, searchInput.value);
-      })
-      .catch(err => console.error("Enhance background error:", err));
-    }
-
-    // Events
-    const onSearchInput = (e) => {
-      renderPage(1, e.target.value);
-      const q = e.target.value.trim();
-      const u = new URL(location.href);
-      if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-      u.searchParams.delete('page');
-      history.replaceState(null, "", u.toString());
-    };
-    searchInput.addEventListener("input", debounce(onSearchInput, 250));
-
-    document.getElementById("clearFilters").addEventListener("click", () => {
-      facets.forEach(({key}) => selections[key].clear());
-      document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
-      updateCounts();
-      renderPage(1, searchInput.value);
+      document.getElementById("clearFilters").addEventListener("click", () => {
+        facets.forEach(({key}) => selections[key].clear());
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
+        updateCounts();
+        renderPage(1, document.getElementById("searchInput").value);
+      });
     });
-  });
-</script>
+  </script>
 </body>
 </html>
