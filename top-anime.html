@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
-  <!-- ✅ Preload CSV (stesso URL del fetch) + crossorigin per evitare warning -->
+  <!-- Preload CSV con crossorigin per evitare warning -->
   <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
 
   <!-- JSON-LD: ItemList (dinamico) -->
@@ -49,26 +49,24 @@
     a:hover{text-decoration:underline}
     .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-    /* Stessa grafica per tutti i blocchi */
+    /* Pannelli coerenti */
     .panel{
       background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);
       box-shadow:var(--shadow-1);padding:18px;
     }
     .panel + .panel{ margin-top:18px; }
 
-    /* Hero (niente filigrana) */
     .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:22px}
     .hero h1{margin:0 0 8px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
     .sub{color:var(--muted);font-size:.95rem;margin:6px 0 14px}
 
-    /* Spaziatura verticale tra i macroblocchi */
     .block-gap{ margin-top:18px; }
 
     /* Chips */
     .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-    /* Search live */
+    /* Search */
     .search-container{width:100%;margin:12px 0 0}
     .search-input{
       width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
@@ -76,7 +74,7 @@
     }
     .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
 
-    /* Dropdown unificati (Genres, Metric, Order) */
+    /* Dropdown (unificati) */
     .filters-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
     .filter-dropdown{position:relative}
     .filter-btn{
@@ -94,7 +92,7 @@
     .options .option{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer}
     .options .option:hover{background:#f5f5f5}
 
-    /* ✅ Checkbox/radio quadrati e coerenti */
+    /* Checkbox/radio quadrati + spunta visiva */
     .options input[type="checkbox"],
     .options input[type="radio"]{
       appearance:none; -webkit-appearance:none; -moz-appearance:none;
@@ -107,9 +105,9 @@
     .options input[type="radio"]:checked{
       border-color:#4f46e5;background:#4f46e5;
     }
-    .options input[type="checkbox"]:checked::after,
-    .options input[type="radio"]:checked::after{
-      content:""; position:absolute; inset:3px; background:#fff; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16"><path fill="black" d="M6.173 13.727L1.2 8.754l1.885-1.885l3.088 3.087l6.742-6.742l1.885 1.885z"/></svg>') center/contain no-repeat;
+    /* ✓ sulla label attiva */
+    .options input:checked + span::before{
+      content:"✓"; display:inline-block; margin-right:6px; color:#4f46e5; font-weight:800;
     }
 
     .btn-clear{
@@ -134,12 +132,13 @@
     .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
     .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
 
-    /* Paginazione */
+    /* Paginazione + Prev/Next */
     .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
     .pagination button{
       padding:8px 11px;border-radius:10px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
       box-shadow:var(--shadow-1);cursor:pointer
     }
+    .pagination button[disabled]{opacity:.5;cursor:not-allowed}
     .pagination button.active{border-color:#4f46e5;color:#3532b3;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
 
     .center{text-align:center;padding:14px;color:var(--muted)}
@@ -165,7 +164,7 @@
       <h1>Top Anime</h1>
       <p class="sub">Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page.</p>
 
-      <!-- SEARCH live (niente bottone) -->
+      <!-- SEARCH live -->
       <div class="search-container">
         <input id="searchInput" class="search-input" type="search" placeholder="Search for an Anime… (title / English / Japanese)" autocomplete="off" />
       </div>
@@ -176,7 +175,7 @@
     <!-- Filtri -->
     <section class="panel block-gap">
       <div class="filters-bar" id="filtersBar" aria-label="Filters">
-        <!-- Dropdowns creati via JS: Genres / Metric / Order -->
+        <!-- Dropdowns via JS -->
         <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
       </div>
       <div class="center" id="resultsInfo"></div>
@@ -228,7 +227,7 @@
     let currentPage=1, queryText='';
     let currentMetric='score', currentOrder='desc';
 
-    // ===== Genres dropdown (multi) =====
+    // Genres
     const genreSet=new Set();
     const selectedGenres=new Set();
 
@@ -246,8 +245,24 @@
     }
 
     function collectGenres(row){ parseList(row.genres).forEach(g=>genreSet.add(g)); }
+    const buildHaystack = (r) => [r.title, r.title_english, r.title_japanese].filter(Boolean).join(' ').toLowerCase();
+    const matchesQuery = (r) => (!queryText) || buildHaystack(r).includes(queryText);
+    const matchesGenres = (r) => {
+      if(!selectedGenres.size) return true;
+      const g=parseList(r.genres); if(!g.length) return false;
+      for(const sel of selectedGenres) if(g.includes(sel)) return true;
+      return false;
+    };
 
-    // Generic dropdown builder (multi or single)
+    // Slug da MAL url (fallback id)
+    const getMalSlug = (malUrl) => {
+      try {
+        const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean);
+        return decodeURIComponent(p[p.length-1] || "");
+      } catch { return ""; }
+    };
+
+    // Dropdown builder
     function buildDropdown({key,label,type,options,withSearch=true,onSelect}){
       const wrap=document.createElement('div');
       wrap.className='filter-dropdown';
@@ -282,7 +297,6 @@
         row.appendChild(input); row.appendChild(span); optionsBox.appendChild(row);
       });
 
-      // Toggle
       btn.addEventListener('click',(e)=>{
         e.stopPropagation();
         document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
@@ -304,15 +318,15 @@
         });
       }
 
-      // Bind changes
       optionsBox.querySelectorAll('input').forEach(inp=>{
         inp.addEventListener('change',()=>{
           onSelect(inp);
           if(type==='single'){
-            // aggiorna label bottone
             const span = optionsBox.querySelector('input:checked')?.parentElement?.querySelector('span')?.textContent || label;
             const labelEl=document.getElementById(`btn-label-${key}`); if(labelEl) labelEl.textContent = span;
             wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+          }else{
+            // per multi non chiudiamo
           }
         });
       });
@@ -327,25 +341,15 @@
       if(count>0){ pill.style.display='inline-block'; pill.textContent=count; } else { pill.style.display='none'; pill.textContent='0'; }
     }
 
-    // ===== Search / Filters logic =====
-    const buildHaystack = (r) => [r.title, r.title_english, r.title_japanese].filter(Boolean).join(' ').toLowerCase();
-    const matchesQuery = (r) => (!queryText) || buildHaystack(r).includes(queryText);
-    const matchesGenres = (r) => {
-      if(!selectedGenres.size) return true;
-      const g=parseList(r.genres); if(!g.length) return false;
-      for(const sel of selectedGenres) if(g.includes(sel)) return true;
-      return false;
-    };
-
     // Metric detection
     function detectNumericColumns(sample){
       const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
-      const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
+      const preferred = ['score','popularity','members','favorites','episodes','score_mean','user_count','watchers','rank','rating'];
       const ordered=[...new Set([...preferred, ...cands])];
       return ordered.filter(k=>cands.includes(k));
     }
 
-    // ===== Fixed global ranks per metric/order =====
+    // Ranks globali fissi
     let globalRankMap = new Map();
     function computeGlobalRanks(metric, order){
       const arr = rows.slice().sort((a,b)=>{
@@ -361,7 +365,6 @@
       globalRankMap = map;
     }
 
-    // ===== Render =====
     function formatGenresForCard(r){ return parseList(r.genres).join(', '); }
 
     function renderChips(){
@@ -372,30 +375,45 @@
       if(selectedGenres.size) chipsEl.append(chip(`Genres: ${[...selectedGenres].join(', ')}`));
     }
 
+    function buildAnimeHref(row){
+      const url = val(row,'url');
+      const slug = url ? getMalSlug(url) : "";
+      if(slug) return `/anime.html?slug=${encodeURIComponent(slug)}`;
+      const id = String(val(row,'anime_id')).trim();
+      return id ? `/anime.html?id=${encodeURIComponent(id)}` : '#';
+    }
+
     function renderListPage(items, startIndex){
       listEl.innerHTML='';
       items.forEach((row,idx)=>{
-        const title = val(row,'title','name','anime','series_title');
+        const title = val(row,'title','name','anime','series_title') || 'Untitled';
         const img = val(row,'main_picture','image_url','image','pic','poster');
         const year = val(row,'year','start_year','aired_from_year','startDateYear');
         const scoreVal = toNum(val(row,'score','rating','score_mean'));
         const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
         const metricVal = toNum(row[currentMetric]);
         const genresText = formatGenresForCard(row);
+        const href = buildAnimeHref(row);
 
         const globalPos = globalRankMap.get(String(row.anime_id||'')) || (startIndex+idx+1); // fallback
+
+        const metricPill = (currentMetric==='score')
+          ? ''  // un solo "Score": niente pill dup
+          : `<span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>`;
 
         const card=document.createElement('article'); card.className='rank-card';
         card.innerHTML = `
           <div class="rank">${globalPos}</div>
-          <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title||'Anime')}">
+          <a href="${href}" aria-label="${esc(title)}">
+            <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title)}">
+          </a>
           <div class="meta">
-            <h3>${esc(title || 'Untitled')}</h3>
+            <h3><a href="${href}">${esc(title)}</a></h3>
             <div class="muted">${year ? esc(year) : ''}${year && genresText ? ' • ' : ''}${genresText ? esc(genresText) : ''}</div>
             <div class="badges">
               ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
               ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
-              <span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>
+              ${metricPill}
             </div>
           </div>`;
         listEl.appendChild(card);
@@ -404,50 +422,51 @@
 
     function updatePagination(totalPages, current){
       paginationEl.innerHTML='';
-      const makeBtn=(txt,page,active=false)=>{
-        const b=document.createElement('button'); b.type='button'; b.textContent=txt; if(active) b.classList.add('active');
-        b.addEventListener('click',()=>goToPage(page)); return b;
+
+      const makeBtn=(txt,page,active=false,disabled=false)=>{
+        const b=document.createElement('button'); b.type='button'; b.textContent=txt;
+        if(active) b.classList.add('active');
+        if(disabled) b.disabled=true;
+        b.addEventListener('click',()=>!disabled && goToPage(page));
+        return b;
       };
+
+      // Prev
+      paginationEl.appendChild(makeBtn('Prev', Math.max(1,current-1), false, current===1));
+
       const dots=()=>{const s=document.createElement('span'); s.textContent='…'; s.style.margin='0 4px'; paginationEl.appendChild(s);};
 
       if(totalPages<=10){
-        for(let i=1;i<=totalPages;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+        for(let i=1;i<=totalPages;i++) paginationEl.appendChild(makeBtn(String(i),i,i===current));
       }else{
-        paginationEl.appendChild(makeBtn(1,1,current===1));
+        paginationEl.appendChild(makeBtn('1',1,current===1));
         if(current>3) dots();
         const start=Math.max(2,current-1), end=Math.min(totalPages-1,current+1);
-        for(let i=start;i<=end;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+        for(let i=start;i<=end;i++) paginationEl.appendChild(makeBtn(String(i),i,i===current));
         if(current<totalPages-2) dots();
-        paginationEl.appendChild(makeBtn(totalPages,totalPages,current===totalPages));
+        paginationEl.appendChild(makeBtn(String(totalPages),totalPages,current===totalPages));
       }
+
+      // Next
+      paginationEl.appendChild(makeBtn('Next', Math.min(totalPages,current+1), false, current===totalPages));
     }
 
     function updateURL(page){
       const u=new URL(location.href);
-      // search
       queryText ? u.searchParams.set('q', queryText) : u.searchParams.delete('q');
-      // genres
       selectedGenres.size ? u.searchParams.set('genres', [...selectedGenres].join('|')) : u.searchParams.delete('genres');
-      // metric/order
       u.searchParams.set('metric', currentMetric);
       u.searchParams.set('order', currentOrder);
-      // page
       page>1 ? u.searchParams.set('page', page) : u.searchParams.delete('page');
       history.replaceState(null,'',u.toString());
-      // canonical + og:url
+
       const full=`${location.origin}${location.pathname}${u.search}`;
       document.getElementById('canonicalLink').href=full;
       const og=document.querySelector('meta[property="og:url"]'); if(og) og.setAttribute('content', full);
     }
 
-    function applyAndRender(page=1){
-      // posizioni globali per metrica/ordine
-      computeGlobalRanks(currentMetric, currentOrder);
-
-      // Filtra
-      let filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
-
-      // Ordina (solo per l’ordine visivo di lista)
+    function renderChipsAndList(filtered, page=1){
+      // ordina visivamente per metrica/ordine (il numero mostrato resta fisso su base globale)
       filtered.sort((a,b)=>{
         const av=toNum(a[currentMetric]), bv=toNum(b[currentMetric]);
         if(isNaN(av) && isNaN(bv)) return 0;
@@ -456,7 +475,6 @@
         return currentOrder==='asc' ? av-bv : bv-av;
       });
 
-      // Pagine
       const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
       currentPage = Math.min(Math.max(1,page), totalPages);
@@ -470,15 +488,21 @@
       updatePagination(totalPages, currentPage);
       updateURL(currentPage);
 
-      // JSON-LD ItemList (prime 10 della pagina)
+      // JSON-LD (prime 10)
       const itemList = pageItems.slice(0,10).map((r,i)=>({
         "@type":"ListItem",
         "position": (globalRankMap.get(String(r.anime_id||'')) || (start+i+1)),
         "name": r.title || "Anime",
-        "url": `${location.origin}/anime?id=${encodeURIComponent(r.anime_id||'')}`,
+        "url": buildAnimeHref(r),
         "image": r.main_picture || undefined
       }));
       document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":itemList});
+    }
+
+    function applyAndRender(page=1){
+      computeGlobalRanks(currentMetric, currentOrder);
+      const filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
+      renderChipsAndList(filtered, page);
     }
 
     function goToPage(p){ applyAndRender(p); }
@@ -487,14 +511,10 @@
       const q=new URLSearchParams(location.search);
       const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText.toLowerCase(); searchInput.value=qText; }
       const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
-
-      // genres
       const rawGenres=q.get('genres');
       if(rawGenres){ rawGenres.split('|').forEach(g=> selectedGenres.add(g)); updateCountBadge('genres', selectedGenres.size); }
-
       if(m) currentMetric=m;
       if(o) currentOrder=o;
-
       return Math.max(1, isNaN(p)?1:p);
     }
 
@@ -506,19 +526,12 @@
           const res=Papa.parse(text,{header:true,skipEmptyLines:true});
           rows = res.data || [];
 
-          // collect genres
           rows.forEach(collectGenres);
 
-          // numeric columns
           const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
-          numericColumns = sample ? detectNumericColumns(sample) : [];
-          if(!numericColumns.length){
-            numericColumns=['score'];
-            rows = rows.map(r=>({...r, score: toNum(r.score)||toNum(val(r,'rating','rank','members','popularity')) || 0}));
-          }
+          numericColumns = sample ? detectNumericColumns(sample) : ['score'];
 
-          // DROPDOWNS ===
-          // Genres (multi)
+          // Dropdowns
           buildDropdown({
             key:'genres',
             label:'Genres',
@@ -532,7 +545,6 @@
             }
           });
 
-          // Metric (single)
           const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
           buildDropdown({
             key:'metric',
@@ -542,13 +554,11 @@
             withSearch:true,
             onSelect:(inp)=>{
               currentMetric = inp.value;
-              // aggiorna label subito
               const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
               applyAndRender(1);
             }
           });
 
-          // Order (single)
           const orderOptions = [
             {label:'Highest first', value:'desc', selected: currentOrder==='desc'},
             {label:'Lowest first',  value:'asc',  selected: currentOrder==='asc' }
@@ -566,7 +576,6 @@
             }
           });
 
-          // HYDRATE + RENDER
           const startPage = hydrateFromURL();
           applyAndRender(startPage);
 
@@ -577,7 +586,7 @@
           dataRendered=true; tryHidePreloader();
         });
 
-      // Search live (no button)
+      // Search live
       searchInput.addEventListener('input', debounce(()=>{
         queryText=(searchInput.value||'').trim().toLowerCase();
         applyAndRender(1);
