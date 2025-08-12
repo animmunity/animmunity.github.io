@@ -5,9 +5,7 @@
   <meta charset="utf-8" />
   <title>Top Anime — AniMMUnity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Ranked list of top anime with filters for metric, genre, and year on AniMMUnity." />
-
-  <!-- Robots -->
+  <meta name="description" content="Search and rank top anime. Filter by genres, sort by metrics, and browse with 50-per-page pagination." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#ffffff">
 
@@ -15,111 +13,128 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:title" content="Top Anime — AniMMUnity">
-  <meta property="og:description" content="Browse and rank the best anime by score, popularity, members and more.">
+  <meta property="og:description" content="Search, filter by genres, and paginate 50 per page.">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Top Anime — AniMMUnity">
-  <meta name="twitter:description" content="Browse and rank the best anime by score, popularity, members and more.">
+  <meta name="twitter:description" content="Search, filter by genres, and paginate 50 per page.">
   <meta name="twitter:image" content="">
+
   <link id="canonicalLink" rel="canonical" href="">
-
-  <!-- JSON-LD: ItemList (compilato via JS) -->
-  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
-
-  <!-- Assets -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-
-  <!-- Preconnect/preload CSV -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" />
 
-  <!-- ===== NOVA WHITE UI (stesso stile) ===== -->
+  <!-- JSON-LD: ItemList (dinamico) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
+
+  <!-- ===== NOVA WHITE UI ===== -->
   <style>
-  :root{
-    --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
-    --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
-    --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
-    --grad:radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
-           radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-    background-image:var(--grad);background-attachment:fixed;
-  }
-  a{color:var(--primary);text-decoration:none}
-  a:hover{text-decoration:underline}
-  .shell{max-width:1200px;margin:30px auto;padding:0 18px}
+    :root{
+      --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
+      --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
+      --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
+      --grad:radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+             radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      background-image:var(--grad);background-attachment:fixed;
+    }
+    a{color:var(--primary);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-  /* Pannelli/hero/chips coerenti */
-  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
-  .panel h2{margin:0 0 10px;font-size:1.05rem;letter-spacing:.2px}
-  .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
-  .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
-  .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem);letter-spacing:.2px}
-  .sub{color:var(--muted);font-size:.95rem}
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-  .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
+    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
+    .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
+    .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
+    .sub{color:var(--muted);font-size:.95rem}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-  /* Layout con aside filtri */
-  .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
-  @media (max-width:980px){.layout{grid-template-columns:1fr}}
-  .aside{position:sticky;top:84px;align-self:start;display:grid;gap:16px}
-  @media (max-width:980px){.aside{position:static;top:auto}.hero{overflow:visible}}
-  @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
+    .panel h2{margin:0 0 10px;font-size:1.05rem}
 
-  /* Filtri */
-  .control{display:grid;gap:6px}
-  .control label{font-size:.9rem;color:var(--muted)}
-  .control input,.control select{
-    width:100%;padding:.65rem .7rem;border-radius:var(--r-sm);
-    border:1px solid var(--border);background:var(--soft);color:var(--ink);outline:none;
-  }
-  .control input:focus,.control select:focus{border-color:#d7dbef;box-shadow:0 0 0 3px rgba(79,70,229,.10)}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    padding:.75rem 1rem;border-radius:12px;border:1px solid #dfe4f5;
-    background:linear-gradient(180deg,#fff,#f4f6fb);color:var(--primary-ink);font-weight:700;cursor:pointer;
-    box-shadow:var(--shadow-1);
-  }
-  .btn:hover{transform:translateY(-1px);transition:transform .15s ease;text-decoration:none}
+    /* Search (stile index) */
+    .search-container{width:100%;margin:10px 0 6px}
+    .search-form{display:flex;gap:10px;align-items:center}
+    .search-input{
+      flex:1;padding:.8rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
+      box-shadow:0 2px 8px rgba(17,24,39,.04);
+    }
+    .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+    .search-btn{
+      padding:.8rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
+      font-weight:700;cursor:pointer;box-shadow:var(--shadow-1)
+    }
 
-  /* Lista classifica */
-  .list{display:grid;gap:12px}
-  .rank-card{
-    display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
-    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;box-shadow:var(--shadow-1);
-  }
-  .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
-  .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
-  .meta h3{margin:.2rem 0 .35rem;font-size:1.05rem}
-  .meta .muted{color:var(--muted)}
-  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:.35rem}
-  .badge{font-size:.78rem;padding:.25rem .45rem;border-radius:999px;border:1px solid var(--border);background:var(--soft)}
-  .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
-  .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
-  .badge.ep{border-color:#ffe6e6;background:#fff5f5;color:#8f1e1e}
-  .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
+    /* Filters bar (dropdown come la tua index) */
+    .filters-bar{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center}
+    .filter-dropdown{position:relative}
+    .filter-btn{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1px solid #bbb;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
+    }
+    .filter-btn[aria-expanded="true"]{outline:2px solid #007BFF}
+    .filter-btn .count{background:#007BFF;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}
+    .filter-menu{
+      position:absolute;top:calc(100% + 6px);left:0;min-width:260px;max-height:320px;overflow:auto;background:#fff;border:1px solid #ddd;border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px;z-index:1000;display:none
+    }
+    .filter-dropdown.open .filter-menu{display:block}
+    .filter-search{width:100%;border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:13px;margin-bottom:8px;outline:none;box-sizing:border-box}
+    .option{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer}
+    .option:hover{background:#f5f5f5}
+    .btn-clear{border:1px solid #bbb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)}
+    .btn-clear:hover{background:#f0f0f0}
 
-  /* Stato */
-  .center{text-align:center;padding:48px 0;color:var(--muted)}
-  .error{color:var(--danger)}
+    /* Metric & Order */
+    .mini-control{display:inline-flex;align-items:center;gap:6px}
+    .mini-control select{
+      padding:8px 10px;border:1px solid #bbb;border-radius:10px;background:#fff;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.06)
+    }
 
-  /* Motion */
-  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .hero,.panel,.rank-card{animation:pop .35s ease both}
+    /* Lista classifica */
+    .list{display:grid;gap:12px}
+    .rank-card{
+      display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
+      background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;box-shadow:var(--shadow-1);
+      animation:pop .35s ease both
+    }
+    .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
+    .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
+    .meta h3{margin:.2rem 0 .35rem;font-size:1.05rem}
+    .meta .muted{color:var(--muted)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:.35rem}
+    .badge{font-size:.78rem;padding:.25rem .45rem;border-radius:999px;border:1px solid var(--border);background:var(--soft)}
+    .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
+    .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
+    .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
+    .badge.ep{border-color:#ffe6e6;background:#fff5f5;color:#8f1e1e}
 
-  /* Preloader (coerente) */
-  #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
-  .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+    /* Paginazione */
+    .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+    .pagination button{
+      padding:8px 11px;border-radius:10px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
+      box-shadow:var(--shadow-1);cursor:pointer
+    }
+    .pagination button.active{border-color:#4f46e5;color:#3532b3;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+
+    .center{text-align:center;padding:14px;color:var(--muted)}
+    .error{color:var(--danger)}
+    @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* Preloader */
+    #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
+    .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Responsive fix */
+    @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
   </style>
 </head>
 <body>
@@ -130,73 +145,47 @@
   <div id="header"></div>
 
   <main class="shell">
-    <section class="hero" aria-label="Intro">
+    <section class="hero">
       <h1>Top Anime</h1>
-      <p class="sub">Rank by score, popularity, members, or episodes. Filter by year and genre.</p>
+      <p class="sub">Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page.</p>
+
+      <!-- SEARCH (stile index) -->
+      <div class="search-container">
+        <form id="searchForm" class="search-form" role="search">
+          <input id="searchInput" class="search-input" type="search" placeholder="Search for an Anime… (title / English / Japanese)" autocomplete="off" />
+          <button class="search-btn" type="submit">Search</button>
+        </form>
+      </div>
+
       <div id="chips" class="chips"></div>
     </section>
 
-    <section class="layout">
-      <!-- ASIDE: Filtri -->
-      <aside class="aside">
-        <div class="panel" aria-label="Filters">
-          <h2>Filters</h2>
-
-          <div class="grid-2">
-            <div class="control">
-              <label for="metric">Metric</label>
-              <select id="metric"></select>
-            </div>
-            <div class="control">
-              <label for="order">Order</label>
-              <select id="order">
-                <option value="desc">Highest first</option>
-                <option value="asc">Lowest first</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid-3" style="margin-top:12px">
-            <div class="control">
-              <label for="limit">Top N</label>
-              <input id="limit" type="number" min="1" value="50" />
-            </div>
-            <div class="control">
-              <label for="yearFrom">Year from</label>
-              <input id="yearFrom" type="number" placeholder="e.g. 2000" />
-            </div>
-            <div class="control">
-              <label for="yearTo">Year to</label>
-              <input id="yearTo" type="number" placeholder="e.g. 2025" />
-            </div>
-          </div>
-
-          <div class="control" style="margin-top:12px">
-            <label for="genre">Genre (multi-select)</label>
-            <select id="genre" multiple size="6" title="Hold Ctrl/Cmd to multi-select"></select>
-          </div>
-
-          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn" id="applyBtn">Apply</button>
-            <button class="btn" id="resetBtn" type="button">Reset</button>
-          </div>
+    <!-- Barra filtri -->
+    <section class="panel">
+      <div class="filters-bar" id="filtersBar" aria-label="Filters">
+        <!-- Dropdown GENRE creato via JS -->
+        <div class="mini-control">
+          <label for="metric" class="muted">Metric</label>
+          <select id="metric"></select>
         </div>
-
-        <div class="panel" id="summaryPanel" style="display:none">
-          <h2>Summary</h2>
-          <div class="grid-2">
-            <div><span class="muted">Total rows:</span> <strong id="sumTotal">0</strong></div>
-            <div><span class="muted">After filters:</span> <strong id="sumFiltered">0</strong></div>
-          </div>
+        <div class="mini-control">
+          <label for="order" class="muted">Order</label>
+          <select id="order">
+            <option value="desc">Highest first</option>
+            <option value="asc">Lowest first</option>
+          </select>
         </div>
-      </aside>
+        <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
+      </div>
+      <div class="center" id="resultsInfo"></div>
+    </section>
 
-      <!-- MAIN: Lista -->
-      <section class="panel" aria-label="Ranking">
-        <h2>Ranking</h2>
-        <div id="list" class="list"></div>
-        <div id="status" class="center">Loading…</div>
-      </section>
+    <!-- Lista + paginazione -->
+    <section class="panel" aria-label="Ranking">
+      <h2>Ranking</h2>
+      <div id="list" class="list"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+      <div id="status" class="center">Loading…</div>
     </section>
   </main>
 
@@ -209,87 +198,187 @@
 
     // Preloader lifecycle
     let assetsLoaded=false, dataRendered=false;
-    function hidePreloader(){const p=document.getElementById("preloader");if(!p)return;p.style.opacity="0";p.style.pointerEvents="none";setTimeout(()=>p.remove(),400)}
-    function tryHidePreloader(){if(assetsLoaded&&dataRendered)hidePreloader()}
+    const hidePreloader=()=>{const p=document.getElementById("preloader");if(!p)return;p.style.opacity="0";p.style.pointerEvents="none";setTimeout(()=>p.remove(),400)}
+    const tryHidePreloader=()=>{if(assetsLoaded&&dataRendered)hidePreloader()}
     window.addEventListener("load",()=>{assetsLoaded=true;tryHidePreloader()});
     setTimeout(()=>hidePreloader(),8000);
 
     // Utils
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-    const val = (row, ...keys) => { for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
-    const toNum = (v) => { if(v===null||v===undefined) return NaN; const n=Number(String(v).replace(',','.')); return isNaN(n)?NaN:n; };
+    const esc=(s='')=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const toNum=v=>{ if(v===null||v===undefined) return NaN; const n=Number(String(v).replace(',','.')); return isNaN(n)?NaN:n; };
+    const val=(row,...keys)=>{ for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
+    const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
 
-    const CSV_URL = '/data/anime.csv';
-    const listEl = document.getElementById('list');
-    const statusEl = document.getElementById('status');
-    const chipsEl = document.getElementById('chips');
+    const CSV_URL='/data/anime.csv';
+    const ITEMS_PER_PAGE=50;
 
-    const metricEl = document.getElementById('metric');
-    const orderEl = document.getElementById('order');
-    const limitEl = document.getElementById('limit');
-    const genreEl = document.getElementById('genre');
-    const yearFromEl = document.getElementById('yearFrom');
-    const yearToEl = document.getElementById('yearTo');
-    const applyBtn = document.getElementById('applyBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const sumTotal = document.getElementById('sumTotal');
-    const sumFiltered = document.getElementById('sumFiltered');
-    const summaryPanel = document.getElementById('summaryPanel');
+    // Elements
+    const listEl=document.getElementById('list');
+    const statusEl=document.getElementById('status');
+    const chipsEl=document.getElementById('chips');
+    const resultsInfo=document.getElementById('resultsInfo');
+    const paginationEl=document.getElementById('pagination');
+    const metricEl=document.getElementById('metric');
+    const orderEl=document.getElementById('order');
+    const clearBtn=document.getElementById('clearFilters');
+    const filtersBar=document.getElementById('filtersBar');
+    const searchForm=document.getElementById('searchForm');
+    const searchInput=document.getElementById('searchInput');
 
-    let rows=[], numericColumns=[], allGenres=new Set();
+    let rows=[], numericColumns=[], currentPage=1, queryText='';
 
+    // ===== GENRE dropdown (multi) =====
+    const genreSet=new Set();
+    const selectedGenres=new Set();
+
+    function parseList(value){
+      if(!value) return [];
+      let s=String(value).trim();
+      if(s==="[]"||s==="") return [];
+      try{
+        if(s.includes("'") && !s.includes('"')) s=s.replace(/'/g,'"');
+        const arr=JSON.parse(s);
+        return Array.isArray(arr)? arr.map(v=>String(v).trim()) : [];
+      }catch{
+        return s.replace(/^\[|\]$/g,"").split(",").map(x=>x.replace(/^['"\s]+|['"\s]+$/g,"")).filter(Boolean);
+      }
+    }
+
+    function collectGenres(row){
+      parseList(row.genres).forEach(g=>genreSet.add(g));
+    }
+
+    function buildGenreDropdown(){
+      const wrap=document.createElement('div');
+      wrap.className='filter-dropdown';
+      wrap.dataset.key='genres';
+
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='filter-btn';
+      btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+      btn.innerHTML=`<span>Genres</span> <span class="count" data-count-for="genres" style="display:none;">0</span>`;
+
+      const menu=document.createElement('div');
+      menu.className='filter-menu';
+      menu.innerHTML=`
+        <input class="filter-search" type="text" placeholder="Search Genres..." data-search-for="genres" aria-label="Search Genres">
+        <div class="options" data-options-for="genres" role="listbox"></div>
+      `;
+
+      const optionsBox=menu.querySelector('[data-options-for="genres"]');
+      [...genreSet].sort((a,b)=>a.localeCompare(b)).forEach(val=>{
+        const row=document.createElement('label'); row.className='option';
+        const input=document.createElement('input'); input.type='checkbox'; input.dataset.facet='genres'; input.value=val;
+        const span=document.createElement('span'); span.textContent=val;
+        row.appendChild(input); row.appendChild(span); optionsBox.appendChild(row);
+      });
+
+      // Toggle open/close
+      btn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
+          if(dd!==wrap){ dd.classList.remove('open'); const b=dd.querySelector('.filter-btn'); if(b) b.setAttribute('aria-expanded','false'); }
+        });
+        const isOpen=wrap.classList.toggle('open'); btn.setAttribute('aria-expanded',String(isOpen));
+        const search=menu.querySelector('[data-search-for="genres"]'); if(search) setTimeout(()=>search.focus(),0);
+      });
+
+      // Keep inside
+      menu.addEventListener('click',e=>e.stopPropagation());
+      menu.addEventListener('keydown',e=>{ if(e.key==='Escape'){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); } });
+      menu.querySelector('[data-search-for="genres"]').addEventListener('input',e=>{
+        const q=e.target.value.toLowerCase();
+        optionsBox.querySelectorAll('.option').forEach(opt=>{ const text=opt.textContent.toLowerCase(); opt.style.display = text.includes(q)? '' : 'none'; });
+      });
+
+      // Bind checks
+      menu.querySelectorAll('input[type="checkbox"]').forEach(chk=>{
+        chk.addEventListener('change',()=>{
+          if(chk.checked) selectedGenres.add(chk.value); else selectedGenres.delete(chk.value);
+          updateGenreCount();
+          applyAndRender(1);
+        });
+      });
+
+      wrap.appendChild(btn); wrap.appendChild(menu);
+      // inserisci come primo dropdown prima del bottone reset
+      const resetAnchor=clearBtn;
+      filtersBar.insertBefore(wrap, resetAnchor);
+    }
+
+    function updateGenreCount(){
+      const pill=document.querySelector('.count[data-count-for="genres"]');
+      if(!pill) return;
+      const n=selectedGenres.size;
+      if(n>0){ pill.style.display='inline-block'; pill.textContent=n; } else { pill.style.display='none'; pill.textContent='0'; }
+    }
+
+    // ===== SEARCH handling =====
+    const buildHaystack = (r) => [r.title, r.title_english, r.title_japanese].filter(Boolean).join(' ').toLowerCase();
+    function matchesQuery(r){
+      if(!queryText) return true;
+      return buildHaystack(r).includes(queryText);
+    }
+
+    function matchesGenres(r){
+      if(!selectedGenres.size) return true;
+      const g = parseList(r.genres);
+      if(!g.length) return false;
+      for(const sel of selectedGenres) if(g.includes(sel)) return true;
+      return false;
+    }
+
+    // ===== Metric detection / sorting =====
     function detectNumericColumns(sample){
-      const candidates = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
+      const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
       const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
-      const ordered=[...new Set([...preferred, ...candidates])];
-      return ordered.filter(k=>candidates.includes(k));
+      const ordered=[...new Set([...preferred, ...cands])];
+      return ordered.filter(k=>cands.includes(k));
     }
 
-    function collectGenresAndYears(data){
-      allGenres.clear(); let minYear=Infinity, maxYear=-Infinity;
-      data.forEach(r=>{
-        const g = val(r,'genres','genre','tags','themes');
-        if(g) String(g).split(/[,|/;]+/).map(s=>s.trim()).filter(Boolean).forEach(x=>allGenres.add(x));
-        const y = toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
-        if(!isNaN(y)){ if(y<minYear)minYear=y; if(y>maxYear)maxYear=y; }
+    function sortByMetric(data, metric, order){
+      return data.sort((a,b)=>{
+        const av=toNum(a[metric]), bv=toNum(b[metric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return order==='asc' ? av-bv : bv-av;
       });
-      genreEl.innerHTML='';
-      [...allGenres].sort((a,b)=>a.localeCompare(b)).forEach(g=>{
-        const o=document.createElement('option');o.value=g;o.textContent=g;genreEl.appendChild(o);
-      });
-      if(minYear!==Infinity) yearFromEl.placeholder=minYear;
-      if(maxYear!==-Infinity) yearToEl.placeholder=maxYear;
     }
 
-    function renderChips({metric,order,limit,genres,yFrom,yTo}){
+    // ===== Render =====
+    function formatGenresForCard(r){
+      const arr=parseList(r.genres);
+      return arr.join(', ');
+    }
+
+    function renderChips(metric, order){
       chipsEl.innerHTML='';
-      const chip=t=>{const s=document.createElement('span');s.className='chip';s.textContent=t;return s;}
-      chipsEl.append(chip(`Metric: ${metric}`), chip(`Order: ${order}`), chip(`Top: ${limit}`));
-      if(genres.length) chipsEl.append(chip(`Genres: ${genres.join(', ')}`));
-      if(!isNaN(yFrom)) chipsEl.append(chip(`From: ${yFrom}`));
-      if(!isNaN(yTo)) chipsEl.append(chip(`To: ${yTo}`));
+      const chip=t=>{const s=document.createElement('span'); s.className='chip'; s.textContent=t; return s;}
+      chipsEl.append(chip(`Metric: ${metric}`), chip(`Order: ${order}`));
+      if(queryText) chipsEl.append(chip(`Search: ${queryText}`));
+      if(selectedGenres.size) chipsEl.append(chip(`Genres: ${[...selectedGenres].join(', ')}`));
     }
 
-    function renderList(data,metric,order,limit){
+    function renderListPage(items, metric, startIndex){
       listEl.innerHTML='';
-      data.slice(0,limit).forEach((row,idx)=>{
+      items.forEach((row,idx)=>{
         const title = val(row,'title','name','anime','series_title');
         const img = val(row,'main_picture','image_url','image','pic','poster');
         const year = val(row,'year','start_year','aired_from_year','startDateYear');
-        const genres = val(row,'genres','genre','tags','themes');
         const episodes = val(row,'episodes','ep','eps');
         const scoreVal = toNum(val(row,'score','rating','score_mean'));
         const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
         const metricVal = toNum(row[metric]);
+        const genresText = formatGenresForCard(row);
 
-        const card=document.createElement('article');
-        card.className='rank-card';
+        const card=document.createElement('article'); card.className='rank-card';
         card.innerHTML = `
-          <div class="rank">${idx+1}</div>
+          <div class="rank">${startIndex + idx + 1}</div>
           <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title||'Anime')}">
           <div class="meta">
             <h3>${esc(title || 'Untitled')}</h3>
-            <div class="muted">${year ? esc(year) : ''}${year && genres ? ' • ' : ''}${genres ? esc(genres) : ''}</div>
+            <div class="muted">${year ? esc(year) : ''}${year && genresText ? ' • ' : ''}${genresText ? esc(genresText) : ''}</div>
             <div class="badges">
               ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
               ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
@@ -299,81 +388,97 @@
           </div>`;
         listEl.appendChild(card);
       });
-      statusEl.textContent = data.length ? '' : 'No results for current filters.';
     }
 
-    function applyFilters(){
-      const metric=metricEl.value;
-      const order=orderEl.value;
-      const limit=Math.max(1, Number(limitEl.value)||50);
-      const selectedGenres=[...genreEl.selectedOptions].map(o=>o.value);
-      const yFrom=toNum(yearFromEl.value);
-      const yTo=toNum(yearToEl.value);
+    function updatePagination(totalPages, current){
+      paginationEl.innerHTML='';
+      const makeBtn=(txt,page,active=false)=>{
+        const b=document.createElement('button'); b.type='button'; b.textContent=txt; if(active) b.classList.add('active');
+        b.addEventListener('click',()=>goToPage(page)); return b;
+      };
+      const dots=()=>{const s=document.createElement('span'); s.textContent='…'; s.style.margin='0 4px'; paginationEl.appendChild(s);};
 
-      let data=rows.slice();
-
-      if(selectedGenres.length){
-        data=data.filter(r=>{
-          const g=String(val(r,'genres','genre','tags','themes')).toLowerCase();
-          return selectedGenres.every(s=>g.includes(String(s).toLowerCase()));
-        });
+      if(totalPages<=10){
+        for(let i=1;i<=totalPages;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+      }else{
+        paginationEl.appendChild(makeBtn(1,1,current===1));
+        if(current>3) dots();
+        const start=Math.max(2,current-1), end=Math.min(totalPages-1,current+1);
+        for(let i=start;i<=end;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+        if(current<totalPages-2) dots();
+        paginationEl.appendChild(makeBtn(totalPages,totalPages,current===totalPages));
       }
-      data=data.filter(r=>{
-        const y=toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
-        if(isNaN(y)) return true;
-        if(!isNaN(yFrom) && y<yFrom) return false;
-        if(!isNaN(yTo) && y>yTo) return false;
-        return true;
-      });
-
-      data.sort((a,b)=>{
-        const av=toNum(a[metric]), bv=toNum(b[metric]);
-        if(isNaN(av) && isNaN(bv)) return 0;
-        if(isNaN(av)) return 1;
-        if(isNaN(bv)) return -1;
-        return order==='asc' ? av-bv : bv-av;
-      });
-
-      renderChips({metric,order,limit,genres:selectedGenres,yFrom,yTo});
-      renderList(data,metric,order,limit);
-      sumFiltered.textContent=data.length; summaryPanel.style.display='block';
-
-      const params=new URLSearchParams(location.search);
-      params.set('metric',metric); params.set('order',order); params.set('limit',String(limit));
-      selectedGenres.length ? params.set('genres',selectedGenres.join(',')) : params.delete('genres');
-      yearFromEl.value ? params.set('from',yearFromEl.value) : params.delete('from');
-      yearToEl.value ? params.set('to',yearToEl.value) : params.delete('to');
-      history.replaceState(null,'',`${location.pathname}?${params.toString()}`);
     }
+
+    function updateURL(page){
+      const u=new URL(location.href);
+      // search
+      queryText ? u.searchParams.set('q', queryText) : u.searchParams.delete('q');
+      // genres
+      selectedGenres.size ? u.searchParams.set('genres', [...selectedGenres].join('|')) : u.searchParams.delete('genres');
+      // metric/order
+      u.searchParams.set('metric', metricEl.value);
+      u.searchParams.set('order', orderEl.value);
+      // page
+      page>1 ? u.searchParams.set('page', page) : u.searchParams.delete('page');
+      history.replaceState(null,'',u.toString());
+      // canonical + og:url
+      const full=`${location.origin}${location.pathname}${u.search}`;
+      document.getElementById('canonicalLink').href=full;
+      const og=document.querySelector('meta[property="og:url"]'); if(og) og.setAttribute('content', full);
+    }
+
+    function applyAndRender(page=1){
+      const metric=metricEl.value||'score';
+      const order=orderEl.value||'desc';
+
+      // Filtra
+      let filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
+
+      // Sort
+      sortByMetric(filtered, metric, order);
+
+      // Pagine (sempre 50)
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+      currentPage = Math.min(Math.max(1,page), totalPages);
+
+      const start = (currentPage-1)*ITEMS_PER_PAGE;
+      const pageItems = filtered.slice(start, start+ITEMS_PER_PAGE);
+
+      resultsInfo.textContent = `${total} results • Page ${currentPage} / ${totalPages}`;
+      renderChips(metric, order);
+      renderListPage(pageItems, metric, start);
+      updatePagination(totalPages, currentPage);
+      updateURL(currentPage);
+
+      // JSON-LD ItemList (prime 10 della pagina)
+      const itemList = pageItems.slice(0,10).map((r,i)=>({
+        "@type":"ListItem",
+        "position": i+1 + start,
+        "name": r.title || "Anime",
+        "url": `${location.origin}/anime?id=${encodeURIComponent(r.anime_id||'')}`,
+        "image": r.main_picture || undefined
+      }));
+      document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":itemList});
+    }
+
+    function goToPage(p){ applyAndRender(p); }
 
     function hydrateFromURL(){
-      const p=new URLSearchParams(location.search);
-      const m=p.get('metric'); const o=p.get('order'); const lim=p.get('limit');
-      const gs=p.get('genres'); const yf=p.get('from'); const yt=p.get('to');
-      if(o) orderEl.value=o; if(lim) limitEl.value=lim; if(yf) yearFromEl.value=yf; if(yt) yearToEl.value=yt;
-      return {m,gs};
-    }
+      const q=new URLSearchParams(location.search);
+      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText; searchInput.value=qText; }
+      const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
 
-    function initControlsAndRender(){
-      document.getElementById('sumTotal').textContent = rows.length;
-      let defaultMetric = numericColumns.find(c=>['score','rating','score_mean'].includes(c)) || numericColumns[0];
-
-      const {m,gs} = hydrateFromURL();
-
-      metricEl.innerHTML='';
-      numericColumns.forEach(c=>{
-        const opt=document.createElement('option');
-        opt.value=c; opt.textContent=c.charAt(0).toUpperCase()+c.slice(1);
-        metricEl.appendChild(opt);
-      });
-      metricEl.value = (m && numericColumns.includes(m)) ? m : defaultMetric;
-
-      if(gs){
-        const wanted=gs.split(',').map(s=>s.trim());
-        [...genreEl.options].forEach(o=>{ if(wanted.includes(o.value)) o.selected=true; });
+      // genres
+      const rawGenres=q.get('genres');
+      if(rawGenres){
+        rawGenres.split('|').forEach(g=> selectedGenres.add(g));
       }
+      if(m) metricEl.value=m;
+      if(o) orderEl.value=o;
 
-      applyFilters();
+      return Math.max(1, isNaN(p)?1:p);
     }
 
     // Boot
@@ -381,43 +486,51 @@
       fetch(CSV_URL)
         .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
         .then(text=>{
-          const res = Papa.parse(text, {header:true, skipEmptyLines:true});
+          const res=Papa.parse(text,{header:true,skipEmptyLines:true});
           rows = res.data || [];
+
+          // collect genres
+          rows.forEach(collectGenres);
+
+          // build genre dropdown
+          buildGenreDropdown();
+
+          // numeric columns
           const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
           numericColumns = sample ? detectNumericColumns(sample) : [];
           if(!numericColumns.length){
             numericColumns=['score'];
             rows = rows.map(r=>({...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0}));
           }
-          collectGenresAndYears(rows);
-          initControlsAndRender();
+          metricEl.innerHTML=''; numericColumns.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; metricEl.appendChild(o); });
+
+          // Hydrate + render
+          const startPage = hydrateFromURL();
+          applyAndRender(startPage);
+
           dataRendered=true; tryHidePreloader();
-
-          // SEO: canonical/OG
-          const url = `${location.origin}${location.pathname}`;
-          document.getElementById('canonicalLink').href = url;
-          document.querySelector('meta[property="og:url"]').setAttribute('content', url);
-
-          // JSON-LD ItemList (primi 10 dopo filtri correnti)
-          setTimeout(()=>{
-            const items=[...document.querySelectorAll('.rank-card')].slice(0,10).map((el,i)=>{
-              const title=el.querySelector('.meta h3')?.textContent?.trim()||`#${i+1}`;
-              return {"@type":"ListItem","position":i+1,"name":title};
-            });
-            document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":items});
-          },0);
+          statusEl.textContent='';
         })
         .catch(err=>{
           statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
           dataRendered=true; tryHidePreloader();
         });
 
-      applyBtn.addEventListener('click', applyFilters);
-      resetBtn.addEventListener('click', ()=>{
-        metricEl.selectedIndex=0; orderEl.value='desc'; limitEl.value=50;
-        yearFromEl.value=''; yearToEl.value=''; [...genreEl.options].forEach(o=>o.selected=false);
-        history.replaceState(null,'',location.pathname); applyFilters();
+      // Events
+      metricEl.addEventListener('change', ()=> applyAndRender(1));
+      orderEl.addEventListener('change', ()=> applyAndRender(1));
+
+      clearBtn.addEventListener('click', ()=>{
+        selectedGenres.clear();
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk=> chk.checked=false);
+        updateGenreCount();
+        queryText=''; searchInput.value='';
+        applyAndRender(1);
       });
+
+      // Search: submit o input live
+      searchForm.addEventListener('submit', (e)=>{ e.preventDefault(); queryText = (searchInput.value||'').trim().toLowerCase(); applyAndRender(1); });
+      searchInput.addEventListener('input', debounce(()=>{ queryText=(searchInput.value||'').trim().toLowerCase(); applyAndRender(1); }, 300));
     });
   </script>
 </body>
