@@ -1,27 +1,21 @@
-<!-- top-anime.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Top Anime — AniMMUnity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Search and rank top anime. Filter by genres, sort by metrics, and browse with 50-per-page pagination." />
+  <meta name="description" content="Search by title, filter genres, sort by metric, and browse 50 per page. Fixed global ranks per metric/order." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#ffffff">
 
-  <!-- Open Graph / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:title" content="Top Anime — AniMMUnity">
-  <meta property="og:description" content="Search, filter by genres, and paginate 50 per page.">
+  <meta property="og:description" content="Search, filter, sort, and paginate with fixed ranks.">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Top Anime — AniMMUnity">
-  <meta name="twitter:description" content="Search, filter by genres, and paginate 50 per page.">
-  <meta name="twitter:image" content="">
-
   <link id="canonicalLink" rel="canonical" href="">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
@@ -30,73 +24,73 @@
   <!-- JSON-LD: ItemList (dinamico) -->
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 
-  <!-- ===== NOVA WHITE UI ===== -->
   <style>
     :root{
       --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
       --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
       --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
-      --grad:radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
-             radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-      background-image:var(--grad);background-attachment:fixed;
+      /* tolto gradiente di sfondo per evitare “velo” */
+      background:#f6f7fb;
     }
     a{color:var(--primary);text-decoration:none}
     a:hover{text-decoration:underline}
     .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
-    .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
-    .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
-    .sub{color:var(--muted);font-size:.95rem}
+    /* Tutti i blocchi con la stessa grafica (panel) */
+    .panel{
+      background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);
+      box-shadow:var(--shadow-1);padding:18px;
+    }
+    .panel + .panel{ margin-top:18px; }
+
+    /* Hero = stesso stile del panel + più respiro */
+    .hero{ composes: panel; }
+    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:22px}
+    .hero h1{margin:0 0 8px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
+    .sub{color:var(--muted);font-size:.95rem;margin:6px 0 14px}
     .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-    .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
-    .panel h2{margin:0 0 10px;font-size:1.05rem}
+    /* Spaziatura tra i blocchi principali */
+    .block-gap{ margin-top:18px; }
 
-    /* Search (stile index) */
-    .search-container{width:100%;margin:10px 0 6px}
-    .search-form{display:flex;gap:10px;align-items:center}
+    /* Search */
+    .search-container{width:100%;margin:10px 0 0}
     .search-input{
-      flex:1;padding:.8rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
+      width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
       box-shadow:0 2px 8px rgba(17,24,39,.04);
     }
     .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
-    .search-btn{
-      padding:.8rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
-      font-weight:700;cursor:pointer;box-shadow:var(--shadow-1)
-    }
 
-    /* Filters bar (dropdown come la tua index) */
-    .filters-bar{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;align-items:center}
+    /* Dropdown (Genres / Metric / Order) */
+    .filters-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
     .filter-dropdown{position:relative}
     .filter-btn{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1px solid #bbb;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
+      display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border:1px solid #bbb;border-radius:10px;
+      cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
     }
     .filter-btn[aria-expanded="true"]{outline:2px solid #007BFF}
     .filter-btn .count{background:#007BFF;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}
     .filter-menu{
       position:absolute;top:calc(100% + 6px);left:0;min-width:260px;max-height:320px;overflow:auto;background:#fff;border:1px solid #ddd;border-radius:12px;
-      box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px;z-index:1000;display:none
+      box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:10px;z-index:1000;display:none
     }
     .filter-dropdown.open .filter-menu{display:block}
     .filter-search{width:100%;border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:13px;margin-bottom:8px;outline:none;box-sizing:border-box}
-    .option{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer}
-    .option:hover{background:#f5f5f5}
-    .btn-clear{border:1px solid #bbb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)}
-    .btn-clear:hover{background:#f0f0f0}
+    .options .option{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer}
+    .options .option:hover{background:#f5f5f5}
+    .options input{margin-right:4px}
 
-    /* Metric & Order */
-    .mini-control{display:inline-flex;align-items:center;gap:6px}
-    .mini-control select{
-      padding:8px 10px;border:1px solid #bbb;border-radius:10px;background:#fff;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.06)
+    .btn-clear{
+      border:1px solid #bbb;background:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
     }
+    .btn-clear:hover{background:#f0f0f0}
 
     /* Lista classifica */
     .list{display:grid;gap:12px}
@@ -132,9 +126,6 @@
     #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
     .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* Responsive fix */
-    @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
   </style>
 </head>
 <body>
@@ -145,43 +136,30 @@
   <div id="header"></div>
 
   <main class="shell">
-    <section class="hero">
+    <!-- Top Anime (stesso stile panel) -->
+    <section class="hero panel">
       <h1>Top Anime</h1>
       <p class="sub">Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page.</p>
 
-      <!-- SEARCH (stile index) -->
+      <!-- SEARCH live (niente bottone) -->
       <div class="search-container">
-        <form id="searchForm" class="search-form" role="search">
-          <input id="searchInput" class="search-input" type="search" placeholder="Search for an Anime… (title / English / Japanese)" autocomplete="off" />
-          <button class="search-btn" type="submit">Search</button>
-        </form>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search for an Anime… (title / English / Japanese)" autocomplete="off" />
       </div>
 
       <div id="chips" class="chips"></div>
     </section>
 
-    <!-- Barra filtri -->
-    <section class="panel">
+    <!-- Filtri (stesso stile panel + spaziatura) -->
+    <section class="panel block-gap">
       <div class="filters-bar" id="filtersBar" aria-label="Filters">
-        <!-- Dropdown GENRE creato via JS -->
-        <div class="mini-control">
-          <label for="metric" class="muted">Metric</label>
-          <select id="metric"></select>
-        </div>
-        <div class="mini-control">
-          <label for="order" class="muted">Order</label>
-          <select id="order">
-            <option value="desc">Highest first</option>
-            <option value="asc">Lowest first</option>
-          </select>
-        </div>
+        <!-- Dropdowns creati via JS: Genres / Metric / Order -->
         <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
       </div>
       <div class="center" id="resultsInfo"></div>
     </section>
 
-    <!-- Lista + paginazione -->
-    <section class="panel" aria-label="Ranking">
+    <!-- Ranking (stesso stile panel) -->
+    <section class="panel block-gap" aria-label="Ranking">
       <h2>Ranking</h2>
       <div id="list" class="list"></div>
       <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
@@ -209,25 +187,24 @@
     const val=(row,...keys)=>{ for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
     const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
 
-    const CSV_URL='/data/anime.csv';
-    const ITEMS_PER_PAGE=50;
-
     // Elements
-    const listEl=document.getElementById('list');
-    const statusEl=document.getElementById('status');
+    const searchInput=document.getElementById('searchInput');
+    const filtersBar=document.getElementById('filtersBar');
+    const clearBtn=document.getElementById('clearFilters');
     const chipsEl=document.getElementById('chips');
     const resultsInfo=document.getElementById('resultsInfo');
+    const listEl=document.getElementById('list');
     const paginationEl=document.getElementById('pagination');
-    const metricEl=document.getElementById('metric');
-    const orderEl=document.getElementById('order');
-    const clearBtn=document.getElementById('clearFilters');
-    const filtersBar=document.getElementById('filtersBar');
-    const searchForm=document.getElementById('searchForm');
-    const searchInput=document.getElementById('searchInput');
+    const statusEl=document.getElementById('status');
 
-    let rows=[], numericColumns=[], currentPage=1, queryText='';
+    // Data/state
+    const CSV_URL='/data/anime.csv';
+    const ITEMS_PER_PAGE=50;
+    let rows=[], numericColumns=[];
+    let currentPage=1, queryText='';
+    let currentMetric='score', currentOrder='desc';
 
-    // ===== GENRE dropdown (multi) =====
+    // ===== Genres dropdown (multi) =====
     const genreSet=new Set();
     const selectedGenres=new Set();
 
@@ -244,91 +221,97 @@
       }
     }
 
-    function collectGenres(row){
-      parseList(row.genres).forEach(g=>genreSet.add(g));
-    }
+    function collectGenres(row){ parseList(row.genres).forEach(g=>genreSet.add(g)); }
 
-    function buildGenreDropdown(){
+    function buildDropdown({key,label,type,options,withSearch=true,onSelect}){
       const wrap=document.createElement('div');
       wrap.className='filter-dropdown';
-      wrap.dataset.key='genres';
+      wrap.dataset.key=key;
 
       const btn=document.createElement('button');
       btn.type='button'; btn.className='filter-btn';
       btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
-      btn.innerHTML=`<span>Genres</span> <span class="count" data-count-for="genres" style="display:none;">0</span>`;
+      btn.innerHTML = type==='multi'
+        ? `<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`
+        : `<span id="btn-label-${esc(key)}">${esc(label)}</span>`;
 
       const menu=document.createElement('div');
       menu.className='filter-menu';
       menu.innerHTML=`
-        <input class="filter-search" type="text" placeholder="Search Genres..." data-search-for="genres" aria-label="Search Genres">
-        <div class="options" data-options-for="genres" role="listbox"></div>
+        ${withSearch ? `<input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">` : ''}
+        <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
       `;
 
-      const optionsBox=menu.querySelector('[data-options-for="genres"]');
-      [...genreSet].sort((a,b)=>a.localeCompare(b)).forEach(val=>{
+      const optionsBox=menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
+
+      options.forEach(opt=>{
         const row=document.createElement('label'); row.className='option';
-        const input=document.createElement('input'); input.type='checkbox'; input.dataset.facet='genres'; input.value=val;
-        const span=document.createElement('span'); span.textContent=val;
+        const input=document.createElement('input');
+        if(type==='multi'){
+          input.type='checkbox'; input.dataset.facet=key; input.value=opt.value; 
+        }else{
+          input.type='radio'; input.name=`radio-${key}`; input.value=opt.value; input.checked = opt.value===opt.selected;
+        }
+        const span=document.createElement('span'); span.textContent=opt.label;
         row.appendChild(input); row.appendChild(span); optionsBox.appendChild(row);
       });
 
-      // Toggle open/close
+      // Toggle
       btn.addEventListener('click',(e)=>{
         e.stopPropagation();
         document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
           if(dd!==wrap){ dd.classList.remove('open'); const b=dd.querySelector('.filter-btn'); if(b) b.setAttribute('aria-expanded','false'); }
         });
         const isOpen=wrap.classList.toggle('open'); btn.setAttribute('aria-expanded',String(isOpen));
-        const search=menu.querySelector('[data-search-for="genres"]'); if(search) setTimeout(()=>search.focus(),0);
+        const search=menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`); if(isOpen && search) setTimeout(()=>search.focus(),0);
       });
-
-      // Keep inside
       menu.addEventListener('click',e=>e.stopPropagation());
-      menu.addEventListener('keydown',e=>{ if(e.key==='Escape'){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); } });
-      menu.querySelector('[data-search-for="genres"]').addEventListener('input',e=>{
-        const q=e.target.value.toLowerCase();
-        optionsBox.querySelectorAll('.option').forEach(opt=>{ const text=opt.textContent.toLowerCase(); opt.style.display = text.includes(q)? '' : 'none'; });
-      });
+      menu.addEventListener('keydown',e=>{ if(e.key==='Escape'){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }});
 
-      // Bind checks
-      menu.querySelectorAll('input[type="checkbox"]').forEach(chk=>{
-        chk.addEventListener('change',()=>{
-          if(chk.checked) selectedGenres.add(chk.value); else selectedGenres.delete(chk.value);
-          updateGenreCount();
-          applyAndRender(1);
+      if(withSearch){
+        menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input',e=>{
+          const q=e.target.value.toLowerCase();
+          optionsBox.querySelectorAll('.option').forEach(optEl=>{
+            const text=optEl.textContent.toLowerCase();
+            optEl.style.display = text.includes(q) ? '' : 'none';
+          });
+        });
+      }
+
+      // Bind changes
+      optionsBox.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('change',()=>{
+          onSelect(inp);
+          if(type==='single'){
+            // aggiorna label bottone
+            const span = optionsBox.querySelector('input:checked')?.parentElement?.querySelector('span')?.textContent || label;
+            const labelEl=document.getElementById(`btn-label-${key}`); if(labelEl) labelEl.textContent = span;
+            wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+          }
         });
       });
 
       wrap.appendChild(btn); wrap.appendChild(menu);
-      // inserisci come primo dropdown prima del bottone reset
-      const resetAnchor=clearBtn;
-      filtersBar.insertBefore(wrap, resetAnchor);
+      filtersBar.insertBefore(wrap, document.getElementById('clearFilters'));
     }
 
-    function updateGenreCount(){
-      const pill=document.querySelector('.count[data-count-for="genres"]');
+    function updateCountBadge(key, count){
+      const pill=document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
       if(!pill) return;
-      const n=selectedGenres.size;
-      if(n>0){ pill.style.display='inline-block'; pill.textContent=n; } else { pill.style.display='none'; pill.textContent='0'; }
+      if(count>0){ pill.style.display='inline-block'; pill.textContent=count; } else { pill.style.display='none'; pill.textContent='0'; }
     }
 
-    // ===== SEARCH handling =====
+    // ===== Search / Filters logic =====
     const buildHaystack = (r) => [r.title, r.title_english, r.title_japanese].filter(Boolean).join(' ').toLowerCase();
-    function matchesQuery(r){
-      if(!queryText) return true;
-      return buildHaystack(r).includes(queryText);
-    }
-
-    function matchesGenres(r){
+    const matchesQuery = (r) => (!queryText) || buildHaystack(r).includes(queryText);
+    const matchesGenres = (r) => {
       if(!selectedGenres.size) return true;
-      const g = parseList(r.genres);
-      if(!g.length) return false;
+      const g=parseList(r.genres); if(!g.length) return false;
       for(const sel of selectedGenres) if(g.includes(sel)) return true;
       return false;
-    }
+    };
 
-    // ===== Metric detection / sorting =====
+    // Metric detection
     function detectNumericColumns(sample){
       const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
       const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
@@ -336,31 +319,35 @@
       return ordered.filter(k=>cands.includes(k));
     }
 
-    function sortByMetric(data, metric, order){
-      return data.sort((a,b)=>{
+    // ===== Fixed global ranks per metric/order =====
+    // Per ogni combinazione (metric, order) costruiamo una mappa anime_id -> posizione globale
+    let globalRankMap = new Map();
+    function computeGlobalRanks(metric, order){
+      const arr = rows.slice().sort((a,b)=>{
         const av=toNum(a[metric]), bv=toNum(b[metric]);
         if(isNaN(av) && isNaN(bv)) return 0;
         if(isNaN(av)) return 1;
         if(isNaN(bv)) return -1;
         return order==='asc' ? av-bv : bv-av;
       });
+      const map=new Map();
+      let pos=1;
+      for(const r of arr){ map.set(String(r.anime_id||''), pos++); }
+      globalRankMap = map;
     }
 
     // ===== Render =====
-    function formatGenresForCard(r){
-      const arr=parseList(r.genres);
-      return arr.join(', ');
-    }
+    function formatGenresForCard(r){ return parseList(r.genres).join(', '); }
 
-    function renderChips(metric, order){
+    function renderChips(){
       chipsEl.innerHTML='';
       const chip=t=>{const s=document.createElement('span'); s.className='chip'; s.textContent=t; return s;}
-      chipsEl.append(chip(`Metric: ${metric}`), chip(`Order: ${order}`));
+      chipsEl.append(chip(`Metric: ${currentMetric}`), chip(`Order: ${currentOrder}`));
       if(queryText) chipsEl.append(chip(`Search: ${queryText}`));
       if(selectedGenres.size) chipsEl.append(chip(`Genres: ${[...selectedGenres].join(', ')}`));
     }
 
-    function renderListPage(items, metric, startIndex){
+    function renderListPage(items, startIndex){
       listEl.innerHTML='';
       items.forEach((row,idx)=>{
         const title = val(row,'title','name','anime','series_title');
@@ -369,12 +356,14 @@
         const episodes = val(row,'episodes','ep','eps');
         const scoreVal = toNum(val(row,'score','rating','score_mean'));
         const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
-        const metricVal = toNum(row[metric]);
+        const metricVal = toNum(row[currentMetric]);
         const genresText = formatGenresForCard(row);
+
+        const globalPos = globalRankMap.get(String(row.anime_id||'')) || (startIndex+idx+1); // fallback
 
         const card=document.createElement('article'); card.className='rank-card';
         card.innerHTML = `
-          <div class="rank">${startIndex + idx + 1}</div>
+          <div class="rank">${globalPos}</div>
           <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title||'Anime')}">
           <div class="meta">
             <h3>${esc(title || 'Untitled')}</h3>
@@ -383,7 +372,7 @@
               ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
               ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
               ${episodes ? `<span class="badge ep">Ep: ${esc(episodes)}</span>` : ''}
-              <span class="badge pill">${esc(metric)}: ${isNaN(metricVal)?'—':metricVal}</span>
+              <span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>
             </div>
           </div>`;
         listEl.appendChild(card);
@@ -417,8 +406,8 @@
       // genres
       selectedGenres.size ? u.searchParams.set('genres', [...selectedGenres].join('|')) : u.searchParams.delete('genres');
       // metric/order
-      u.searchParams.set('metric', metricEl.value);
-      u.searchParams.set('order', orderEl.value);
+      u.searchParams.set('metric', currentMetric);
+      u.searchParams.set('order', currentOrder);
       // page
       page>1 ? u.searchParams.set('page', page) : u.searchParams.delete('page');
       history.replaceState(null,'',u.toString());
@@ -429,16 +418,22 @@
     }
 
     function applyAndRender(page=1){
-      const metric=metricEl.value||'score';
-      const order=orderEl.value||'desc';
+      // (ri)calcola posizioni globali per la metrica/ordine attuali
+      computeGlobalRanks(currentMetric, currentOrder);
 
       // Filtra
       let filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
 
-      // Sort
-      sortByMetric(filtered, metric, order);
+      // Ordina per metrica/ordine corrente (solo per l’ordine di lista, non per il numero mostrato)
+      filtered.sort((a,b)=>{
+        const av=toNum(a[currentMetric]), bv=toNum(b[currentMetric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return currentOrder==='asc' ? av-bv : bv-av;
+      });
 
-      // Pagine (sempre 50)
+      // Pagine
       const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
       currentPage = Math.min(Math.max(1,page), totalPages);
@@ -447,15 +442,15 @@
       const pageItems = filtered.slice(start, start+ITEMS_PER_PAGE);
 
       resultsInfo.textContent = `${total} results • Page ${currentPage} / ${totalPages}`;
-      renderChips(metric, order);
-      renderListPage(pageItems, metric, start);
+      renderChips();
+      renderListPage(pageItems, start);
       updatePagination(totalPages, currentPage);
       updateURL(currentPage);
 
       // JSON-LD ItemList (prime 10 della pagina)
       const itemList = pageItems.slice(0,10).map((r,i)=>({
         "@type":"ListItem",
-        "position": i+1 + start,
+        "position": (globalRankMap.get(String(r.anime_id||'')) || (start+i+1)),
         "name": r.title || "Anime",
         "url": `${location.origin}/anime?id=${encodeURIComponent(r.anime_id||'')}`,
         "image": r.main_picture || undefined
@@ -467,16 +462,15 @@
 
     function hydrateFromURL(){
       const q=new URLSearchParams(location.search);
-      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText; searchInput.value=qText; }
+      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText.toLowerCase(); searchInput.value=qText; }
       const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
 
       // genres
       const rawGenres=q.get('genres');
-      if(rawGenres){
-        rawGenres.split('|').forEach(g=> selectedGenres.add(g));
-      }
-      if(m) metricEl.value=m;
-      if(o) orderEl.value=o;
+      if(rawGenres){ rawGenres.split('|').forEach(g=> selectedGenres.add(g)); updateCountBadge('genres', selectedGenres.size); }
+
+      if(m) currentMetric=m;
+      if(o) currentOrder=o;
 
       return Math.max(1, isNaN(p)?1:p);
     }
@@ -492,45 +486,91 @@
           // collect genres
           rows.forEach(collectGenres);
 
-          // build genre dropdown
-          buildGenreDropdown();
-
           // numeric columns
           const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
           numericColumns = sample ? detectNumericColumns(sample) : [];
           if(!numericColumns.length){
             numericColumns=['score'];
-            rows = rows.map(r=>({...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0}));
+            rows = rows.map(r=>({...r, score: toNum(r.score)||toNum(val(r,'rating','rank','members','popularity')) || 0}));
           }
-          metricEl.innerHTML=''; numericColumns.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; metricEl.appendChild(o); });
 
-          // Hydrate + render
+          // DROPDOWNS ===
+          // Genres (multi)
+          buildDropdown({
+            key:'genres',
+            label:'Genres',
+            type:'multi',
+            options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
+            withSearch:true,
+            onSelect:(inp)=>{
+              if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
+              updateCountBadge('genres', selectedGenres.size);
+              applyAndRender(1);
+            }
+          });
+
+          // Metric (single)
+          const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
+          buildDropdown({
+            key:'metric',
+            label:`Metric: ${currentMetric}`,
+            type:'single',
+            options:metricOptions,
+            withSearch:true,
+            onSelect:(inp)=>{
+              currentMetric = inp.value;
+              applyAndRender(1);
+            }
+          });
+
+          // Order (single)
+          const orderOptions = [
+            {label:'Highest first', value:'desc', selected: currentOrder==='desc'},
+            {label:'Lowest first',  value:'asc',  selected: currentOrder==='asc' }
+          ];
+          buildDropdown({
+            key:'order',
+            label:`Order: ${currentOrder}`,
+            type:'single',
+            options:orderOptions,
+            withSearch:false,
+            onSelect:(inp)=>{
+              currentOrder = inp.value;
+              applyAndRender(1);
+            }
+          });
+
+          // HYDRATE + RENDER
           const startPage = hydrateFromURL();
           applyAndRender(startPage);
 
-          dataRendered=true; tryHidePreloader();
-          statusEl.textContent='';
+          dataRendered=true; tryHidePreloader(); statusEl.textContent='';
         })
         .catch(err=>{
           statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
           dataRendered=true; tryHidePreloader();
         });
 
-      // Events
-      metricEl.addEventListener('change', ()=> applyAndRender(1));
-      orderEl.addEventListener('change', ()=> applyAndRender(1));
+      // Search live (no button)
+      searchInput.addEventListener('input', debounce(()=>{
+        queryText=(searchInput.value||'').trim().toLowerCase();
+        applyAndRender(1);
+      }, 250));
 
+      // Reset
       clearBtn.addEventListener('click', ()=>{
         selectedGenres.clear();
-        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk=> chk.checked=false);
-        updateGenreCount();
+        document.querySelectorAll('.filter-menu input[type="checkbox"][data-facet="genres"]').forEach(chk=> chk.checked=false);
+        updateCountBadge('genres', 0);
         queryText=''; searchInput.value='';
+        // reset metric/order ai default visibili nelle label
+        currentMetric = numericColumns[0] || 'score';
+        currentOrder = 'desc';
+        // aggiorna label bottoni metric/order
+        const mLabel=document.getElementById('btn-label-metric'); if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
+        const oLabel=document.getElementById('btn-label-order');  if(oLabel) oLabel.textContent=`Order: ${currentOrder}`;
         applyAndRender(1);
       });
-
-      // Search: submit o input live
-      searchForm.addEventListener('submit', (e)=>{ e.preventDefault(); queryText = (searchInput.value||'').trim().toLowerCase(); applyAndRender(1); });
-      searchInput.addEventListener('input', debounce(()=>{ queryText=(searchInput.value||'').trim().toLowerCase(); applyAndRender(1); }, 300));
     });
   </script>
 </body>
