@@ -1,635 +1,491 @@
+<!-- top-anime.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <title>AniMMUnity — Anime List with Powerful Filters</title>
-  <meta name="description" content="Browse the AniMMUnity anime list. Filter by genres, themes, demographics, studios, producers, and licensors. Fast search, clean cards, and detail pages with trailers and info.">
-
-  <!-- Canonical -->
-  <link rel="canonical" href="https://animmunity.github.io/">
-
-  <!-- Robots -->
+  <meta charset="utf-8" />
+  <title>Top Anime — AniMMUnity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Rank top anime with dropdown filters, sort by score or popularity, and paginate 50 per page on AniMMUnity." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-
-  <!-- Favicons -->
-  <link rel="icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <!-- Theme color -->
   <meta name="theme-color" content="#ffffff">
 
-  <!-- Open Graph -->
-  <meta name="google-site-verification" content="W6u_tODiRrFoPP_hX2-DKmsH9_ByVD8T4jm7hy_4xkg" />
-  <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://animmunity.github.io/">
-  <meta property="og:title" content="AniMMUnity — Anime List with Powerful Filters">
-  <meta property="og:description" content="Search and filter anime by genres, themes, demographics, studios, producers, and licensors.">
-  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="Top Anime — AniMMUnity">
+  <meta property="og:description" content="Dropdown filters, ranking by multiple metrics, and pagination.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
 
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AniMMUnity — Anime List with Powerful Filters">
-  <meta name="twitter:description" content="Search and filter anime by genres, themes, demographics, studios, producers, and licensors.">
-  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
+  <link id="canonicalLink" rel="canonical" href="">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+  <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" />
 
-  <!-- Sitemap hint -->
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <!-- JSON-LD: ItemList (dinamico) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 
-  <!-- Performance hints (solo esterni usati) -->
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-
-  <!-- Prev/Next per SEO pagination (aggiornati via JS) -->
-  <link id="relPrev" rel="prev" href="" />
-  <link id="relNext" rel="next" href="" />
-
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
-
+  <!-- NOVA WHITE UI + Dropdown Filters style (coerente con la tua pagina) -->
   <style>
-    /* --- Dropdown Filters UI --- */
-    .filters-bar {
-      display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; align-items: center;
+    :root{
+      --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
+      --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
+      --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
+      --grad:radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+             radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
     }
-    .filter-dropdown { position: relative; }
-    .filter-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 12px; background: #fff; border: 1px solid #bbb;
-      border-radius: 10px; cursor: pointer; font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      background-image:var(--grad);background-attachment:fixed;
     }
-    .filter-btn[aria-expanded="true"] { outline: 2px solid #007BFF; }
-    .filter-btn .count {
-      background: #007BFF; color: #fff; border-radius: 999px;
-      padding: 2px 8px; font-size: 12px;
-    }
-    .filter-menu {
-      position: absolute; top: calc(100% + 6px); left: 0;
-      min-width: 240px; max-height: 320px; overflow: auto;
-      background: #fff; border: 1px solid #ddd; border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 10px; z-index: 1000;
-      display: none;
-    }
-    .filter-dropdown.open .filter-menu { display: block; }
-    .filter-search {
-      width: 100%; border: 1px solid #ccc; border-radius: 8px;
-      padding: 6px 8px; font-size: 13px; margin-bottom: 8px; outline: none;
-      box-sizing: border-box;
-    }
-    .option { display:flex; align-items:center; gap:8px; padding:6px 4px; border-radius:6px; cursor:pointer; }
-    .option:hover { background:#f5f5f5; }
+    a{color:var(--primary);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-    /* Reset button */
-    .btn-clear {
-      border: 1px solid #bbb; background: #fff; padding: 8px 12px;
-      border-radius: 10px; cursor: pointer; font-size: 14px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-    }
-    .btn-clear:hover { background:#f0f0f0; }
+    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
+    .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
+    .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
+    .sub{color:var(--muted);font-size:.95rem}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-    .results-info { margin: 16px 0; font-size: 14px; color: #555; text-align: center; display: block; }
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
+    .panel h2{margin:0 0 10px;font-size:1.05rem}
 
-    /* Search full-width */
-    .search-container { width: 100%; margin: 16px 0; }
-    #searchInput {
-      width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.75rem 1rem;
-      border-radius: 8px; border: 1px solid #bbb; font-size: 16px;
+    /* Dropdown Filters (stile come la tua pagina) */
+    .filters-bar{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;align-items:center}
+    .filter-dropdown{position:relative}
+    .filter-btn{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1px solid #bbb;
+      border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.06)
     }
-    #searchInput:focus { outline: none; border-color: #007BFF; box-shadow: 0 0 0 3px rgba(0,123,255,.2); }
+    .filter-btn[aria-expanded="true"]{outline:2px solid #007BFF}
+    .filter-btn .count{background:#007BFF;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}
+    .filter-menu{
+      position:absolute;top:calc(100% + 6px);left:0;min-width:260px;max-height:320px;overflow:auto;background:#fff;border:1px solid #ddd;border-radius:12px;
+      box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:10px;z-index:1000;display:none
+    }
+    .filter-dropdown.open .filter-menu{display:block}
+    .filter-search{width:100%;border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:13px;margin-bottom:8px;outline:none;box-sizing:border-box}
+    .option{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer}
+    .option:hover{background:#f5f5f5}
+    .btn-clear{border:1px solid #bbb;background:#fff;padding:8px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.06)}
+    .btn-clear:hover{background:#f0f0f0}
 
-    /* Card images — preferisci cover o contain: cambia qui */
-    .anime-grid .card img {
-      width: 100%;
-      height: auto;      /* per SEO immagini: preserva proporzioni originali */
-      display: block;
-      border-radius: 8px;
-      object-fit: contain;  /* se vuoi riempire/tagliare usa: cover */
-      background: #fff;     /* bande “pulite” con contain */
+    /* Metric & Order mini controls (stessa riga) */
+    .mini-control{display:inline-flex;align-items:center;gap:6px}
+    .mini-control select{
+      padding:8px 10px;border:1px solid #bbb;border-radius:10px;background:#fff;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,0.06)
     }
+
+    /* Lista classifica */
+    .list{display:grid;gap:12px}
+    .rank-card{
+      display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
+      background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;box-shadow:var(--shadow-1);
+      animation:pop .35s ease both
+    }
+    .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
+    .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
+    .meta h3{margin:.2rem 0 .35rem;font-size:1.05rem}
+    .meta .muted{color:var(--muted)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:.35rem}
+    .badge{font-size:.78rem;padding:.25rem .45rem;border-radius:999px;border:1px solid var(--border);background:var(--soft)}
+    .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
+    .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
+    .badge.ep{border-color:#ffe6e6;background:#fff5f5;color:#8f1e1e}
+    .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
+
+    /* Paginazione */
+    .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+    .pagination button{
+      padding:8px 11px;border-radius:10px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
+      box-shadow:var(--shadow-1);cursor:pointer
+    }
+    .pagination button.active{border-color:#4f46e5;color:#3532b3;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+    .center{text-align:center;padding:20px;color:var(--muted)}
+    .error{color:var(--danger)}
+    @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
     /* Preloader */
-    #preloader {
-      position: fixed; inset: 0; background: #ffffff; display: grid; place-items: center;
-      transition: opacity .4s ease; z-index: 9999;
-    }
-    .spinner {
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 4px solid #e3e3e3; border-top-color: #007BFF; animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
+    .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
 
-    /* Intro SEO block */
-    .seo-intro {
-      max-width: none;       /* rimuove il limite di 900px */
-      margin: 0 0 16px 0;    /* margini solo in basso */
-      color: #444;
-      line-height: 1.6;
-      background: #fff;
-      padding: 12px 16px;
-      border-radius: 12px;
-    }
-    .quick-links a { margin-right: 10px; font-size: 14px; }
+    /* Responsive fix */
+    @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
   </style>
-
-  <!-- JSON-LD: WebSite + SearchAction -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"WebSite",
-    "name":"AniMMUnity",
-    "url":"https://animmunity.github.io/",
-    "potentialAction":{
-      "@type":"SearchAction",
-      "target":"https://animmunity.github.io/?q={search_term_string}",
-      "query-input":"required name=search_term_string"
-    }
-  }
-  </script>
-
-  <!-- JSON-LD: Breadcrumbs (statici) -->
-  <script type="application/ld+json">
-  {
-    "@context":"https://schema.org",
-    "@type":"BreadcrumbList",
-    "itemListElement":[
-      { "@type":"ListItem","position":1,"name":"Home","item":"https://animmunity.github.io/" },
-      { "@type":"ListItem","position":2,"name":"Anime List","item":"https://animmunity.github.io/" }
-    ]
-  }
-  </script>
-
-  <!-- JSON-LD: ItemList (dinamico, aggiornato via JS) -->
-  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 </head>
 <body>
-
-  <!-- 🔄 Preloader -->
+  <!-- Preloader -->
   <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-  <!-- Header -->
-  <div id="header-placeholder"></div>
+  <!-- Header/Footer dinamici -->
+  <div id="header"></div>
 
-  <main class="anime-main">
-    <h1 class="page-title" style="text-align: center;">Anime List</h1>
-
-    <!-- Blocco introduttivo SEO -->
-    <section class="seo-intro">
-      <h2>Search, Filter &amp; Discover Anime</h2>
-      <p>
-        Explore a curated list of anime with fast search and multi-facet filters:
-        <strong>genres</strong>, <strong>themes</strong>, <strong>demographics</strong>, and
-        industry metadata like <strong>studios</strong>, <strong>producers</strong> and
-        <strong>licensors</strong>. Open any title to see trailers, descriptions, and key info.
-      </p>
+  <main class="shell">
+    <section class="hero">
+      <h1>Top Anime</h1>
+      <p class="sub">Dropdown filters like your Anime List page. Sorted by metric, with pagination (50/page).</p>
+      <div id="chips" class="chips"></div>
     </section>
 
-    <div class="search-container" aria-labelledby="search-label">
-      <label id="search-label" class="visually-hidden" for="searchInput">Anime Search Engine 🔍</label>
-      <input type="text" id="searchInput" placeholder="Search for an Anime..." autocomplete="off"/>
-    </div>
+    <!-- Barra filtri (stile come la tua pagina) -->
+    <section class="panel">
+      <div class="filters-bar" id="filtersBar" aria-label="Filters">
+        <!-- Dropdown faccette creati via JS -->
+        <div class="mini-control">
+          <label for="metric" class="muted">Metric</label>
+          <select id="metric"></select>
+        </div>
+        <div class="mini-control">
+          <label for="order" class="muted">Order</label>
+          <select id="order">
+            <option value="desc">Highest first</option>
+            <option value="asc">Lowest first</option>
+          </select>
+        </div>
+        <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
+      </div>
+      <div class="center" id="resultsInfo"></div>
+    </section>
 
-    <!-- 🔽 DROPDOWN FILTERS + Reset on the same row -->
-    <div class="filters-bar" id="filtersBar" aria-label="Filters">
-      <!-- created via JS -->
-      <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
-    </div>
-    <span class="results-info" id="resultsInfo" aria-live="polite"></span>
-
-    <section aria-label="Results">
-      <div id="animeGrid" class="anime-grid" aria-live="polite"></div>
+    <!-- Lista + paginazione -->
+    <section class="panel" aria-label="Ranking">
+      <h2>Ranking</h2>
+      <div id="list" class="list"></div>
       <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+      <div id="status" class="center">Loading…</div>
     </section>
   </main>
 
-  <!-- Footer -->
-  <div id="footer-placeholder"></div>
-
-  <!-- Noscript fallback (indicizzabile) -->
-  <noscript>
-    <div style="max-width:900px;margin:20px auto;background:#fff;border-radius:12px;padding:16px">
-      <p><strong>JavaScript is disabled.</strong> Enable it to use search and filters.</p>
-      <p>Dataset: <a href="https://animmunity.github.io/data/anime.csv">anime.csv</a></p>
-      <ul>
-        <li><a href="/?q=naruto">Naruto</a></li>
-        <li><a href="/?q=one%20piece">One Piece</a></li>
-        <li><a href="/?q=attack%20on%20titan">Attack on Titan</a></li>
-      </ul>
-    </div>
-  </noscript>
+  <div id="footer"></div>
 
   <script>
-    // ===== Utilities =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
-    const safeMainPicture = (pic) => {
-      const fallback = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
-      const p = (pic || '').trim();
-      if (!p) return fallback;
-      return /\/[sml]\.jpg$/i.test(p) ? p.replace(/\/[sml]\.jpg$/i, '/l.jpg') : p;
-    };
+    // Header/Footer
+    fetch("/header.html").then(r=>r.text()).then(t=>{document.getElementById("header").innerHTML=t}).catch(()=>{});
+    fetch("/footer.html").then(r=>r.text()).then(t=>{document.getElementById("footer").innerHTML=t}).catch(()=>{});
 
-    // ===== Header/Footer =====
-    fetch("header.html").then(r => r.text()).then(d => {
-      document.getElementById("header-placeholder").innerHTML = d;
-      const toggle = document.querySelector('.menu-toggle');
-      const headerInner = document.querySelector('.header-inner');
-      if (toggle && headerInner) toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
-    });
-    fetch("footer.html").then(r => r.text()).then(d => {
-      document.getElementById("footer-placeholder").innerHTML = d;
-    });
+    // Preloader lifecycle
+    let assetsLoaded=false, dataRendered=false;
+    const hidePreloader=()=>{const p=document.getElementById("preloader");if(!p)return;p.style.opacity="0";p.style.pointerEvents="none";setTimeout(()=>p.remove(),400)}
+    const tryHidePreloader=()=>{if(assetsLoaded&&dataRendered)hidePreloader()}
+    window.addEventListener("load",()=>{assetsLoaded=true;tryHidePreloader()});
+    setTimeout(()=>hidePreloader(),8000);
 
-    // ===== Preloader lifecycle =====
-    let assetsLoaded = false;
-    let dataRendered = false;
+    // Utils
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const toNum = (v) => { if(v===null||v===undefined) return NaN; const n=Number(String(v).replace(',','.')); return isNaN(n)?NaN:n; };
+    const val = (row, ...keys) => { for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
 
-    function hidePreloader() {
-      const pre = document.getElementById("preloader");
-      if (!pre) return;
-      pre.style.opacity = "0";
-      pre.style.pointerEvents = "none";
-      setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
+    const CSV_URL = '/data/anime.csv';
+    const listEl = document.getElementById('list');
+    const statusEl = document.getElementById('status');
+    const chipsEl = document.getElementById('chips');
+    const resultsInfo = document.getElementById('resultsInfo');
+    const paginationEl = document.getElementById('pagination');
+
+    const metricEl = document.getElementById('metric');
+    const orderEl = document.getElementById('order');
+    const clearBtn = document.getElementById('clearFilters');
+    const filtersBar = document.getElementById('filtersBar');
+
+    const ITEMS_PER_PAGE = 50;
+    let rows=[], numericColumns=[], currentPage=1;
+
+    // Facets in stile tua pagina
+    const facets = [
+      { key:'demographics', label:'Demographics' },
+      { key:'themes',       label:'Themes' },
+      { key:'genres',       label:'Genres' },
+      { key:'licensors',    label:'Licensors' },
+      { key:'producers',    label:'Producers' },
+      { key:'studios',      label:'Studios' },
+    ];
+    const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+    const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+
+    function parseList(value){
+      if(!value) return [];
+      let s=String(value).trim();
+      if(s==="[]"||s==="") return [];
+      try{
+        if(s.includes("'") && !s.includes('"')) s = s.replace(/'/g,'"');
+        const arr=JSON.parse(s);
+        return Array.isArray(arr)? arr.map(v=>String(v).trim()) : [];
+      }catch{
+        return s.replace(/^\[|\]$/g,"").split(",").map(x=>x.replace(/^['"\s]+|['"\s]+$/g,"")).filter(Boolean);
+      }
     }
-    function tryHidePreloader() {
-      if (assetsLoaded && dataRendered) hidePreloader();
+
+    function detectNumericColumns(sample){
+      const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
+      const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
+      const ordered=[...new Set([...preferred, ...cands])];
+      return ordered.filter(k=>cands.includes(k));
     }
-    window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
-    setTimeout(() => hidePreloader(), 8000); // safety net
 
-    // ===== App =====
-    document.addEventListener("DOMContentLoaded", function () {
-      const ITEMS_PER_PAGE = 20;
-      let rawData = [];
-      let animeData = [];
-      let currentPage = 1;
+    function buildFacetDropdowns(){
+      const resetAnchor = clearBtn; // inseriamo prima del bottone reset
+      facets.forEach(({key,label})=>{
+        const wrap=document.createElement('div');
+        wrap.className='filter-dropdown'; wrap.dataset.key=key;
 
-      // Pre-fill query from ?q=
-      const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
-      if (urlQ) window.__initialQuery = urlQ;
+        const btn=document.createElement('button');
+        btn.type='button'; btn.className='filter-btn';
+        btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+        btn.innerHTML=`<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`;
 
-      // Facets
-      const facets = [
-        { key: 'demographics', label: 'Demographics' },
-        { key: 'themes',       label: 'Themes' },
-        { key: 'genres',       label: 'Genres' },
-        { key: 'licensors',    label: 'Licensors' },
-        { key: 'producers',    label: 'Producers' },
-        { key: 'studios',      label: 'Studios' },
-      ];
-      const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
-      const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
+        const menu=document.createElement('div');
+        menu.className='filter-menu';
+        menu.innerHTML=`
+          <input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">
+          <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
+        `;
 
-      // Parse list fields like "['Aniplex','Square Enix']"
-      function parseList(value) {
-        if (!value) return [];
-        let s = String(value).trim();
-        if (s === "[]" || s === "") return [];
-        try {
-          if (s.includes("'") && !s.includes('"')) s = s.replace(/'/g, '"');
-          const arr = JSON.parse(s);
-          return Array.isArray(arr) ? arr.map(v => String(v).trim()) : [];
-        } catch {
-          return s.replace(/^\[|\]$/g, "").split(",").map(x => x.replace(/^['"\s]+|['"\s]+$/g, "")).filter(Boolean);
-        }
-      }
-
-      function fillOptionSetsFromRow(row) {
-        facets.forEach(({key}) => parseList(row[key]).forEach(v => optionSets[key].add(v)));
-      }
-
-      // Build dropdowns
-      function buildDropdowns() {
-        const bar = document.getElementById('filtersBar');
-        const resetBtn = document.getElementById('clearFilters');
-
-        facets.forEach(({key, label}) => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'filter-dropdown';
-          wrapper.dataset.key = key;
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'filter-btn';
-          btn.setAttribute('aria-haspopup', 'listbox');
-          btn.setAttribute('aria-expanded', 'false');
-          btn.innerHTML = `<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`;
-
-          const menu = document.createElement('div');
-          menu.className = 'filter-menu';
-          menu.innerHTML = `
-            <input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">
-            <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
-          `;
-
-          const optionsBox = menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
-          const values = Array.from(optionSets[key]).sort((a,b)=>a.localeCompare(b));
-
-          values.forEach(val => {
-            const row = document.createElement('label');
-            row.className = 'option';
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.setAttribute('data-facet', key);
-            input.value = val;
-            const span = document.createElement('span');
-            span.textContent = val;
-            row.appendChild(input);
-            row.appendChild(span);
-            optionsBox.appendChild(row);
-          });
-
-          // Toggle open/close
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
-              if (dd !== wrapper) {
-                dd.classList.remove('open');
-                const b = dd.querySelector('.filter-btn');
-                if (b) b.setAttribute('aria-expanded', 'false');
-              }
-            });
-            const isOpen = wrapper.classList.toggle('open');
-            btn.setAttribute('aria-expanded', String(isOpen));
-            const search = menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`);
-            if (search) setTimeout(() => search.focus(), 0);
-          });
-
-          // Keep clicks inside menu
-          menu.addEventListener('click', (e) => e.stopPropagation());
-          // Close on Escape
-          menu.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-              wrapper.classList.remove('open');
-              btn.setAttribute('aria-expanded', 'false');
-              btn.focus();
-            }
-          });
-
-          // Search inside dropdown
-          menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase();
-            optionsBox.querySelectorAll('.option').forEach(opt => {
-              const text = opt.textContent.toLowerCase();
-              opt.style.display = text.includes(q) ? '' : 'none';
-            });
-          });
-
-          wrapper.appendChild(btn);
-          wrapper.appendChild(menu);
-          bar.insertBefore(wrapper, resetBtn);
+        const optionsBox=menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
+        const values=[...optionSets[key]].sort((a,b)=>a.localeCompare(b));
+        values.forEach(val=>{
+          const row=document.createElement('label'); row.className='option';
+          const input=document.createElement('input'); input.type='checkbox'; input.dataset.facet=key; input.value=val;
+          const span=document.createElement('span'); span.textContent=val;
+          row.appendChild(input); row.appendChild(span); optionsBox.appendChild(row);
         });
 
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.filter-dropdown')) {
-            document.querySelectorAll('.filter-dropdown.open').forEach(dd => {
-              dd.classList.remove('open');
-              const b = dd.querySelector('.filter-btn');
-              if (b) b.setAttribute('aria-expanded', 'false');
-            });
-          }
-        }, { capture: true });
-
-        // Checkbox change → update selections + render
-        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => {
-          chk.addEventListener('change', () => {
-            const facet = chk.dataset.facet;
-            if (chk.checked) selections[facet].add(chk.value);
-            else selections[facet].delete(chk.value);
-            updateCounts();
-            renderPage(1, document.getElementById('searchInput').value);
+        // Toggle
+        btn.addEventListener('click',(e)=>{
+          e.stopPropagation();
+          document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
+            if(dd!==wrap){ dd.classList.remove('open'); const b=dd.querySelector('.filter-btn'); if(b) b.setAttribute('aria-expanded','false'); }
           });
+          const isOpen=wrap.classList.toggle('open'); btn.setAttribute('aria-expanded',String(isOpen));
+          const search=menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`); if(search) setTimeout(()=>search.focus(),0);
+        });
+        menu.addEventListener('click',e=>e.stopPropagation());
+        menu.addEventListener('keydown',e=>{ if(e.key==='Escape'){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }});
+        menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input',e=>{
+          const q=e.target.value.toLowerCase();
+          optionsBox.querySelectorAll('.option').forEach(opt=>{ const text=opt.textContent.toLowerCase(); opt.style.display = text.includes(q)? '' : 'none'; });
         });
 
-        updateCounts();
-      }
-
-      function updateCounts() {
-        facets.forEach(({key}) => {
-          const n = selections[key].size;
-          const pill = document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
-          if (!pill) return;
-          if (n > 0) { pill.style.display = 'inline-block'; pill.textContent = n; }
-          else { pill.style.display = 'none'; pill.textContent = '0'; }
-        });
-      }
-
-      function getTextMatchHaystack(anime) {
-        return [anime.title, anime.title_english, anime.title_japanese]
-                .filter(Boolean).join(' ').toLowerCase();
-      }
-
-      function animeMatchesFilters(anime, q) {
-        if (q && !getTextMatchHaystack(anime).includes(q)) return false;
-
-        // AND across facets, OR inside a single facet
-        const orMatch = (selSet, fieldArr) => {
-          if (!selSet || selSet.size === 0) return true;
-          if (!fieldArr || fieldArr.length === 0) return false;
-          for (const val of selSet) if (fieldArr.includes(val)) return true;
-          return false;
-        };
-
-        return facets.every(({key}) => orMatch(selections[key], anime[key]));
-      }
-
-      // JSON-LD ItemList updater
-      function updateItemListLD(items) {
-        const script = document.getElementById('ld-itemlist');
-        const itemListElement = items.map((anime, idx) => ({
-          "@type": "ListItem",
-          "position": idx + 1,
-          "url": `${location.origin}/anime?id=${encodeURIComponent(anime.anime_id)}`,
-          "name": anime.title,
-          "image": anime.main_picture || undefined
-        }));
-        const ld = { "@context":"https://schema.org", "@type":"ItemList", "itemListElement": itemListElement };
-        script.textContent = JSON.stringify(ld);
-      }
-
-      // Prev/Next rel links
-      function updateRelPrevNext(totalPages, current, query) {
-        const relPrev = document.getElementById('relPrev');
-        const relNext = document.getElementById('relNext');
-        const buildUrl = (p) => {
-          const u = new URL(location.href);
-          const q = (query || '').trim();
-          if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-          if (p > 1) u.searchParams.set('page', p); else u.searchParams.delete('page');
-          return u.toString();
-        };
-        relPrev.setAttribute('href', (current > 1) ? buildUrl(current - 1) : '');
-        relNext.setAttribute('href', (current < totalPages) ? buildUrl(current + 1) : '');
-      }
-
-      function renderPage(page = 1, query = "") {
-        const grid = document.getElementById("animeGrid");
-        const q = (query || "").toLowerCase();
-
-        const filtered = animeData.filter(a => animeMatchesFilters(a, q));
-
-        const info = document.getElementById("resultsInfo");
-        info.textContent = `${filtered.length} results`;
-
-        const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-        page = Math.min(page, totalPages);
-        currentPage = page;
-
-        const start = (page - 1) * ITEMS_PER_PAGE;
-        const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
-
-        grid.innerHTML = "";
-        for (const anime of pageItems) {
-          const card = document.createElement("div");
-          card.className = "card";
-          card.setAttribute('itemscope', '');
-          card.setAttribute('itemtype', 'https://schema.org/CreativeWork');
-
-          const a = document.createElement('a');
-          a.href = `anime?id=${encodeURIComponent(anime.anime_id)}`;
-          a.setAttribute('itemprop', 'url');
-
-          const img = document.createElement('img');
-          img.loading = "lazy";
-          img.src = anime.main_picture;
-          img.alt = anime.title ? `${anime.title} cover` : "Anime cover";
-          img.onerror = function(){ this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'; };
-          img.setAttribute('itemprop', 'image');
-
-          const h3 = document.createElement('h3');
-          h3.textContent = anime.title;
-          h3.setAttribute('itemprop', 'name');
-
-          a.appendChild(img);
-          a.appendChild(h3);
-          card.appendChild(a);
-          grid.appendChild(card);
-        }
-
-        // JSON-LD ItemList per la pagina corrente
-        updateItemListLD(pageItems);
-        // Prev/Next rel
-        updateRelPrevNext(totalPages, page, document.getElementById("searchInput").value);
-        // Paginazione visiva
-        renderPagination(totalPages, page);
-      }
-
-      function renderPagination(totalPages, current) {
-        const pagination = document.getElementById("pagination");
-        pagination.innerHTML = "";
-
-        const createButton = (text, pageNum, isActive = false) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.textContent = text;
-          if (isActive) btn.classList.add("active");
-          btn.addEventListener("click", () => {
-            currentPage = pageNum;
-            renderPage(pageNum, document.getElementById("searchInput").value);
-            // Aggiorna URL
-            const u = new URL(location.href);
-            const q = document.getElementById("searchInput").value.trim();
-            if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-            if (pageNum > 1) u.searchParams.set('page', pageNum); else u.searchParams.delete('page');
-            history.replaceState(null, "", u.toString());
-          });
-          return btn;
-        };
-
-        const addEllipsis = () => {
-          const dots = document.createElement("span");
-          dots.textContent = "...";
-          dots.style.margin = "0 4px";
-          pagination.appendChild(dots);
-        };
-
-        if (totalPages <= 10) {
-          for (let i = 1; i <= totalPages; i++) {
-            pagination.appendChild(createButton(i, i, i === current));
-          }
-        } else {
-          pagination.appendChild(createButton(1, 1, current === 1));
-          if (current > 3) addEllipsis();
-          const start = Math.max(2, current - 1);
-          const end = Math.min(totalPages - 1, current + 1);
-          for (let i = start; i <= end; i++) {
-            pagination.appendChild(createButton(i, i, i === current));
-          }
-          if (current < totalPages - 2) addEllipsis();
-          pagination.appendChild(createButton(totalPages, totalPages, current === totalPages));
-        }
-      }
-
-      // Events
-      const onSearchInput = (e) => {
-        renderPage(1, e.target.value);
-        // Update ?q= e ?page=
-        const q = e.target.value.trim();
-        const u = new URL(location.href);
-        if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
-        u.searchParams.delete('page'); // reset page when searching
-        history.replaceState(null, "", u.toString());
-      };
-      document.getElementById("searchInput").addEventListener("input", debounce(onSearchInput, 250));
-
-      document.getElementById("clearFilters").addEventListener("click", () => {
-        facets.forEach(({key}) => selections[key].clear());
-        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk => chk.checked = false);
-        updateCounts();
-        renderPage(1, document.getElementById("searchInput").value);
+        wrap.appendChild(btn); wrap.appendChild(menu);
+        filtersBar.insertBefore(wrap, resetAnchor);
       });
 
-      // Load CSV
-      fetch("https://animmunity.github.io/data/anime.csv")
-        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-        .then(csvText => {
-          const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-          rawData = parsed.data;
-
-          animeData = rawData.map(row => {
-            fillOptionSetsFromRow(row);
-            return {
-              anime_id: String(row.anime_id || "").trim(),
-              title: (row.title || "").trim() || "Untitled",
-              title_english: (row.title_english || "").trim(),
-              title_japanese: (row.title_japanese || "").trim(),
-              main_picture: safeMainPicture(row.main_picture),
-              demographics: parseList(row.demographics),
-              themes:       parseList(row.themes),
-              genres:       parseList(row.genres),
-              licensors:    parseList(row.licensors),
-              producers:    parseList(row.producers),
-              studios:      parseList(row.studios),
-            };
+      // Outside click close
+      document.addEventListener('click',(e)=>{
+        if(!e.target.closest('.filter-dropdown')){
+          document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
+            dd.classList.remove('open'); const b=dd.querySelector('.filter-btn'); if(b) b.setAttribute('aria-expanded','false');
           });
+        }
+      },{capture:true});
 
-          buildDropdowns();
-
-          // Pre-fill search + page da URL
-          const input = document.getElementById('searchInput');
-          const url = new URL(location.href);
-          const qParam = url.searchParams.get('q') || '';
-          const pageParam = parseInt(url.searchParams.get('page') || '1', 10);
-          if (qParam && input) input.value = qParam;
-          renderPage(Math.max(1, pageParam), qParam);
-
-          dataRendered = true;
-          tryHidePreloader();
-        })
-        .catch(err => {
-          console.error("Failed to load CSV:", err);
-          const grid = document.getElementById("animeGrid");
-          if (grid) {
-            grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">
-              Error loading data. Please try again later.
-            </div>`;
-          }
-          dataRendered = true;
-          tryHidePreloader();
+      // Checkbox binding
+      document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk=>{
+        chk.addEventListener('change',()=>{
+          const facet=chk.dataset.facet;
+          if(chk.checked) selections[facet].add(chk.value); else selections[facet].delete(chk.value);
+          updateFacetCounts(); renderPage(1);
         });
+      });
+      updateFacetCounts();
+    }
+
+    function updateFacetCounts(){
+      facets.forEach(({key})=>{
+        const n=selections[key].size;
+        const pill=document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
+        if(!pill) return;
+        if(n>0){ pill.style.display='inline-block'; pill.textContent=n; } else { pill.style.display='none'; pill.textContent='0'; }
+      });
+    }
+
+    function collectFacetOptions(r){
+      facets.forEach(({key})=> parseList(r[key]).forEach(v=> optionSets[key].add(v)));
+    }
+
+    function matchFilters(row){
+      const orMatch=(set, arr)=>{ if(!set||set.size===0) return true; if(!arr||arr.length===0) return false; for(const v of set) if(arr.includes(v)) return true; return false; };
+      return facets.every(({key}) => orMatch(selections[key], parseList(row[key])));
+    }
+
+    function renderChips(metric, order){
+      chipsEl.innerHTML='';
+      const chip=t=>{const s=document.createElement('span'); s.className='chip'; s.textContent=t; return s;}
+      chipsEl.append(chip(`Metric: ${metric}`), chip(`Order: ${order}`));
+      facets.forEach(({key,label})=>{
+        if(selections[key].size) chipsEl.append(chip(`${label}: ${[...selections[key]].join(', ')}`));
+      });
+    }
+
+    function sortByMetric(data, metric, order){
+      return data.sort((a,b)=>{
+        const av=toNum(a[metric]), bv=toNum(b[metric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return order==='asc' ? av-bv : bv-av;
+      });
+    }
+
+    function renderListPage(items, metric, startIndex){
+      listEl.innerHTML='';
+      items.forEach((row,idx)=>{
+        const title = val(row,'title','name','anime','series_title');
+        const img = val(row,'main_picture','image_url','image','pic','poster');
+        const year = val(row,'year','start_year','aired_from_year','startDateYear');
+        const genres = val(row,'genres','genre','tags','themes');
+        const episodes = val(row,'episodes','ep','eps');
+        const scoreVal = toNum(val(row,'score','rating','score_mean'));
+        const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
+        const metricVal = toNum(row[metric]);
+
+        const card=document.createElement('article'); card.className='rank-card';
+        card.innerHTML = `
+          <div class="rank">${startIndex + idx + 1}</div>
+          <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title||'Anime')}">
+          <div class="meta">
+            <h3>${esc(title || 'Untitled')}</h3>
+            <div class="muted">${year ? esc(year) : ''}${year && genres ? ' • ' : ''}${genres ? esc(genres) : ''}</div>
+            <div class="badges">
+              ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
+              ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
+              ${episodes ? `<span class="badge ep">Ep: ${esc(episodes)}</span>` : ''}
+              <span class="badge pill">${esc(metric)}: ${isNaN(metricVal)?'—':metricVal}</span>
+            </div>
+          </div>`;
+        listEl.appendChild(card);
+      });
+    }
+
+    function updatePagination(totalPages, current){
+      paginationEl.innerHTML='';
+      const makeBtn=(txt, page, active=false)=>{
+        const b=document.createElement('button'); b.type='button'; b.textContent=txt; if(active) b.classList.add('active');
+        b.addEventListener('click',()=>{ goToPage(page); });
+        return b;
+      };
+      const addDots=()=>{const s=document.createElement('span'); s.textContent='…'; s.style.margin='0 4px'; paginationEl.appendChild(s);};
+
+      if(totalPages<=10){
+        for(let i=1;i<=totalPages;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+      }else{
+        paginationEl.appendChild(makeBtn(1,1,current===1));
+        if(current>3) addDots();
+        const start=Math.max(2,current-1), end=Math.min(totalPages-1,current+1);
+        for(let i=start;i<=end;i++) paginationEl.appendChild(makeBtn(i,i,i===current));
+        if(current<totalPages-2) addDots();
+        paginationEl.appendChild(makeBtn(totalPages,totalPages,current===totalPages));
+      }
+    }
+
+    function updateURL(page){
+      const u=new URL(location.href);
+      u.searchParams.set('metric', metricEl.value);
+      u.searchParams.set('order', orderEl.value);
+      if(page>1) u.searchParams.set('page', page); else u.searchParams.delete('page');
+      // serializza faccette
+      facets.forEach(({key})=>{
+        if(selections[key].size) u.searchParams.set(key, [...selections[key]].join('|'));
+        else u.searchParams.delete(key);
+      });
+      history.replaceState(null,'',u.toString());
+      // canonical + og:url
+      document.getElementById('canonicalLink').href = `${location.origin}${location.pathname}${u.search}`;
+      const ogu=document.querySelector('meta[property="og:url"]'); if(ogu) ogu.setAttribute('content', `${location.origin}${location.pathname}${u.search}`);
+    }
+
+    function applyAndRender(page=1){
+      const metric = metricEl.value || 'score';
+      const order = orderEl.value || 'desc';
+
+      // Filtra
+      let filtered = rows.filter(matchFilters);
+
+      // Sort globale (prima della paginazione)
+      sortByMetric(filtered, metric, order);
+
+      // Pagine
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+      currentPage = Math.min(Math.max(1,page), totalPages);
+
+      const start = (currentPage-1)*ITEMS_PER_PAGE;
+      const pageItems = filtered.slice(start, start+ITEMS_PER_PAGE);
+
+      resultsInfo.textContent = `${total} results • Page ${currentPage} / ${totalPages}`;
+      renderChips(metric, order);
+      renderListPage(pageItems, metric, start);
+      updatePagination(totalPages, currentPage);
+      updateURL(currentPage);
+
+      // JSON-LD ItemList per pagina corrente (prime 10)
+      const itemList = pageItems.slice(0,10).map((r,i)=>({
+        "@type":"ListItem",
+        "position": i+1 + start,
+        "name": r.title || r.name || "Anime",
+        "url": `${location.origin}/anime?id=${encodeURIComponent(r.anime_id || '')}`,
+        "image": r.main_picture || undefined
+      }));
+      document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":itemList});
+    }
+
+    function goToPage(p){ applyAndRender(p); }
+
+    function hydrateFromURL(){
+      const q=new URLSearchParams(location.search);
+      const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
+      if(m) metricEl.value=m; if(o) orderEl.value=o;
+      facets.forEach(({key})=>{
+        const raw=q.get(key);
+        if(raw){ raw.split('|').forEach(v=> selections[key].add(v)); }
+      });
+      return Math.max(1, isNaN(p)?1:p);
+    }
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', ()=>{
+      fetch(CSV_URL)
+        .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+        .then(text=>{
+          const res=Papa.parse(text,{header:true,skipEmptyLines:true});
+          rows = (res.data||[]).map(r=>{ collectFacetOptions(r); return r; });
+
+          // Numeric columns
+          const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
+          numericColumns = sample ? detectNumericColumns(sample) : [];
+          if(!numericColumns.length){
+            numericColumns=['score'];
+            rows = rows.map(r=>({...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0}));
+          }
+          // Metric dropdown
+          metricEl.innerHTML=''; numericColumns.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; metricEl.appendChild(o); });
+          // Build facet dropdowns (dopo optionSets)
+          buildFacetDropdowns();
+
+          // Hydrate from URL and render
+          const startPage = hydrateFromURL();
+          applyAndRender(startPage);
+
+          dataRendered=true; tryHidePreloader();
+        })
+        .catch(err=>{
+          statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
+          dataRendered=true; tryHidePreloader();
+        });
+
+      // Events
+      metricEl.addEventListener('change', ()=> applyAndRender(1));
+      orderEl.addEventListener('change', ()=> applyAndRender(1));
+      clearBtn.addEventListener('click', ()=>{
+        facets.forEach(({key})=> selections[key].clear());
+        document.querySelectorAll('.filter-menu input[type="checkbox"]').forEach(chk=> chk.checked=false);
+        applyAndRender(1);
+      });
     });
   </script>
 </body>
