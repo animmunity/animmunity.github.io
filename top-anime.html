@@ -3,195 +3,145 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Top Anime • AniMMunity</title>
+  <title>Top Anime — AniMMUnity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Ranked list of top anime with filters for metric, genre and year." />
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <meta name="description" content="Ranked list of top anime with filters for metric, genre, and year on AniMMUnity." />
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="Top Anime — AniMMUnity">
+  <meta property="og:description" content="Browse and rank the best anime by score, popularity, members and more.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Top Anime — AniMMUnity">
+  <meta name="twitter:description" content="Browse and rank the best anime by score, popularity, members and more.">
+  <meta name="twitter:image" content="">
+  <link id="canonicalLink" rel="canonical" href="">
+
+  <!-- JSON-LD: ItemList (compilato via JS) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
+
+  <!-- Assets -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
-  <!-- === NOVA WHITE UI (come richiesto) === -->
+  <!-- Preconnect/preload CSV -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" />
+
+  <!-- ===== NOVA WHITE UI (stesso stile) ===== -->
   <style>
-  /* =====================
-     NOVA WHITE UI — Fresh, airy, tactile
-     (JS invariato, markup aggiornato)
-     ===================== */
   :root{
-    /* Palette */
-    --bg: #f6f7fb;              /* sfondo pagina chiaro */
-    --ink: #0f172a;             /* testo principale */
-    --muted: #5b6478;           /* testo attenuato */
-    --panel: #ffffff;           /* superfici */
-    --soft: #f0f2f8;            /* superfici secondarie */
-    --border: #e6e9f2;          /* bordi */
-    --primary: #4f46e5;         /* indaco */
-    --primary-ink: #3532b3;
-    --accent: #06b6d4;          /* ciano */
-    --success: #16a34a;         /* verde */
-    --danger: #ef4444;          /* rosso */
-    --warning: #f59e0b;         /* ambra */
-
-    /* Raggi e ombre */
-    --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
-    --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
-    --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
-
-    /* Gradiente brand */
-    --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
-            radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+    --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
+    --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
+    --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
+    --grad:radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+           radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
   }
-
   *{box-sizing:border-box}
-  html, body{height:100%}
+  html,body{height:100%}
   body{
-    margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--ink); background: var(--bg);
-    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale;
-    background-image: var(--grad);
-    background-attachment: fixed; /* verrà disattivato in mobile */
+    margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    background-image:var(--grad);background-attachment:fixed;
   }
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-  a{color:var(--primary); text-decoration: none}
-  a:hover{ text-decoration: underline }
+  /* Pannelli/hero/chips coerenti */
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
+  .panel h2{margin:0 0 10px;font-size:1.05rem;letter-spacing:.2px}
+  .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
+  .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
+  .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem);letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:.95rem}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-  /* ===== Topbar (se usi header.html, la topbar è solo placeholder visivo) ===== */
-  .topbar{
-    position: sticky; top:0; z-index: 50;
-    backdrop-filter: saturate(130%) blur(10px);
-    background: rgba(255,255,255,.75);
-    border-bottom: 1px solid var(--border);
+  /* Layout con aside filtri */
+  .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
+  @media (max-width:980px){.layout{grid-template-columns:1fr}}
+  .aside{position:sticky;top:84px;align-self:start;display:grid;gap:16px}
+  @media (max-width:980px){.aside{position:static;top:auto}.hero{overflow:visible}}
+  @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
+
+  /* Filtri */
+  .control{display:grid;gap:6px}
+  .control label{font-size:.9rem;color:var(--muted)}
+  .control input,.control select{
+    width:100%;padding:.65rem .7rem;border-radius:var(--r-sm);
+    border:1px solid var(--border);background:var(--soft);color:var(--ink);outline:none;
   }
-  .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
-  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
-  .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
-  .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
-
-  /* ===== Container principale ===== */
-  .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
-
-  .layout{
-    display:grid; grid-template-columns: 360px 1fr; gap: 24px;
-  }
-  @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
-
-  /* ===== Aside sticky (filtri) ===== */
-  .aside{
-    position: sticky; top: 84px; align-self: start;
-    display: grid; gap:16px;
-  }
-
-  .panel{
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-    box-shadow: var(--shadow-1); padding: 16px;
-  }
-  .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
-
-  /* Controls */
-  .control{ display:grid; gap:6px; }
-  .control label{ font-size:.9rem; color:var(--muted); }
-  .control input, .control select{
-    width:100%; padding:.65rem .7rem; border-radius: var(--r-sm);
-    border:1px solid var(--border); background: var(--soft); color:var(--ink);
-    outline:none;
-  }
-  .control input:focus, .control select:focus{
-    border-color: #d7dbef; box-shadow: 0 0 0 3px rgba(79,70,229,.10);
-  }
-  .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-  .grid-3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
-
+  .control input:focus,.control select:focus{border-color:#d7dbef;box-shadow:0 0 0 3px rgba(79,70,229,.10)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
   .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    padding:.75rem 1rem; border-radius: 12px; border:1px solid #dfe4f5;
-    background: linear-gradient(180deg, #ffffff, #f4f6fb);
-    color: var(--primary-ink); font-weight: 700; cursor: pointer;
-    box-shadow: var(--shadow-1);
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:.75rem 1rem;border-radius:12px;border:1px solid #dfe4f5;
+    background:linear-gradient(180deg,#fff,#f4f6fb);color:var(--primary-ink);font-weight:700;cursor:pointer;
+    box-shadow:var(--shadow-1);
   }
-  .btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
+  .btn:hover{transform:translateY(-1px);transition:transform .15s ease;text-decoration:none}
 
-  /* ===== Main content ===== */
-  .main{ display:grid; gap: 18px; }
-
-  .hero{
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-    box-shadow: var(--shadow-2); padding: 18px; position: relative; overflow: clip;
-  }
-  .hero::after{
-    content:""; position:absolute; inset:auto -20% -50% -20%; height: 180px; background:
-    radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%);
-  }
-  .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
-  .sub{ color: var(--muted); font-size: .95rem; }
-
-  /* Rank list */
-  .list{ display:grid; gap:12px; }
+  /* Lista classifica */
+  .list{display:grid;gap:12px}
   .rank-card{
-    display:grid; grid-template-columns: 60px 80px 1fr; gap:14px; align-items:center;
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg); padding: 12px;
-    box-shadow: var(--shadow-1);
+    display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;box-shadow:var(--shadow-1);
   }
-  .rank{
-    width:52px; height:52px; display:grid; place-items:center; font-weight:800;
-    border-radius: 14px; background: var(--soft); color: var(--primary-ink); border:1px solid var(--border);
-  }
-  .thumb{ width:80px; height:112px; border-radius: 12px; object-fit: cover; background:#e9ecf6; }
-  .meta h3{ margin:.2rem 0 .35rem; font-size:1.05rem; }
-  .meta .muted{ color:var(--muted); }
-  .badges{ display:flex; gap:8px; flex-wrap:wrap; margin-top:.35rem; }
-  .badge{ font-size:.78rem; padding:.25rem .45rem; border-radius:999px; border:1px solid var(--border); background: var(--soft); }
-  .badge.score{ border-color:#e0f2e9; background:#f0fbf5; color:#1f6c3e; }
-  .badge.pop{ border-color:#e0f2ff; background:#f0f8ff; color:#13527a; }
-  .badge.ep{ border-color:#ffe6e6; background:#fff5f5; color:#8f1e1e; }
-  .badge.pill{ background:#eef2ff; border-color:#e0e7ff; color:#3730a3; }
+  .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
+  .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
+  .meta h3{margin:.2rem 0 .35rem;font-size:1.05rem}
+  .meta .muted{color:var(--muted)}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:.35rem}
+  .badge{font-size:.78rem;padding:.25rem .45rem;border-radius:999px;border:1px solid var(--border);background:var(--soft)}
+  .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
+  .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
+  .badge.ep{border-color:#ffe6e6;background:#fff5f5;color:#8f1e1e}
+  .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
 
-  /* Loading & Error */
-  .center{ text-align:center; padding: 48px 0; color: var(--muted); }
-  .error{ color: var(--danger); }
+  /* Stato */
+  .center{text-align:center;padding:48px 0;color:var(--muted)}
+  .error{color:var(--danger)}
 
   /* Motion */
-  @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
-  .hero, .panel, .rank-card{ animation: pop .35s ease both }
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .hero,.panel,.rank-card{animation:pop .35s ease both}
 
-  /* Responsive fix */
-  @media (max-width: 980px) {
-    .aside { position: static; top: auto; }
-    .hero { overflow: visible; }
-  }
-  @media (max-width: 980px), (hover: none) and (pointer: coarse) {
-    body { background-attachment: scroll; }
-  }
-
-  /* Preloader */
-  #preloader{
-    position: fixed; inset: 0; background: #ffffff;
-    display: grid; place-items: center;
-    transition: opacity .4s ease; z-index: 9999;
-  }
-  .spinner{
-    width: 44px; height: 44px; border-radius: 50%;
-    border: 4px solid #e3e3e3; border-top-color: #007BFF;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  /* Preloader (coerente) */
+  #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
+  .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <!-- header dinamico -->
-  <div id="header-placeholder"></div>
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-  <div id="preloader"><div class="spinner"></div></div>
+  <!-- Header/Footer dinamici -->
+  <div id="header"></div>
 
   <main class="shell">
-    <div class="hero">
+    <section class="hero" aria-label="Intro">
       <h1>Top Anime</h1>
       <p class="sub">Rank by score, popularity, members, or episodes. Filter by year and genre.</p>
-      <div class="chips" id="activeChips"></div>
-    </div>
+      <div id="chips" class="chips"></div>
+    </section>
 
     <section class="layout">
-      <!-- ASIDE (filtri) -->
+      <!-- ASIDE: Filtri -->
       <aside class="aside">
-        <div class="panel">
+        <div class="panel" aria-label="Filters">
           <h2>Filters</h2>
+
           <div class="grid-2">
             <div class="control">
               <label for="metric">Metric</label>
@@ -226,7 +176,7 @@
             <select id="genre" multiple size="6" title="Hold Ctrl/Cmd to multi-select"></select>
           </div>
 
-          <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap">
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
             <button class="btn" id="applyBtn">Apply</button>
             <button class="btn" id="resetBtn" type="button">Reset</button>
           </div>
@@ -241,29 +191,38 @@
         </div>
       </aside>
 
-      <!-- MAIN LIST -->
-      <section class="main">
-        <div class="panel">
-          <h2>Ranking</h2>
-          <div id="list" class="list"></div>
-          <div id="status" class="center"></div>
-        </div>
+      <!-- MAIN: Lista -->
+      <section class="panel" aria-label="Ranking">
+        <h2>Ranking</h2>
+        <div id="list" class="list"></div>
+        <div id="status" class="center">Loading…</div>
       </section>
     </section>
   </main>
 
-  <!-- footer dinamico -->
-  <div id="footer-placeholder"></div>
+  <div id="footer"></div>
 
   <script>
-    // Header/Footer include
-    fetch('header.html').then(r => r.text()).then(t => document.getElementById('header-placeholder').innerHTML = t);
-    fetch('footer.html').then(r => r.text()).then(t => document.getElementById('footer-placeholder').innerHTML = t);
+    // Header/Footer
+    fetch("/header.html").then(r=>r.text()).then(t=>{document.getElementById("header").innerHTML=t}).catch(()=>{});
+    fetch("/footer.html").then(r=>r.text()).then(t=>{document.getElementById("footer").innerHTML=t}).catch(()=>{});
 
-    const CSV_URL = 'data/anime.csv';
+    // Preloader lifecycle
+    let assetsLoaded=false, dataRendered=false;
+    function hidePreloader(){const p=document.getElementById("preloader");if(!p)return;p.style.opacity="0";p.style.pointerEvents="none";setTimeout(()=>p.remove(),400)}
+    function tryHidePreloader(){if(assetsLoaded&&dataRendered)hidePreloader()}
+    window.addEventListener("load",()=>{assetsLoaded=true;tryHidePreloader()});
+    setTimeout(()=>hidePreloader(),8000);
+
+    // Utils
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const val = (row, ...keys) => { for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
+    const toNum = (v) => { if(v===null||v===undefined) return NaN; const n=Number(String(v).replace(',','.')); return isNaN(n)?NaN:n; };
+
+    const CSV_URL = '/data/anime.csv';
     const listEl = document.getElementById('list');
     const statusEl = document.getElementById('status');
-    const chipsEl = document.getElementById('activeChips');
+    const chipsEl = document.getElementById('chips');
 
     const metricEl = document.getElementById('metric');
     const orderEl = document.getElementById('order');
@@ -273,221 +232,191 @@
     const yearToEl = document.getElementById('yearTo');
     const applyBtn = document.getElementById('applyBtn');
     const resetBtn = document.getElementById('resetBtn');
-
     const sumTotal = document.getElementById('sumTotal');
     const sumFiltered = document.getElementById('sumFiltered');
     const summaryPanel = document.getElementById('summaryPanel');
-    const preloader = document.getElementById('preloader');
 
-    let rows = [];
-    let numericColumns = [];
-    let allGenres = new Set();
+    let rows=[], numericColumns=[], allGenres=new Set();
 
-    function hidePreloader(){ preloader.style.opacity='0'; setTimeout(()=> preloader.style.display='none', 400); }
-
-    // Utils
-    function val(row, ...keys) {
-      for (const k of keys) {
-        if (k in row && row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];
-      }
-      return '';
-    }
-    function toNum(v) {
-      if (v === null || v === undefined) return NaN;
-      const n = Number(String(v).replace(',', '.'));
-      return isNaN(n) ? NaN : n;
-    }
-
-    function detectNumericColumns(sample) {
-      const candidates = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k]) === 0);
+    function detectNumericColumns(sample){
+      const candidates = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
       const preferred = ['score','rating','rank','popularity','members','favorites','episodes','score_mean','user_count','watchers'];
-      const ordered = [...new Set([...preferred, ...candidates])];
-      return ordered.filter(k => candidates.includes(k));
+      const ordered=[...new Set([...preferred, ...candidates])];
+      return ordered.filter(k=>candidates.includes(k));
     }
 
-    function collectGenresAndYears(data) {
-      allGenres.clear();
-      let minYear = Infinity, maxYear = -Infinity;
-      data.forEach(row => {
-        const g = val(row, 'genres', 'genre', 'tags', 'themes');
-        if (g) String(g).split(/[,|/;]+/).map(s => s.trim()).filter(Boolean).forEach(x => allGenres.add(x));
-        const y = toNum(val(row, 'year', 'start_year', 'aired_from_year', 'startDateYear'));
-        if (!isNaN(y)) { if (y < minYear) minYear = y; if (y > maxYear) maxYear = y; }
+    function collectGenresAndYears(data){
+      allGenres.clear(); let minYear=Infinity, maxYear=-Infinity;
+      data.forEach(r=>{
+        const g = val(r,'genres','genre','tags','themes');
+        if(g) String(g).split(/[,|/;]+/).map(s=>s.trim()).filter(Boolean).forEach(x=>allGenres.add(x));
+        const y = toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
+        if(!isNaN(y)){ if(y<minYear)minYear=y; if(y>maxYear)maxYear=y; }
       });
-      genreEl.innerHTML = '';
-      [...allGenres].sort((a,b)=>a.localeCompare(b)).forEach(g => {
-        const opt = document.createElement('option');
-        opt.value = g; opt.textContent = g;
-        genreEl.appendChild(opt);
+      genreEl.innerHTML='';
+      [...allGenres].sort((a,b)=>a.localeCompare(b)).forEach(g=>{
+        const o=document.createElement('option');o.value=g;o.textContent=g;genreEl.appendChild(o);
       });
-      if (minYear !== Infinity) yearFromEl.placeholder = minYear;
-      if (maxYear !== -Infinity) yearToEl.placeholder = maxYear;
+      if(minYear!==Infinity) yearFromEl.placeholder=minYear;
+      if(maxYear!==-Infinity) yearToEl.placeholder=maxYear;
     }
 
-    function renderChips({metric, order, limit, genres, yFrom, yTo}) {
-      chipsEl.innerHTML = '';
-      const mk = (txt)=>{ const span = document.createElement('span'); span.className='chip'; span.textContent=txt; return span; };
-      chipsEl.append(mk(`Metric: ${metric}`), mk(`Order: ${order}`), mk(`Top: ${limit}`));
-      if (genres.length) chipsEl.append(mk(`Genres: ${genres.join(', ')}`));
-      if (!isNaN(yFrom)) chipsEl.append(mk(`From: ${yFrom}`));
-      if (!isNaN(yTo)) chipsEl.append(mk(`To: ${yTo}`));
+    function renderChips({metric,order,limit,genres,yFrom,yTo}){
+      chipsEl.innerHTML='';
+      const chip=t=>{const s=document.createElement('span');s.className='chip';s.textContent=t;return s;}
+      chipsEl.append(chip(`Metric: ${metric}`), chip(`Order: ${order}`), chip(`Top: ${limit}`));
+      if(genres.length) chipsEl.append(chip(`Genres: ${genres.join(', ')}`));
+      if(!isNaN(yFrom)) chipsEl.append(chip(`From: ${yFrom}`));
+      if(!isNaN(yTo)) chipsEl.append(chip(`To: ${yTo}`));
     }
 
-    function renderList(data, metric, order, limit) {
-      listEl.innerHTML = '';
-      data.slice(0, limit).forEach((row, idx) => {
-        const title = val(row, 'title', 'name', 'anime', 'series_title');
-        const img = val(row, 'main_picture', 'image_url', 'image', 'pic', 'poster');
-        const year = val(row, 'year', 'start_year', 'aired_from_year', 'startDateYear');
-        const genres = val(row, 'genres', 'genre', 'tags', 'themes');
-        const episodes = val(row, 'episodes', 'ep', 'eps');
-        const scoreVal = toNum(val(row, 'score','rating','score_mean'));
-        const popularity = toNum(val(row, 'popularity','members','watchers','user_count','favorites'));
+    function renderList(data,metric,order,limit){
+      listEl.innerHTML='';
+      data.slice(0,limit).forEach((row,idx)=>{
+        const title = val(row,'title','name','anime','series_title');
+        const img = val(row,'main_picture','image_url','image','pic','poster');
+        const year = val(row,'year','start_year','aired_from_year','startDateYear');
+        const genres = val(row,'genres','genre','tags','themes');
+        const episodes = val(row,'episodes','ep','eps');
+        const scoreVal = toNum(val(row,'score','rating','score_mean'));
+        const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
         const metricVal = toNum(row[metric]);
 
-        const card = document.createElement('article');
-        card.className = 'rank-card';
+        const card=document.createElement('article');
+        card.className='rank-card';
         card.innerHTML = `
           <div class="rank">${idx+1}</div>
-          <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${title}">
+          <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Anime'}" alt="${esc(title||'Anime')}">
           <div class="meta">
-            <h3>${title || 'Untitled'}</h3>
-            <div class="muted">${year ? year : ''}${year && genres ? ' • ' : ''}${genres ? genres : ''}</div>
+            <h3>${esc(title || 'Untitled')}</h3>
+            <div class="muted">${year ? esc(year) : ''}${year && genres ? ' • ' : ''}${genres ? esc(genres) : ''}</div>
             <div class="badges">
               ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
               ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
-              ${episodes ? `<span class="badge ep">Ep: ${episodes}</span>` : ''}
-              <span class="badge pill">${metric}: ${isNaN(metricVal) ? '—' : metricVal}</span>
+              ${episodes ? `<span class="badge ep">Ep: ${esc(episodes)}</span>` : ''}
+              <span class="badge pill">${esc(metric)}: ${isNaN(metricVal)?'—':metricVal}</span>
             </div>
-          </div>
-        `;
+          </div>`;
         listEl.appendChild(card);
       });
       statusEl.textContent = data.length ? '' : 'No results for current filters.';
     }
 
-    function applyFilters() {
-      const metric = metricEl.value;
-      const order = orderEl.value;
-      const limit = Math.max(1, Number(limitEl.value) || 50);
-      const selectedGenres = [...genreEl.selectedOptions].map(o => o.value);
-      const yFrom = toNum(yearFromEl.value);
-      const yTo = toNum(yearToEl.value);
+    function applyFilters(){
+      const metric=metricEl.value;
+      const order=orderEl.value;
+      const limit=Math.max(1, Number(limitEl.value)||50);
+      const selectedGenres=[...genreEl.selectedOptions].map(o=>o.value);
+      const yFrom=toNum(yearFromEl.value);
+      const yTo=toNum(yearToEl.value);
 
-      let data = rows.slice();
+      let data=rows.slice();
 
-      if (selectedGenres.length) {
-        data = data.filter(r => {
-          const g = String(val(r,'genres','genre','tags','themes')).toLowerCase();
-          return selectedGenres.every(s => g.includes(String(s).toLowerCase()));
+      if(selectedGenres.length){
+        data=data.filter(r=>{
+          const g=String(val(r,'genres','genre','tags','themes')).toLowerCase();
+          return selectedGenres.every(s=>g.includes(String(s).toLowerCase()));
         });
       }
-      data = data.filter(r => {
-        const y = toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
-        if (isNaN(y)) return true;
-        if (!isNaN(yFrom) && y < yFrom) return false;
-        if (!isNaN(yTo) && y > yTo) return false;
+      data=data.filter(r=>{
+        const y=toNum(val(r,'year','start_year','aired_from_year','startDateYear'));
+        if(isNaN(y)) return true;
+        if(!isNaN(yFrom) && y<yFrom) return false;
+        if(!isNaN(yTo) && y>yTo) return false;
         return true;
       });
 
-      data.sort((a,b) => {
-        const av = toNum(a[metric]);
-        const bv = toNum(b[metric]);
-        if (isNaN(av) && isNaN(bv)) return 0;
-        if (isNaN(av)) return 1;
-        if (isNaN(bv)) return -1;
-        return order === 'asc' ? av - bv : bv - av;
+      data.sort((a,b)=>{
+        const av=toNum(a[metric]), bv=toNum(b[metric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return order==='asc' ? av-bv : bv-av;
       });
 
-      renderChips({metric, order, limit, genres: selectedGenres, yFrom, yTo});
-      renderList(data, metric, order, limit);
-      sumFiltered.textContent = data.length;
-      summaryPanel.style.display = 'block';
+      renderChips({metric,order,limit,genres:selectedGenres,yFrom,yTo});
+      renderList(data,metric,order,limit);
+      sumFiltered.textContent=data.length; summaryPanel.style.display='block';
 
-      const params = new URLSearchParams(window.location.search);
-      params.set('metric', metric);
-      params.set('order', order);
-      params.set('limit', String(limit));
-      selectedGenres.length ? params.set('genres', selectedGenres.join(',')) : params.delete('genres');
-      yearFromEl.value ? params.set('from', yearFromEl.value) : params.delete('from');
-      yearToEl.value ? params.set('to', yearToEl.value) : params.delete('to');
-      history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+      const params=new URLSearchParams(location.search);
+      params.set('metric',metric); params.set('order',order); params.set('limit',String(limit));
+      selectedGenres.length ? params.set('genres',selectedGenres.join(',')) : params.delete('genres');
+      yearFromEl.value ? params.set('from',yearFromEl.value) : params.delete('from');
+      yearToEl.value ? params.set('to',yearToEl.value) : params.delete('to');
+      history.replaceState(null,'',`${location.pathname}?${params.toString()}`);
     }
 
-    function hydrateFromURL() {
-      const params = new URLSearchParams(window.location.search);
-      const m = params.get('metric');
-      const o = params.get('order');
-      const lim = params.get('limit');
-      const gs = params.get('genres');
-      const yf = params.get('from');
-      const yt = params.get('to');
-      if (o) orderEl.value = o;
-      if (lim) limitEl.value = lim;
-      if (yf) yearFromEl.value = yf;
-      if (yt) yearToEl.value = yt;
-      return { m, gs };
+    function hydrateFromURL(){
+      const p=new URLSearchParams(location.search);
+      const m=p.get('metric'); const o=p.get('order'); const lim=p.get('limit');
+      const gs=p.get('genres'); const yf=p.get('from'); const yt=p.get('to');
+      if(o) orderEl.value=o; if(lim) limitEl.value=lim; if(yf) yearFromEl.value=yf; if(yt) yearToEl.value=yt;
+      return {m,gs};
     }
 
-    function initControlsAndRender() {
-      sumTotal.textContent = rows.length;
+    function initControlsAndRender(){
+      document.getElementById('sumTotal').textContent = rows.length;
+      let defaultMetric = numericColumns.find(c=>['score','rating','score_mean'].includes(c)) || numericColumns[0];
 
-      let defaultMetric = numericColumns.find(c => ['score','rating','score_mean'].includes(c)) || numericColumns[0];
+      const {m,gs} = hydrateFromURL();
 
-      const { m, gs } = hydrateFromURL();
-
-      metricEl.innerHTML = '';
-      numericColumns.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c; opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+      metricEl.innerHTML='';
+      numericColumns.forEach(c=>{
+        const opt=document.createElement('option');
+        opt.value=c; opt.textContent=c.charAt(0).toUpperCase()+c.slice(1);
         metricEl.appendChild(opt);
       });
-      metricEl.value = m && numericColumns.includes(m) ? m : defaultMetric;
+      metricEl.value = (m && numericColumns.includes(m)) ? m : defaultMetric;
 
-      if (gs) {
-        const wanted = gs.split(',').map(s => s.trim());
-        [...genreEl.options].forEach(opt => { if (wanted.includes(opt.value)) opt.selected = true; });
+      if(gs){
+        const wanted=gs.split(',').map(s=>s.trim());
+        [...genreEl.options].forEach(o=>{ if(wanted.includes(o.value)) o.selected=true; });
       }
 
       applyFilters();
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      Papa.parse(CSV_URL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: (res) => {
-          rows = res.data;
-
-          const sample = rows.find(r => Object.values(r).some(v => v !== ''));
+    // Boot
+    window.addEventListener('DOMContentLoaded', ()=>{
+      fetch(CSV_URL)
+        .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+        .then(text=>{
+          const res = Papa.parse(text, {header:true, skipEmptyLines:true});
+          rows = res.data || [];
+          const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
           numericColumns = sample ? detectNumericColumns(sample) : [];
-
-          if (!numericColumns.length) {
-            numericColumns = ['score'];
-            rows = rows.map(r => ({ ...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0 }));
+          if(!numericColumns.length){
+            numericColumns=['score'];
+            rows = rows.map(r=>({...r, score: toNum(val(r,'rating','rank','members','popularity')) || 0}));
           }
-
           collectGenresAndYears(rows);
           initControlsAndRender();
-          hidePreloader();
-        },
-        error: (err) => {
-          listEl.innerHTML = `<div class="center error">Error loading CSV: ${err?.message || err}</div>`;
-          hidePreloader();
-        }
-      });
+          dataRendered=true; tryHidePreloader();
+
+          // SEO: canonical/OG
+          const url = `${location.origin}${location.pathname}`;
+          document.getElementById('canonicalLink').href = url;
+          document.querySelector('meta[property="og:url"]').setAttribute('content', url);
+
+          // JSON-LD ItemList (primi 10 dopo filtri correnti)
+          setTimeout(()=>{
+            const items=[...document.querySelectorAll('.rank-card')].slice(0,10).map((el,i)=>{
+              const title=el.querySelector('.meta h3')?.textContent?.trim()||`#${i+1}`;
+              return {"@type":"ListItem","position":i+1,"name":title};
+            });
+            document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":items});
+          },0);
+        })
+        .catch(err=>{
+          statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
+          dataRendered=true; tryHidePreloader();
+        });
 
       applyBtn.addEventListener('click', applyFilters);
-      resetBtn.addEventListener('click', () => {
-        metricEl.selectedIndex = 0;
-        orderEl.value = 'desc';
-        limitEl.value = 50;
-        yearFromEl.value = '';
-        yearToEl.value = '';
-        [...genreEl.options].forEach(o => o.selected = false);
-        history.replaceState(null, '', location.pathname);
-        applyFilters();
+      resetBtn.addEventListener('click', ()=>{
+        metricEl.selectedIndex=0; orderEl.value='desc'; limitEl.value=50;
+        yearFromEl.value=''; yearToEl.value=''; [...genreEl.options].forEach(o=>o.selected=false);
+        history.replaceState(null,'',location.pathname); applyFilters();
       });
     });
   </script>
