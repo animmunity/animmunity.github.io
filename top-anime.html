@@ -32,7 +32,7 @@
   <!-- JSON-LD: ItemList (dinamico) -->
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 
- <style>
+<style>
   :root{
     --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
     --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
@@ -159,56 +159,53 @@
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* ===================== */
-/*  RESPONSIVE FIXES     */
-/* ===================== */
-/* Step 1: prevenire overflow su titoli e meta */
-.rank-card, .meta, .meta h3 { min-width:0 }
+  /*  RESPONSIVE FIXES     */
+  /* ===================== */
+  .rank-card, .meta, .meta h3 { min-width:0 }
 
-/* Step 2: comprimere leggermente thumbs e gaps su tablet */
-@media (max-width: 900px){
-  .rank-card{grid-template-columns:52px 72px 1fr;gap:12px}
-  .thumb{width:72px;height:100px}
-}
-
-/* Step 3: layout a 2 righe: rank a sinistra, thumb sotto, meta a destra */
-@media (max-width: 720px){
-  .rank-card{
-    grid-template-columns:52px 1fr;
-    grid-template-areas:
-      "rank meta"
-      "rank thumb";
-    align-items:start
+  @media (max-width: 900px){
+    .rank-card{grid-template-columns:52px 72px 1fr;gap:12px}
+    .thumb{width:72px;height:100px}
   }
-  .rank{grid-area:rank;align-self:start}
-  .thumb-wrap{grid-area:thumb}
-  .meta{grid-area:meta}
-  .thumb{width:68px;height:95px}
-}
 
-/* Step 4: su mobile stretto rank piccolo e visibile, thumb full-width sotto */
-@media (max-width: 440px){
-  .rank-card{
-    grid-template-columns:52px 1fr;
-    grid-template-areas:
-      "rank meta"
-      "rank thumb";
+  /* Numero sopra titolo su mobile */
+  @media (max-width: 720px){
+    .rank-card{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .rank{
+      order: -1;
+      margin-bottom: 6px;
+    }
+    .thumb-wrap{
+      order: 0;
+      width: 100%;
+    }
+    .meta{
+      order: 1;
+      width: 100%;
+    }
+    .thumb{width:68px;height:95px}
   }
-  .rank{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    width:40px;
-    height:40px;
-    font-size:.9rem
-  }
-  .thumb{width:100%;height:auto;aspect-ratio:3/4}
-  .meta h3{-webkit-line-clamp:3}
-}
 
-/* Evitare che i dropdown escano fuori dallo schermo */
-@media (max-width: 520px){
-  .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
-}
+  @media (max-width: 440px){
+    .rank{
+      align-self: flex-start;
+      width: auto;
+      height: auto;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+      border-radius: 8px;
+    }
+    .thumb{width:100%;height:auto;aspect-ratio:3/4}
+    .meta h3{-webkit-line-clamp:3}
+  }
+
+  @media (max-width: 520px){
+    .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
+  }
 </style>
 </head>
 <body>
