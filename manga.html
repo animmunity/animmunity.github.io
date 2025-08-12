@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Manga Detail — AniMMUnity</title>
+  <meta name="description" content="Manga detail page with cover, info, genres, demographics and full metadata on AniMMUnity.">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph / Twitter (filled via JS) -->
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
+  <link id="canonicalLink" rel="canonical" href="">
+
+  <!-- JSON-LD placeholders -->
+  <script id="ld-breadcrumbs" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}</script>
+  <script id="ld-entity" type="application/ld+json">{"@context":"https://schema.org","@type":"CreativeWork"}</script>
+
+  <!-- Assets -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <!-- Preload split CSVs -->
+  <link rel="preload" href="/data/manga_core.csv" as="fetch" type="text/csv">
+  <link rel="preload" href="/data/manga_text_part1.csv" as="fetch" type="text/csv">
+  <link rel="preload" href="/data/manga_text_part2.csv" as="fetch" type="text/csv">
+
+<style>
+  /* =====================
+     NOVA WHITE UI — Same look & feel as anime detail
+     ===================== */
+  :root{
+    --bg: #f6f7fb; --ink: #0f172a; --muted: #5b6478; --panel: #ffffff; --soft: #f0f2f8; --border: #e6e9f2;
+    --primary: #4f46e5; --accent: #06b6d4; --danger:#ef4444;
+    --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
+    --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
+    --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
+    --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+            radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+  }
+  *{box-sizing:border-box}
+  html, body{height:100%}
+  body{ margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color:var(--ink); background: var(--bg);
+        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale; background-image: var(--grad); background-attachment: fixed; }
+  a{color:var(--primary); text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  .topbar{ position: sticky; top:0; z-index:50; backdrop-filter: saturate(130%) blur(10px); background: rgba(255,255,255,.75); border-bottom:1px solid var(--border); }
+  .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
+  .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
+  .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
+
+  .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
+  .layout{ display:grid; grid-template-columns: 360px 1fr; gap:24px; }
+  @media (max-width:980px){ .layout{ grid-template-columns:1fr; } }
+
+  .aside{ position: sticky; top:84px; align-self:start; display:grid; gap:16px; }
+  .poster{ position:relative; z-index:1; border-radius:var(--r-lg); overflow:hidden; background:var(--panel); border:1px solid var(--border); box-shadow:var(--shadow-2); }
+  .poster img{ width:100%; display:block; aspect-ratio:3/4; object-fit:cover; }
+
+  .pill{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.8rem; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:var(--soft); color:#334155; }
+  .pills{ display:flex; gap:8px; flex-wrap:wrap; }
+
+  .stat-card{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); padding:14px; box-shadow:var(--shadow-1); }
+  .stat-row{ display:grid; grid-template-columns: 1fr 1fr; gap:8px 12px; font-size:.95rem; }
+  .stat-row p{ margin:0; color:var(--muted); }
+  .stat-row strong{ color:var(--ink); }
+
+  .main{ display:grid; gap:18px; }
+  .hero{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-2); padding:18px; position:relative; overflow:clip; }
+  .hero::after{ content:""; position:absolute; inset:auto -20% -50% -20%; height:180px; background: radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%); }
+  .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
+  .sub{ color:var(--muted); font-size:.95rem; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .chip{ background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius:999px; font-size:.8rem; }
+
+  .panel{ background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:16px; }
+  .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
+  .grid-kv{ display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:10px 16px; }
+  .grid-kv p{ margin:0; }
+  .grid-kv strong{ color:var(--ink); }
+  .desc{ line-height:1.8; color:#1f2937; }
+
+  .nav-prevnext{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .link-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--panel); box-shadow:var(--shadow-1); }
+  .link-btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
+
+  .center{ text-align:center; padding:48px 0; color:var(--muted); }
+  .error{ color:var(--danger); }
+  @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
+  .hero, .panel, .poster, .stat-card{ animation: pop .35s ease both }
+
+  @media (max-width:980px){ .aside{ position: static; top:auto; } .hero{ overflow:visible; } }
+  @media (max-width:980px), (hover:none) and (pointer:coarse){ body{ background-attachment: scroll; } }
+
+  /* Preloader */
+  #preloader{ position: fixed; inset:0; background:#ffffff; display:grid; place-items:center; transition: opacity .4s ease; z-index:9999; }
+  .spinner{ width:44px; height:44px; border-radius:50%; border:4px solid #e3e3e3; border-top-color:#007BFF; animation: spin 1s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg) } }
+</style>
+</head>
+<body>
+
+<!-- 🔄 Preloader -->
+<div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+<div id="header"></div>
+
+<div class="shell">
+  <main id="content" role="main" aria-live="polite">
+    <div class="center" id="loading">Loading…</div>
+  </main>
+</div>
+
+<div id="footer"></div>
+
+<script>
+// ===== Utils =====
+const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
+const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
+const parseArray = (str) => {
+  if (!str) return [];
+  const s = String(str).trim();
+  try { const arr = JSON.parse(s); return Array.isArray(arr) ? arr : [String(str)]; }
+  catch { return s.replace(/^\[|\]$/g,'').split(',').map(x=>x.replace(/^[\'"\s]+|[\'"\s]+$/g,'').trim()).filter(Boolean); }
+};
+
+const getMalSlug = (malUrl) => {
+  try { const u = new URL(malUrl); const parts = u.pathname.split('/').filter(Boolean); return decodeURIComponent(parts[parts.length-1]||''); } catch { return ''; }
+};
+const normalizeSlug = (s) => decodeURIComponent(String(s||'')).trim();
+const getSlugFromPath = () => { const parts = location.pathname.split('/').filter(Boolean); const i = parts.indexOf('manga'); return (i!==-1 && parts[i+1]) ? parts[i+1] : ''; };
+
+// Header/Footer
+fetch('/header.html').then(r=>r.text()).then(t=>{ document.getElementById('header').innerHTML = t; }).catch(()=>{});
+fetch('/footer.html').then(r=>r.text()).then(t=>{ document.getElementById('footer').innerHTML = t; }).catch(()=>{});
+
+// ===== Preloader lifecycle =====
+let assetsLoaded = false, dataRendered = false;
+function hidePreloader(){ const pre=document.getElementById('preloader'); if(!pre) return; pre.style.opacity='0'; pre.style.pointerEvents='none'; setTimeout(()=> pre && pre.parentNode && pre.parentNode.removeChild(pre), 400); }
+function tryHidePreloader(){ if (assetsLoaded && dataRendered) hidePreloader(); }
+window.addEventListener('load', ()=>{ assetsLoaded = true; tryHidePreloader(); });
+setTimeout(()=> hidePreloader(), 8000);
+
+// ===== Labels & Sections (specifico manga) =====
+const columnLabels = {
+  manga_id:'Manga ID', title:'Title', title_english:'English Title', title_japanese:'Japanese Title', title_synonyms:'Alternative Titles',
+  type:'Type', score:'Score', scored_by:'Ratings Count', status:'Status',
+  volumes:'Volumes', chapters:'Chapters', start_date:'Start Date', end_date:'End Date',
+  real_start_date:'Real Start Date', real_end_date:'Real End Date',
+  members:'Members', favorites:'Favorites', sfw:'SFW', approved:'Approved',
+  genres:'Genres', themes:'Themes', demographics:'Demographics',
+  serializations:'Serializations', authors:'Authors', url:'Source URL',
+  synopsis:'Synopsis', background:'Background', main_picture:'Main Image',
+  created_at_before:'Created At', updated_at:'Updated At'
+};
+
+const sections = {
+  'Identity & Titles': ['title','title_english','title_japanese','title_synonyms'],
+  'Classification & Ratings': ['type','score','scored_by','status','sfw','approved'],
+  'Volumes & Chapters': ['volumes','chapters'],
+  'Dates': ['start_date','end_date','real_start_date','real_end_date'],
+  'Popularity & Insight': ['members','favorites','genres','themes','demographics'],
+  'Publishing': ['serializations','authors','url'],
+  'Technical': ['created_at_before','updated_at']
+};
+
+function formatMultiline(text){ if(!text) return '—'; const stripped=String(text).replace(/\[Written by MAL Rewrite\]$/,''); return esc(stripped).replace(/\r\n|\r|\n/g,'<br>'); }
+
+function prettyList(val){
+  if (val === null || val === undefined || val === '') return '—';
+  const s = String(val).trim();
+  if (s.startsWith('[') && s.endsWith(']')) {
+    const arr = parseArray(s); return arr.length ? arr.join(', ') : '—';
+  }
+  return s;
+}
+
+function parseAuthors(str){
+  if (!str) return [];
+  let s = String(str).trim();
+  try {
+    // prova JSON diretto
+    const arr = JSON.parse(s);
+    return Array.isArray(arr) ? arr.map(a=>[a.first_name,a.last_name,a.role].filter(Boolean).join(' ').trim()) : [];
+  } catch{
+    try {
+      // converti apici singoli -> doppi, chiavi -> doppi apici
+      s = s.replace(/\b(id|first_name|last_name|role)\b/g,'"$1"').replace(/'/g,'"');
+      const arr = JSON.parse(s);
+      return Array.isArray(arr) ? arr.map(a=>[a.first_name,a.last_name,a.role].filter(Boolean).join(' ').trim()) : [];
+    } catch { return [s]; }
+  }
+}
+
+function renderDetails(manga){
+  const genresArr = parseArray(manga.genres);
+  const demoArr   = parseArray(manga.demographics);
+  const serialsArr= parseArray(manga.serializations);
+  const authorsArr= parseAuthors(manga.authors);
+
+  const genresList = genresArr.join(', ') || '—';
+  const serialsList= serialsArr.join(', ') || '—';
+  const demoList   = demoArr.join(', ') || '—';
+  const authorsList= authorsArr.join(', ') || '—';
+
+  const imgSrc = (manga.main_picture && manga.main_picture.trim())
+    ? manga.main_picture
+    : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+
+  const chips = [...genresArr, ...demoArr].slice(0, 24); // non esageriamo
+
+  return `
+    <div class="layout">
+      <aside class="aside" aria-label="Cover and key facts">
+        <figure class="poster">
+          <img src="${esc(imgSrc)}" alt="${esc(manga.title || manga.title_english || 'Manga cover')}"
+            onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'" />
+        </figure>
+        <div class="pills">
+          <span class="pill">${esc(safe(manga.type))}</span>
+        </div>
+        <div class="stat-card" aria-label="Quick stats">
+          <div class="stat-row">
+            <p>Score</p><strong>${esc(safe(manga.score))}</strong>
+            <p>Ratings</p><strong>${esc(safe(manga.scored_by))}</strong>
+            <p>Volumes</p><strong>${esc(safe(manga.volumes))}</strong>
+            <p>Chapters</p><strong>${esc(safe(manga.chapters))}</strong>
+            <p>Status</p><strong>${esc(safe(manga.status))}</strong>
+            <p>Members</p><strong>${esc(safe(manga.members))}</strong>
+          </div>
+        </div>
+      </aside>
+
+      <section class="main">
+        <header class="hero">
+          <h1>${esc(manga.title_english || manga.title || 'Manga')}</h1>
+          <div class="sub">🗓 ${esc(safe(manga.start_date))} — ${manga.end_date ? esc(safe(manga.end_date)) : 'Ongoing'}</div>
+          <div class="sub">🏷️ Serials: ${esc(serialsList)} · Demographics: ${esc(demoList)}</div>
+          <div class="chips" role="list">${chips.map(g=>`<span class='chip' role='listitem'>${esc(g)}</span>`).join('')}</div>
+        </header>
+
+        <section class="panel" aria-label="Synopsis"><h2>Synopsis</h2><p class="desc">${formatMultiline(manga.synopsis)}</p></section>
+        ${manga.background ? `<section class="panel" aria-label="Background"><h2>Background</h2><p class="desc">${formatMultiline(manga.background)}</p></section>` : ''}
+
+        ${Object.entries(sections).map(([name, fields])=>{
+          const parts = [];
+          for (const f of fields){
+            let v = manga[f];
+            if (v===null || v===undefined || v==='' || (typeof v==='string' && v.trim()==='[]')) continue;
+            if (['genres','themes','demographics','serializations','title_synonyms'].includes(f)) v = prettyList(v);
+            if (f==='authors') v = authorsList;
+            parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(String(v)))}</p>`);
+          }
+          return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
+        }).join('')}
+
+        <nav class="nav-prevnext" aria-label="Previous/Next"></nav>
+      </section>
+    </div>`;
+}
+
+function setDynamicMeta(manga){
+  const title = (manga.title_english || manga.title || 'Manga').trim();
+  const desc  = (manga.synopsis || '').replace(/\s+/g,' ').slice(0,160);
+  const rawSlug = manga.url ? getMalSlug(manga.url) : manga.manga_id;
+  const url = `${location.origin}/manga.html?slug=${encodeURIComponent(rawSlug)}`;
+  const img = (manga.main_picture && manga.main_picture.trim()) ? manga.main_picture : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+
+  document.title = `${title} — AniMMUnity`;
+  const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute('content', desc);
+  const can = document.getElementById('canonicalLink'); if (can) can.href = url;
+  const set = (sel,val)=>{ const el=document.querySelector(sel); if (el) el.setAttribute('content', val); };
+  set('meta[property="og:title"]', title);
+  set('meta[property="og:description"]', desc);
+  set('meta[property="og:url"]', url);
+  set('meta[property="og:image"]', img);
+  set('meta[name="twitter:title"]', title);
+  set('meta[name="twitter:description"]', desc);
+  set('meta[name="twitter:image"]', img);
+
+  const bc = {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
+    {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
+    {"@type":"ListItem","position":2,"name":"Manga List","item":`${location.origin}/`},
+    {"@type":"ListItem","position":3,"name":title,"item":url}
+  ]};
+  document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
+
+  const schemaType = 'Book'; // più adeguato ai manga
+  const entity = {
+    "@context":"https://schema.org",
+    "@type": schemaType,
+    name: title,
+    url, image: img,
+    genre: parseArray(manga.genres),
+    inLanguage: 'ja',
+    datePublished: manga.start_date || undefined,
+    dateEnded: manga.end_date || undefined,
+    dateModified: manga.updated_at || undefined,
+    sameAs: manga.url || undefined,
+    numberOfVolumes: (manga.volumes && !isNaN(manga.volumes)) ? Number(manga.volumes) : undefined,
+    numberOfPages: (manga.chapters && !isNaN(manga.chapters)) ? Number(manga.chapters) : undefined,
+    description: desc,
+    author: parseAuthors(manga.authors).map(a=>({"@type":"Person","name":a}))
+  };
+  document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+}
+
+function renderPrevNext(navRoot, core, detailsMap, current){
+  const byTitle = [...core].sort((a,b)=> (a.title||'').localeCompare(b.title||''));
+  const idx = byTitle.findIndex(x=> x.manga_id === current.manga_id);
+  const prev = idx>0 ? byTitle[idx-1] : null;
+  const next = idx<byTitle.length-1 ? byTitle[idx+1] : null;
+  if (!prev && !next) return;
+
+  function hrefFor(rec){
+    const det = detailsMap.get(rec.manga_id) || {};
+    if (det.url) return `/manga.html?slug=${encodeURIComponent(getMalSlug(det.url))}`;
+    return `/manga.html?id=${encodeURIComponent(rec.manga_id)}`;
+  }
+
+  navRoot.innerHTML = `
+    <div>${prev ? `<a class="link-btn" href="${hrefFor(prev)}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+    <div>${next ? `<a class="link-btn" href="${hrefFor(next)}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
+  `;
+}
+
+// ===== Boot =====
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  const mangaId = (params.get('id')||'').trim();
+  const slugFromQuery = normalizeSlug(params.get('slug'));
+  const slugFromPath  = normalizeSlug(getSlugFromPath());
+
+  // carica tutti i CSV necessari
+  Promise.all([
+    fetch('/data/manga_core.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+    fetch('/data/manga_text_part1.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+    fetch('/data/manga_text_part2.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+  ])
+  .then(([coreCsv, d1Csv, d2Csv]) => {
+    const core = parseCSV(coreCsv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
+    const d1 = parseCSV(d1Csv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
+    const d2 = parseCSV(d2Csv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
+
+    // indice dettagli per manga_id (part1 -> part2, preferisci il più completo)
+    const detailsMap = new Map();
+    for (const row of [...d1, ...d2]){
+      if (!row.manga_id) continue;
+      const prev = detailsMap.get(row.manga_id) || {};
+      // merge non distruttivo: tieni il valore più lungo come più informativo
+      const merged = { ...prev };
+      for (const k of Object.keys(row)){
+        const nv = row[k];
+        const ov = prev[k];
+        merged[k] = (!ov || (String(nv||'').length > String(ov||'').length)) ? nv : ov;
+      }
+      detailsMap.set(row.manga_id, merged);
+    }
+
+    // trova il record corrente
+    let recCore = null; let recDetails = null;
+    if (mangaId){
+      recCore = core.find(a => a.manga_id === mangaId);
+      recDetails = detailsMap.get(mangaId) || null;
+    } else {
+      const wanted = slugFromQuery || slugFromPath;
+      if (wanted){
+        // cerca per slug di MAL dentro details
+        for (const [id, det] of detailsMap.entries()){
+          const slug = det.url ? getMalSlug(det.url) : '';
+          if (normalizeSlug(slug) === wanted){ recCore = core.find(a=>a.manga_id===id); recDetails = det; break; }
+        }
+      }
+    }
+
+    const contentEl = document.getElementById('content');
+    if (!recCore){
+      const msg = mangaId ? `ID: ${esc(mangaId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
+      contentEl.innerHTML = `<div class="center error">Manga not found<br>${msg}</div>`;
+      dataRendered = true; tryHidePreloader();
+      return;
+    }
+
+    const manga = { ...recCore, ...(recDetails||{}) };
+
+    contentEl.innerHTML = renderDetails(manga);
+    setDynamicMeta(manga);
+    const navRoot = contentEl.querySelector('.nav-prevnext');
+    if (navRoot) renderPrevNext(navRoot, core, detailsMap, manga);
+
+    dataRendered = true; tryHidePreloader();
+  })
+  .catch(err => {
+    document.getElementById('content').innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
+    dataRendered = true; tryHidePreloader();
+  })
+  .finally(() => document.getElementById('loading')?.remove());
+});
+</script>
+</body>
+</html>
