@@ -4,22 +4,30 @@
   <meta charset="utf-8" />
   <title>Top Anime — AniMMUnity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Search by title, filter genres, sort by metric, and browse 50 per page. Fixed global ranks per metric/order." />
+  <meta name="description" content="Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page. Fixed global ranks per metric/order." />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#ffffff">
 
+  <!-- OG / Twitter -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:title" content="Top Anime — AniMMUnity">
   <meta property="og:description" content="Search, filter, sort, and paginate with fixed ranks.">
   <meta property="og:url" content="">
   <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Top Anime — AniMMUnity">
+  <meta name="twitter:description" content="Search, filter, sort, and paginate with fixed ranks.">
+  <meta name="twitter:image" content="">
+
   <link id="canonicalLink" rel="canonical" href="">
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" />
+
+  <!-- ✅ Preload CSV (stesso URL del fetch) + crossorigin per evitare warning -->
+  <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
 
   <!-- JSON-LD: ItemList (dinamico) -->
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
@@ -34,41 +42,41 @@
     html,body{height:100%}
     body{
       margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-      /* tolto gradiente di sfondo per evitare “velo” */
-      background:#f6f7fb;
+      color:var(--ink);background:var(--bg);
+      -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
     }
     a{color:var(--primary);text-decoration:none}
     a:hover{text-decoration:underline}
     .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-    /* Tutti i blocchi con la stessa grafica (panel) */
+    /* Stessa grafica per tutti i blocchi */
     .panel{
       background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);
       box-shadow:var(--shadow-1);padding:18px;
     }
     .panel + .panel{ margin-top:18px; }
 
-    /* Hero = stesso stile del panel + più respiro */
-    .hero{ composes: panel; }
+    /* Hero (niente filigrana) */
     .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:22px}
     .hero h1{margin:0 0 8px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
     .sub{color:var(--muted);font-size:.95rem;margin:6px 0 14px}
+
+    /* Spaziatura verticale tra i macroblocchi */
+    .block-gap{ margin-top:18px; }
+
+    /* Chips */
     .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-    /* Spaziatura tra i blocchi principali */
-    .block-gap{ margin-top:18px; }
-
-    /* Search */
-    .search-container{width:100%;margin:10px 0 0}
+    /* Search live */
+    .search-container{width:100%;margin:12px 0 0}
     .search-input{
       width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
       box-shadow:0 2px 8px rgba(17,24,39,.04);
     }
     .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
 
-    /* Dropdown (Genres / Metric / Order) */
+    /* Dropdown unificati (Genres, Metric, Order) */
     .filters-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
     .filter-dropdown{position:relative}
     .filter-btn{
@@ -83,9 +91,26 @@
     }
     .filter-dropdown.open .filter-menu{display:block}
     .filter-search{width:100%;border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:13px;margin-bottom:8px;outline:none;box-sizing:border-box}
-    .options .option{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer}
+    .options .option{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer}
     .options .option:hover{background:#f5f5f5}
-    .options input{margin-right:4px}
+
+    /* ✅ Checkbox/radio quadrati e coerenti */
+    .options input[type="checkbox"],
+    .options input[type="radio"]{
+      appearance:none; -webkit-appearance:none; -moz-appearance:none;
+      width:16px;height:16px;border:2px solid #9aa3b2;border-radius:4px;background:#fff;display:inline-block;position:relative;cursor:pointer;
+      outline:none; flex:0 0 16px;
+    }
+    .options input[type="checkbox"]:focus,
+    .options input[type="radio"]:focus{ box-shadow:0 0 0 3px rgba(79,70,229,.15); }
+    .options input[type="checkbox"]:checked,
+    .options input[type="radio"]:checked{
+      border-color:#4f46e5;background:#4f46e5;
+    }
+    .options input[type="checkbox"]:checked::after,
+    .options input[type="radio"]:checked::after{
+      content:""; position:absolute; inset:3px; background:#fff; mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 16 16"><path fill="black" d="M6.173 13.727L1.2 8.754l1.885-1.885l3.088 3.087l6.742-6.742l1.885 1.885z"/></svg>') center/contain no-repeat;
+    }
 
     .btn-clear{
       border:1px solid #bbb;background:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
@@ -108,7 +133,6 @@
     .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
     .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
     .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
-    .badge.ep{border-color:#ffe6e6;background:#fff5f5;color:#8f1e1e}
 
     /* Paginazione */
     .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
@@ -136,7 +160,7 @@
   <div id="header"></div>
 
   <main class="shell">
-    <!-- Top Anime (stesso stile panel) -->
+    <!-- Top Anime -->
     <section class="hero panel">
       <h1>Top Anime</h1>
       <p class="sub">Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page.</p>
@@ -149,7 +173,7 @@
       <div id="chips" class="chips"></div>
     </section>
 
-    <!-- Filtri (stesso stile panel + spaziatura) -->
+    <!-- Filtri -->
     <section class="panel block-gap">
       <div class="filters-bar" id="filtersBar" aria-label="Filters">
         <!-- Dropdowns creati via JS: Genres / Metric / Order -->
@@ -158,7 +182,7 @@
       <div class="center" id="resultsInfo"></div>
     </section>
 
-    <!-- Ranking (stesso stile panel) -->
+    <!-- Ranking -->
     <section class="panel block-gap" aria-label="Ranking">
       <h2>Ranking</h2>
       <div id="list" class="list"></div>
@@ -223,6 +247,7 @@
 
     function collectGenres(row){ parseList(row.genres).forEach(g=>genreSet.add(g)); }
 
+    // Generic dropdown builder (multi or single)
     function buildDropdown({key,label,type,options,withSearch=true,onSelect}){
       const wrap=document.createElement('div');
       wrap.className='filter-dropdown';
@@ -248,7 +273,8 @@
         const row=document.createElement('label'); row.className='option';
         const input=document.createElement('input');
         if(type==='multi'){
-          input.type='checkbox'; input.dataset.facet=key; input.value=opt.value; 
+          input.type='checkbox'; input.dataset.facet=key; input.value=opt.value;
+          if(opt.selected) input.checked=true;
         }else{
           input.type='radio'; input.name=`radio-${key}`; input.value=opt.value; input.checked = opt.value===opt.selected;
         }
@@ -320,7 +346,6 @@
     }
 
     // ===== Fixed global ranks per metric/order =====
-    // Per ogni combinazione (metric, order) costruiamo una mappa anime_id -> posizione globale
     let globalRankMap = new Map();
     function computeGlobalRanks(metric, order){
       const arr = rows.slice().sort((a,b)=>{
@@ -353,7 +378,6 @@
         const title = val(row,'title','name','anime','series_title');
         const img = val(row,'main_picture','image_url','image','pic','poster');
         const year = val(row,'year','start_year','aired_from_year','startDateYear');
-        const episodes = val(row,'episodes','ep','eps');
         const scoreVal = toNum(val(row,'score','rating','score_mean'));
         const popularity = toNum(val(row,'popularity','members','watchers','user_count','favorites'));
         const metricVal = toNum(row[currentMetric]);
@@ -371,7 +395,6 @@
             <div class="badges">
               ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
               ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
-              ${episodes ? `<span class="badge ep">Ep: ${esc(episodes)}</span>` : ''}
               <span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>
             </div>
           </div>`;
@@ -418,13 +441,13 @@
     }
 
     function applyAndRender(page=1){
-      // (ri)calcola posizioni globali per la metrica/ordine attuali
+      // posizioni globali per metrica/ordine
       computeGlobalRanks(currentMetric, currentOrder);
 
       // Filtra
       let filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
 
-      // Ordina per metrica/ordine corrente (solo per l’ordine di lista, non per il numero mostrato)
+      // Ordina (solo per l’ordine visivo di lista)
       filtered.sort((a,b)=>{
         const av=toNum(a[currentMetric]), bv=toNum(b[currentMetric]);
         if(isNaN(av) && isNaN(bv)) return 0;
@@ -477,7 +500,7 @@
 
     // Boot
     window.addEventListener('DOMContentLoaded', ()=>{
-      fetch(CSV_URL)
+      fetch(CSV_URL, { credentials: 'same-origin' })
         .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
         .then(text=>{
           const res=Papa.parse(text,{header:true,skipEmptyLines:true});
@@ -519,6 +542,8 @@
             withSearch:true,
             onSelect:(inp)=>{
               currentMetric = inp.value;
+              // aggiorna label subito
+              const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
               applyAndRender(1);
             }
           });
@@ -536,6 +561,7 @@
             withSearch:false,
             onSelect:(inp)=>{
               currentOrder = inp.value;
+              const labelEl=document.getElementById('btn-label-order'); if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
               applyAndRender(1);
             }
           });
@@ -563,10 +589,8 @@
         document.querySelectorAll('.filter-menu input[type="checkbox"][data-facet="genres"]').forEach(chk=> chk.checked=false);
         updateCountBadge('genres', 0);
         queryText=''; searchInput.value='';
-        // reset metric/order ai default visibili nelle label
-        currentMetric = numericColumns[0] || 'score';
+        currentMetric = 'score';
         currentOrder = 'desc';
-        // aggiorna label bottoni metric/order
         const mLabel=document.getElementById('btn-label-metric'); if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
         const oLabel=document.getElementById('btn-label-order');  if(oLabel) oLabel.textContent=`Order: ${currentOrder}`;
         applyAndRender(1);
