@@ -197,7 +197,8 @@ const sections = {
 
 function formatMultiline(text){
   if(!text) return '—';
-  const stripped = String(text).replace(/\[Written by MAL Rewrite\]\s*$/i, '');
+  // Rimuove il tag in qualunque punto della stringa (anche con spazi/line break attorno)
+  const stripped = String(text).replace(/\s*\[Written by MAL Rewrite\]\s*/gi, '');
   return esc(stripped).replace(/\r\n|\r|\n/g,'<br>');
 }
 
