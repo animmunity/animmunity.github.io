@@ -317,9 +317,7 @@
       const facets = [
         { key: 'demographics',  label: 'Demographics' },
         { key: 'themes',        label: 'Themes' },
-        { key: 'genres',        label: 'Genres' },
-        { key: 'serializations',label: 'Serializations' },
-        { key: 'authors',       label: 'Authors' }
+        { key: 'genres',        label: 'Genres' }
       ];
       const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
       const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
@@ -329,8 +327,6 @@
         parseList(row.demographics).forEach(v => optionSets.demographics.add(v));
         parseList(row.themes).forEach(v => optionSets.themes.add(v));
         parseList(row.genres).forEach(v => optionSets.genres.add(v));
-        parseList(row.serializations).forEach(v => optionSets.serializations.add(v));
-        parseAuthors(row.authors).forEach(v => optionSets.authors.add(v));
       }
 
       // Build dropdowns (identico alla pagina Anime)
@@ -633,8 +629,6 @@
           const demographics = parseList(det.demographics || core.demographics);
           const themes        = parseList(det.themes || core.themes);
           const genres        = parseList(det.genres || core.genres);
-          const serializations= parseList(det.serializations || core.serializations);
-          const authors       = parseAuthors(det.authors || core.authors);
 
           // Detail URL preference: slug from MAL url if present
           const malSlug = det.url ? getMalSlug(det.url) : '';
@@ -643,7 +637,7 @@
             : `${location.origin}/manga.html?id=${encodeURIComponent(core.manga_id)}`;
 
           // fill facets option sets
-          fillOptionSetsFromRow({ demographics, themes, genres, serializations, authors });
+          fillOptionSetsFromRow({ demographics, themes, genres });
 
           return {
             manga_id: core.manga_id,
@@ -654,8 +648,6 @@
             demographics,
             themes,
             genres,
-            serializations,
-            authors,
             _detailUrl: detailUrl
           };
         });
