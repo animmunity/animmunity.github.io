@@ -229,24 +229,42 @@
     const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
 
     // ---------- Helpers immagini (MAL l.jpg -> t.jpg + fallback) ----------
-    const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
-    const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
-    const toThumbUrl = (url) => {
-      const u = cleanImageUrl(url);
-      if (!u) return '';
-      if (/^https?:\/\/cdn\.myanimelist\.net\/.+\/[0-9]+l\.jpg$/i.test(u)) return u.replace(/l\.jpg$/i, 't.jpg');
-      return u;
-    };
-    function imgOnErrorFallback(imgEl, originalUrl) {
-      const cur = imgEl.getAttribute('data-state') || 'thumb';
-      if (cur === 'thumb') {
-        imgEl.src = cleanImageUrl(originalUrl);     // passa alla large
-        imgEl.setAttribute('data-state', 'large');
-      } else if (cur === 'large') {
-        imgEl.src = PLACEHOLDER;                    // ultimo fallback
-        imgEl.setAttribute('data-state', 'placeholder');
-      }
+const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+
+const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
+
+// Versione alta qualità: rimuove la 'l' prima dell'estensione (…157897l.jpg -> …157897.jpg)
+const toHighResUrl = (url) => {
+  const u = cleanImageUrl(url);
+  if (!u) return '';
+  return u.replace(/l(\.(?:jpe?g|png))$/i, '$1');
+};
+
+// Versione thumbnail: se abbiamo la 'l' la convertiamo in 't' (…157897l.jpg -> …157897t.jpg)
+// altrimenti lasciamo com'è (alcune immagini nascono già senza suffisso).
+const toThumbUrl = (url) => {
+  const u = cleanImageUrl(url);
+  if (!u) return '';
+  if (/l\.(?:jpe?g|png)$/i.test(u)) return u.replace(/l(\.(?:jpe?g|png))$/i, 't$1');
+  if (/\.thumb\.(?:jpe?g|png)$/i.test(u)) return u; // eventuali pattern alternativi
+  return u;
+};
+
+// onerror smart: prova in ordine HQ -> thumb -> placeholder
+function imgOnErrorSmart(imgEl, originalUrl) {
+  const cur = imgEl.getAttribute('data-state') || 'hq';
+  if (cur === 'hq') {
+    const thumb = toThumbUrl(originalUrl);
+    if (thumb && thumb !== imgEl.src) {
+      imgEl.src = thumb;
+      imgEl.setAttribute('data-state', 'thumb');
+      return;
     }
+  }
+  // ultimo fallback
+  imgEl.src = PLACEHOLDER;
+  imgEl.setAttribute('data-state', 'placeholder');
+}
     // ----------------------------------------------------------------------
 
     // Elements
