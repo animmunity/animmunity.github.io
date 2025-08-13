@@ -3,138 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AniMMUnity — Home (Light Glass)</title>
-  <meta name="description" content="AniMMUnity, lightning‑fast search and clean showcases for Anime & Manga. Light‑only glassmorphism UI."/>
-  <meta name="theme-color" content="#f7f8fb" />
+  <title>AniMMUnity — Home</title>
+  <meta name="description" content="Discover AniMMUnity: fast search, clean filters and rankings for Anime & Manga. Random showcases with 20 covers each, plus latest blog posts."/>
+  <meta name="theme-color" content="#ffffff" />
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
   <link rel="stylesheet" href="/styles.css" />
 
   <style>
-  /* =============================
-     LIGHT‑ONLY GLASS REDESIGN
-     ============================= */
+  /* === Apple-style, understated, tactile === */
   :root{
-    /* Base neutrals (light only) */
-    --bg:#f7f8fb;        /* page bg */
-    --ink:#0b1324;       /* main text */
-    --muted:#5b6475;     /* secondary */
-    --line:#e6e9f2;      /* subtle borders */
+    /* neutrals */
+    --bg:#f5f5f7; --ink:#0f172a; --muted:#6b7280; --panel:#ffffff; --panel-2:#fbfbfd; --border:#e5e7eb;
+    --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
+    --shadow-1:0 8px 26px rgba(17,24,39,.06); --shadow-2:0 12px 40px rgba(17,24,39,.08);
 
-    /* Panels & effects */
-    --panel:rgba(255,255,255,.78);
-    --panel-deep:rgba(255,255,255,.92);
-    --glass-shadow:0 12px 40px rgba(24,40,72,.08), 0 3px 10px rgba(24,40,72,.06);
-    --ring:#3377ff33; /* focus ring */
-
-    /* Accent system */
-    --accent:#3b82f6;      /* blue */
-    --accent-2:#a855f7;    /* violet */
-    --accent-3:#10b981;    /* emerald */
-    --accent-4:#f59e0b;    /* amber */
-
-    /* Radii */
-    --r-2xl:28px; --r-xl:20px; --r-lg:16px; --r-md:12px; --r-sm:10px;
+    /* Apple-like accents */
+    --blue:#0a84ff;     --blue-ink:#ffffff;    --blue-ghost:#e8f1ff;  --blue-border:#cfe3ff;
+    --indigo:#5856d6;   --indigo-ink:#ffffff;  --indigo-ghost:#ecebff;--indigo-border:#dddafc;
+    --green:#34c759;    --green-ink:#0f172a;   --green-ghost:#e9f9ef; --green-border:#d2f1dd;
+    --orange:#ff9f0a;   --orange-ink:#0f172a;  --orange-ghost:#fff3e6;--orange-border:#ffe0bf;
+    --focus:#0a84ff40;  /* focus ring */
   }
-
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:
-    radial-gradient(1000px 600px at 10% -10%, #fff 0%, #eef3ff 60%, transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, #fff 0%, #ffeef7 55%, transparent 55%),
-    radial-gradient(800px 600px at 50% 120%, #fff 0%, #eaf8ff 55%, transparent 55%),
-    var(--bg);
-    color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans",Arial;line-height:1.45}
-
-  .shell{max-width:1200px;margin:0 auto;padding:18px}
-
-  /* ======= Header (slot kept) ======= */
-  .header-glass{position:sticky;top:0;z-index:40;background:var(--panel-deep);backdrop-filter:saturate(125%) blur(16px);border-bottom:1px solid var(--line)}
-
-  /* ======= Hero ======= */
-  .hero{border-radius:var(--r-2xl);padding:32px;border:1px solid var(--line);background:var(--panel);backdrop-filter:saturate(130%) blur(14px);box-shadow:var(--glass-shadow)}
-  .super{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:var(--panel-deep);font-weight:800;letter-spacing:.02em}
-  .hero h1{margin:12px 0 6px;font-weight:900;letter-spacing:-.02em;font-size:clamp(1.6rem,1.4vw + 1.2rem,2.6rem)}
-  .hero p{margin:0;color:var(--muted)}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans","Helvetica Neue",Arial}
+  .shell{max-width:1200px;margin:0 auto;padding:16px}
 
   /* ======= Search block ======= */
-  .section{background:var(--panel);backdrop-filter:saturate(130%) blur(14px);border:1px solid var(--line);border-radius:var(--r-xl);box-shadow:var(--glass-shadow);padding:16px;margin-top:16px}
-  .section-title{display:flex;align-items:center;justify-content:space-between;margin:4px 0 10px}
+  .section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px;margin-top:16px}
+  .section-title{display:flex;align-items:center;justify-content:space-between;margin:6px 0 10px}
+
   .search-section{padding:0}
-  .search-card{display:flex;align-items:center;gap:10px;padding:14px;border-radius:var(--r-xl);border:1px solid var(--line);background:var(--panel-deep)}
-  .search-input{flex:1;font-size:1.05rem;padding:14px 16px 14px 44px;border-radius:14px;border:1px solid var(--line);background:linear-gradient(#fff,#f9fbff);outline:none;transition:border-color .15s, box-shadow .15s}
-  .search-input:focus{border-color:#b9d3ff;box-shadow:0 0 0 6px var(--ring)}
+  .search-card{display:flex;align-items:center;gap:12px;padding:16px;border-radius:var(--r-lg);
+               background:linear-gradient(180deg,var(--panel),var(--panel-2));
+               border:1px solid var(--border)}
+  .search-input{flex:1;font-size:1.05rem;padding:14px 16px 14px 44px;border-radius:14px;border:1px solid var(--border);
+                background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%2399a1ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;
+                outline:none;transition:border-color .15s ease, box-shadow .15s ease}
+  .search-input:focus{border-color:#bcd7ff;box-shadow:0 0 0 4px var(--focus)}
   .search-actions{display:flex;gap:8px}
-  .btn{height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);font-weight:800;cursor:pointer;transition:transform .06s, box-shadow .15s, background .15s}
+  .btn{height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--border);font-weight:600;cursor:pointer;transition:transform .06s ease, box-shadow .15s ease, background .15s ease}
   .btn:active{transform:translateY(1px)}
-  .btn-primary{background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(59,130,246,.25)}
-  .btn-primary:hover{filter:saturate(110%)}
+  .btn-primary{background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(10,132,255,.25)}
+  .btn-primary:hover{background:#0077f5}
   .btn-ghost{background:#fff;color:var(--ink)}
-  .btn-ghost:hover{background:#f6f9ff}
+  .btn-ghost:hover{background:#f2f2f6}
   .btn-icon{width:44px;display:inline-flex;align-items:center;justify-content:center}
 
-  /* ======= Tiles (new look) ======= */
+  /* ======= Tiles (tinted, Apple-ish) ======= */
   .tiles{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:18px}
-  .tile{grid-column:span 6;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px;border-radius:22px;border:1px solid var(--line);box-shadow:var(--glass-shadow);text-decoration:none;background:var(--panel-deep);position:relative;overflow:hidden}
-  .tile .label{font-size:clamp(1.05rem,1vw + .6rem,1.4rem);font-weight:900;letter-spacing:-.02em}
+  .tile{grid-column:span 6;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px;border-radius:22px;border:1px solid var(--border);box-shadow:var(--shadow-1);text-decoration:none;position:relative;isolation:isolate;background:var(--panel)}
+  .tile .label{font-size:clamp(1.1rem,1vw + .6rem,1.5rem);font-weight:900;letter-spacing:-.02em}
   .tile small{display:block;opacity:.95;font-weight:600;color:var(--muted)}
-  .tile:hover{transform:translateY(-2px)}
+  .tile:hover{box-shadow:var(--shadow-2)}
   @media (max-width: 920px){.tile{grid-column:span 12}}
-  .tile[data-c="1"]{box-shadow:0 10px 22px rgba(59,130,246,.12), var(--glass-shadow)}
-  .tile[data-c="2"]{box-shadow:0 10px 22px rgba(168,85,247,.12), var(--glass-shadow)}
-  .tile[data-c="3"]{box-shadow:0 10px 22px rgba(16,185,129,.12), var(--glass-shadow)}
-  .tile[data-c="4"]{box-shadow:0 10px 22px rgba(245,158,11,.12), var(--glass-shadow)}
-  .tile::after{content:"";position:absolute;inset:auto -40px -40px auto;width:160px;height:160px;border-radius:50%;
-               background:radial-gradient(closest-side, rgba(255,255,255,.7), rgba(255,255,255,.0));filter:blur(4px)}
 
-  /* ======= Rails & cards ======= */
+  /* tinted variants */
+  .tile.rose{background:var(--blue-ghost);border-color:var(--blue-border)}
+  .tile.lilac{background:var(--indigo-ghost);border-color:var(--indigo-border)}
+  .tile.aqua{background:var(--green-ghost);border-color:var(--green-border)}
+  .tile.peach{background:var(--orange-ghost);border-color:var(--orange-border)}
+  .tile.rose .label{color:#0a84ff}
+  .tile.lilac .label{color:#5856d6}
+  .tile.aqua .label{color:#34c759}
+  .tile.peach .label{color:#ff9f0a}
+
+  /* chevron */
+  .tile::after{content:"";position:absolute;right:20px;top:50%;transform:translateY(-50%) rotate(45deg);width:10px;height:10px;border-right:3px solid currentColor;border-top:3px solid currentColor;opacity:.25}
+
+  /* Rails & cards */
   .rail{display:flex;gap:10px;overflow:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px}
   .rail::-webkit-scrollbar{height:6px}
-  .rail::-webkit-scrollbar-thumb{background:#a9b4c9;border-radius:50px}
-  .card-mini{width:150px;flex:0 0 150px;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--glass-shadow);overflow:hidden;transition:transform .18s}
-  .card-mini:hover{transform:translateY(-3px)}
-  .card-mini img{width:100%;height:200px;object-fit:cover;background:#edf1f7}
-  .card-mini .t{padding:8px 9px 10px;font-size:.9rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rail::-webkit-scrollbar-thumb{background:#00000033;border-radius:50px}
+  .card-mini{width:140px;flex:0 0 140px;scroll-snap-align:start;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-1);overflow:hidden}
+  .card-mini img{width:100%;height:186px;object-fit:cover;background:#e9ecf6}
+  .card-mini .t{padding:8px;font-size:.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-  /* ======= Blog ======= */
+  /* Blog */
   .blog-grid{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
-  .blog-card{flex:0 0 280px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--glass-shadow);overflow:hidden;display:flex;flex-direction:column}
-  .blog-card .cover{width:100%;height:160px;object-fit:cover;background:#edf1f7}
-  .blog-card .body{padding:12px}
-  .blog-card .title{font-weight:900;font-size:1.02rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .blog-card{flex:0 0 260px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-1);overflow:hidden;display:flex;flex-direction:column}
+  .blog-card .cover{width:100%;height:150px;object-fit:cover;background:#e9ecf6}
+  .blog-card .body{padding:10px}
+  .blog-card .title{font-weight:800;font-size:1rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .blog-card .meta{color:var(--muted);font-size:.85rem}
   .center{text-align:center;color:var(--muted)}
-
-  /* a11y: reduced motion */
-  @media (prefers-reduced-motion: reduce){
-    .tile,.card-mini,.blog-card{transition:none !important}
-  }
   </style>
 </head>
 <body>
-  <!-- Header slot (kept) -->
-  <div class="header-glass" id="header-placeholder"></div>
+  <!-- Header slot -->
+  <div id="header-placeholder"></div>
 
   <main class="shell">
-    <!-- Hero -->
-    <section class="hero" aria-label="Intro">
-      <span class="super" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg>
-        AniMMUnity · Light UI
-      </span>
-      <h1>Find your next Anime & Manga</h1>
-      <p>Glassmorphism, silky scroll and crisp cards. Same speed and features — 100% light background.</p>
-    </section>
-
-    <!-- Search -->
+    <!-- Search in its own block -->
     <section class="section search-section" aria-label="Search">
       <div class="search-card">
-        <input id="q" class="search-input" type="search" placeholder="Search a title…" autocomplete="off"
-               style="background-image:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"%2399a1ad\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><line x1=\"21\" y1=\"21\" x2=\"16.65\" y2=\"16.65\"/></svg>'); background-repeat:no-repeat; background-position:14px center;" />
+        <input id="q" class="search-input" type="search" placeholder="Search a title…" autocomplete="off" />
         <div class="search-actions">
           <button id="clear-q" class="btn btn-ghost btn-icon" title="Clear" aria-label="Clear" style="display:none">
+            <!-- × icon -->
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <button id="search-go" class="btn btn-primary" aria-label="Search">Search</button>
@@ -144,25 +111,25 @@
 
     <!-- Main tiles -->
     <section class="tiles" aria-label="Main sections">
-      <a class="tile" data-c="1" href="/anime-list.html">
+      <a class="tile rose" href="/anime-list.html">
         <div>
           <div class="label">Anime List</div>
           <small>Genres, themes & more</small>
         </div>
       </a>
-      <a class="tile" data-c="2" href="/manga-list.html">
+      <a class="tile lilac" href="/manga-list.html">
         <div>
           <div class="label">Manga List</div>
           <small>Demographics & genres</small>
         </div>
       </a>
-      <a class="tile" data-c="3" href="/top-anime.html">
+      <a class="tile aqua" href="/top-anime.html">
         <div>
           <div class="label">Top Anime</div>
           <small>Scores, members, rank</small>
         </div>
       </a>
-      <a class="tile" data-c="4" href="/top-manga.html">
+      <a class="tile peach" href="/top-manga.html">
         <div>
           <div class="label">Top Manga</div>
           <small>Fixed global ranks</small>
@@ -170,13 +137,13 @@
       </a>
     </section>
 
-    <!-- BLOG -->
+    <!-- BLOG first -->
     <section class="section" aria-label="Latest blog posts">
       <div class="section-title">
         <h2 style="margin:0">Latest articles</h2>
         <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a>
       </div>
-      <div id="blog-rail" class="blog-grid" role="list"></div>
+      <div id="blog-rail" class="blog-grid"></div>
       <div id="blog-status" class="center" style="padding:10px"></div>
     </section>
 
@@ -199,7 +166,7 @@
     </section>
   </main>
 
-  <!-- Footer slot (kept) -->
+  <!-- Footer slot -->
   <div id="footer-placeholder"></div>
 
   <script>
@@ -223,8 +190,8 @@
 
     // Helpers
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
-    const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-    const clean=(u)=> (u? String(u).trim().replace(/^"+|"+$/g,'') : '');
+    const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const clean=(u)=> (u? String(u).trim().replace(/^\"+|\"+$/g,'') : '');
     const toHQ=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'$1') : '';};
     const toThumb=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'t$1') : '';};
     function imgOnErrorSmart(imgEl, original){
