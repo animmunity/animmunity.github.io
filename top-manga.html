@@ -116,7 +116,7 @@
     animation:pop .35s ease both
   }
   .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
-  .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
+  .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6;image-rendering:auto}
   .thumb-wrap{display:block}
 
   .meta{min-width:0}
@@ -228,44 +228,41 @@
     const val=(row,...keys)=>{ for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
     const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
 
-    // ---------- Helpers immagini (MAL l.jpg -> t.jpg + fallback) ----------
-const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+    // ---------- Helpers immagini (HQ + srcset + fallback) ----------
+    const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+    const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
 
-const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
+    // …157897l.jpg -> …157897.jpg  (HQ)
+    const toHighResUrl = (url) => {
+      const u = cleanImageUrl(url);
+      if (!u) return '';
+      return u.replace(/l(\.(?:jpe?g|png))$/i, '$1');
+    };
 
-// Versione alta qualità: rimuove la 'l' prima dell'estensione (…157897l.jpg -> …157897.jpg)
-const toHighResUrl = (url) => {
-  const u = cleanImageUrl(url);
-  if (!u) return '';
-  return u.replace(/l(\.(?:jpe?g|png))$/i, '$1');
-};
+    // …157897l.jpg -> …157897t.jpg  (thumb 1×)
+    const toThumbUrl = (url) => {
+      const u = cleanImageUrl(url);
+      if (!u) return '';
+      if (/l\.(?:jpe?g|png)$/i.test(u)) return u.replace(/l(\.(?:jpe?g|png))$/i, 't$1');
+      if (/\.thumb\.(?:jpe?g|png)$/i.test(u)) return u;
+      return u;
+    };
 
-// Versione thumbnail: se abbiamo la 'l' la convertiamo in 't' (…157897l.jpg -> …157897t.jpg)
-// altrimenti lasciamo com'è (alcune immagini nascono già senza suffisso).
-const toThumbUrl = (url) => {
-  const u = cleanImageUrl(url);
-  if (!u) return '';
-  if (/l\.(?:jpe?g|png)$/i.test(u)) return u.replace(/l(\.(?:jpe?g|png))$/i, 't$1');
-  if (/\.thumb\.(?:jpe?g|png)$/i.test(u)) return u; // eventuali pattern alternativi
-  return u;
-};
-
-// onerror smart: prova in ordine HQ -> thumb -> placeholder
-function imgOnErrorSmart(imgEl, originalUrl) {
-  const cur = imgEl.getAttribute('data-state') || 'hq';
-  if (cur === 'hq') {
-    const thumb = toThumbUrl(originalUrl);
-    if (thumb && thumb !== imgEl.src) {
-      imgEl.src = thumb;
-      imgEl.setAttribute('data-state', 'thumb');
-      return;
+    // onerror: prova HQ -> thumb -> placeholder
+    function imgOnErrorSmart(imgEl, originalUrl) {
+      const cur = imgEl.getAttribute('data-state') || 'hq';
+      if (cur === 'hq') {
+        const thumb = toThumbUrl(originalUrl);
+        if (thumb && thumb !== imgEl.src) {
+          imgEl.src = thumb;
+          imgEl.setAttribute('data-state', 'thumb');
+          return;
+        }
+      }
+      imgEl.src = PLACEHOLDER;
+      imgEl.setAttribute('data-state', 'placeholder');
     }
-  }
-  // ultimo fallback
-  imgEl.src = PLACEHOLDER;
-  imgEl.setAttribute('data-state', 'placeholder');
-}
-    // ----------------------------------------------------------------------
+    // ----------------------------------------------------------------
 
     // Elements
     const searchInput=document.getElementById('searchInput');
@@ -439,8 +436,11 @@ function imgOnErrorSmart(imgEl, originalUrl) {
       listEl.innerHTML='';
       items.forEach((row,idx)=>{
         const title = val(row,'title','title_english') || 'Untitled';
+
         const rawImg = val(row,'main_picture','image_url','image','pic','poster');
-        const thumb  = toThumbUrl(rawImg);
+        const imgHQ  = toHighResUrl(rawImg); // per 2x / retina
+        const img1x  = toThumbUrl(rawImg);   // per 1x
+
         const start  = val(row,'start_date','published_from_year','year');
         const scoreVal = toNum(val(row,'score'));
         const popularity = toNum(val(row,'members','favorites','scored_by'));
@@ -462,9 +462,10 @@ function imgOnErrorSmart(imgEl, originalUrl) {
                  loading="lazy"
                  decoding="async"
                  width="80" height="112"
-                 src="${esc(thumb || PLACEHOLDER)}"
-                 data-state="thumb"
-                 onerror="imgOnErrorFallback(this, '${esc(cleanImageUrl(rawImg))}')"
+                 src="${esc(imgHQ || img1x || PLACEHOLDER)}"
+                 srcset="${esc(img1x || PLACEHOLDER)} 1x, ${esc(imgHQ || img1x || PLACEHOLDER)} 2x"
+                 data-state="hq"
+                 onerror="imgOnErrorSmart(this, '${esc(cleanImageUrl(rawImg))}')"
                  alt="${esc(title)}">
           </a>
           <div class="meta">
@@ -611,7 +612,8 @@ function imgOnErrorSmart(imgEl, originalUrl) {
           return merged;
         });
 
-        const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
+        const sample = rows.find(r=>Object.values(r).some(v=>v!==''
+          && v!==null && v!==undefined));
         numericColumns = sample ? detectNumericColumns(sample) : ['score'];
 
         // Dropdowns
