@@ -199,42 +199,71 @@ function prettyList(val){
 }
 
 /** 🔧 Authors → [{ name, role }] con parsing robusto */
+// Decodifica minima entità HTML (per "Story &amp; Art" → "Story & Art")
+function decodeHTML(str='') {
+  return String(str)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+/** ✅ Autori robusto: gestisce CSV con doppi apici (""), apici singoli e chiavi non quotate */
 function parseAuthors(str){
   if (!str) return [];
   let s = String(str).trim();
 
-  const mapItem = (a) => {
-    const first = (a.first_name || '').trim();
-    const last  = (a.last_name  || '').trim();
-    const name  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
-    const role  = (a.role || '').trim();
-    if (!name && !role) return null;
-    return { name, role };
-  };
+  // Caso tipico CSV: intero JSON con doppi apici e apici raddoppiati
+  if (s.includes('""') || (s.startsWith('"') && s.endsWith('"'))) {
+    s = s.replace(/^"(.*)"$/s, '$1'); // rimuove apici esterni
+    s = s.replace(/""/g, '"');        // normalizza doppi apici interni
+  }
 
   try {
     const arr = JSON.parse(s);
-    if (Array.isArray(arr)) return arr.map(mapItem).filter(Boolean);
-  } catch {
-    try {
-      // apici singoli / chiavi non quotate
-      s = s.replace(/\b(id|first_name|last_name|role|name)\b/g,'"$1"').replace(/'/g,'"');
-      const arr = JSON.parse(s);
-      if (Array.isArray(arr)) return arr.map(mapItem).filter(Boolean);
-    } catch {
-      // fallback: stringa semplice → solo name
-      return [{ name: s, role: '' }];
+    if (Array.isArray(arr)) {
+      return arr.map(a => {
+        if (a && typeof a === 'object') {
+          const first = (a.first_name || '').trim();
+          const last  = (a.last_name  || '').trim();
+          const full  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
+          const role  = decodeHTML((a.role || '').trim());
+          if (!full && !role) return null;
+          return { name: full, role };
+        } else {
+          const name = String(a || '').trim();
+          return name ? { name, role: '' } : null;
+        }
+      }).filter(Boolean);
     }
-  }
-  return [];
+  } catch(_) {}
+
+  // Fallback per apici singoli / chiavi non quotate
+  try {
+    let t = s.replace(/\b(id|first_name|last_name|role|name)\b/g, '"$1"').replace(/'/g, '"');
+    const arr = JSON.parse(t);
+    if (Array.isArray(arr)) {
+      return arr.map(a => {
+        const first = (a.first_name || '').trim();
+        const last  = (a.last_name  || '').trim();
+        const full  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
+        const role  = decodeHTML((a.role || '').trim());
+        if (!full && !role) return null;
+        return { name: full, role };
+      }).filter(Boolean);
+    }
+  } catch(_) {}
+
+  // Ultimo fallback: tutto come singolo nome
+  const name = s.replace(/^\[|\]$/g,'').trim();
+  return name ? [{ name, role: '' }] : [];
 }
 
 function renderDetails(manga){
   const genresArr  = parseArray(manga.genres);
   const demoArr    = parseArray(manga.demographics);
   const serialsArr = parseArray(manga.serializations);
-  const authorsArr = parseAuthors(manga.authors); // [{name, role}]
-
   const genresList  = genresArr.join(', ') || '—';
   const serialsList = serialsArr.join(', ') || '—';
   const demoList    = demoArr.join(', ') || '—';
