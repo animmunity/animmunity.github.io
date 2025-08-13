@@ -2,27 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AniMMUnity — Explore Anime & Manga</title>
-  <meta name="description" content="Explore the AniMMUnity database — browse anime lists, manga lists, top rankings, and more.">
-  <link rel="canonical" href="https://animmunity.github.io/">
-
+  <meta name="description" content="Explore AniMMUnity — browse anime lists, manga lists, and top rankings.">
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <meta name="theme-color" content="#ffffff">
-
-  <meta property="og:site_name" content="AniMMUnity">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="AniMMUnity — Explore Anime & Manga">
-  <meta property="og:description" content="Browse anime lists, manga lists, top anime, and top manga rankings.">
-  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
-
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AniMMUnity — Explore Anime & Manga">
-  <meta name="twitter:description" content="Browse anime lists, manga lists, top anime, and top manga rankings.">
-  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
-
   <link rel="stylesheet" href="styles.css">
   <style>
     main {
@@ -77,7 +62,7 @@
       <div class="section-card">
         <a href="top-anime.html">
           <h3>Top Anime</h3>
-          <p>See the highest-rated anime ranked by the community.</p>
+          <p>Highest-rated anime ranked by the community.</p>
         </a>
       </div>
       <div class="section-card">
@@ -89,7 +74,7 @@
       <div class="section-card">
         <a href="top-manga.html">
           <h3>Top Manga</h3>
-          <p>See the highest-rated manga ranked by the community.</p>
+          <p>Highest-rated manga ranked by the community.</p>
         </a>
       </div>
     </div>
@@ -99,13 +84,17 @@
   <div id="footer-placeholder"></div>
 
   <script>
-    // Load header and footer
-    fetch("header.html").then(r => r.text()).then(d => {
-      document.getElementById("header-placeholder").innerHTML = d;
-    });
-    fetch("footer.html").then(r => r.text()).then(d => {
-      document.getElementById("footer-placeholder").innerHTML = d;
-    });
+    // Carica header
+    fetch("header.html")
+      .then(r => r.ok ? r.text() : "")
+      .then(html => { document.getElementById("header-placeholder").innerHTML = html || ""; })
+      .catch(() => { document.getElementById("header-placeholder").innerHTML = ""; });
+
+    // Carica footer
+    fetch("footer.html")
+      .then(r => r.ok ? r.text() : "")
+      .then(html => { document.getElementById("footer-placeholder").innerHTML = html || ""; })
+      .catch(() => { document.getElementById("footer-placeholder").innerHTML = ""; });
   </script>
 
 </body>
