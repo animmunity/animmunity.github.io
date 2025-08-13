@@ -115,7 +115,6 @@
 
   function parseNicknames(s){
     if(!s) return [];
-    // i CSV di esempio usano virgole semplici separate
     return String(s).split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
   }
 
@@ -168,7 +167,7 @@
           </div>
           <div class="actions">
             <a class="btn" target="_blank" rel="noopener"
-               href="https://www.youtube.com/results?search_query=${encodeURIComponent(current.name)}">
+               href="https://www.youtube.com/results?search_query=${encodeURIComponent(c.name || '')}">
               Open YouTube search ↗
             </a>
             <a class="btn" href="characters-list.html">← Back to Characters</a>
@@ -219,7 +218,7 @@
       "@context":"https://schema.org","@type":"BreadcrumbList",
       "itemListElement":[
         {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
-        {"@type":"ListItem","position":2,"name":"Characters","item":`${location.origin}/characters.html`},
+        {"@type":"ListItem","position":2,"name":"Characters","item":`${location.origin}/characters-list.html`},
         {"@type":"ListItem","position":3,"name":title,"item":url}
       ]
     };
@@ -297,7 +296,12 @@
           current = characters.find(x => slugify(x.name) === slugParam);
         }
         if (!current) {
-          document.getElementById('content').innerHTML = `<div class="panel"><h2>Character not found</h2><p>Id: <code>${esc(idParam||'—')}</code> — Slug: <code>${esc(slugParam||'—')}</code></p><p><a class="btn" href="characters.html">← Back to Characters</a></p></div>`;
+          document.getElementById('content').innerHTML = `
+            <div class="panel">
+              <h2>Character not found</h2>
+              <p>Id: <code>${esc(idParam||'—')}</code> — Slug: <code>${esc(slugParam||'—')}</code></p>
+              <p><a class="btn" href="characters-list.html">← Back to Characters</a></p>
+            </div>`;
           dataRendered = true; tryHidePreloader(); return;
         }
 
