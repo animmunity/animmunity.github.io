@@ -90,7 +90,7 @@
     /* ================= Sections ================= */
     .section{background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);padding:16px;margin-top:16px}
     .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .section-h h2{margin:0;font-size:1.08rem;font-weight:900;letter-spacing:-.01em}
+    .section-h h2{margin:0;font-size:1.08rem;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
     .section-h a{font-weight:800;text-decoration:none;color:var(--accent)}
 
     /* ================= Rails / Cards ================= */
@@ -100,14 +100,14 @@
 
     .card-mini{width:150px;flex:0 0 150px;scroll-snap-align:start;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f7f9ff)}
     .card-mini img{width:100%;height:196px;object-fit:cover;background:#eef2ff}
-    .card-mini .t{padding:9px 10px;font-size:.93rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .card-mini .t{padding:9px 10px;font-size:.95rem;font-weight:900;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
     /* ================= Blog ================= */
     .blog-grid{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
     .blog-card{flex:0 0 270px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f8faff)}
     .blog-card .cover{width:100%;height:150px;object-fit:cover;background:#eef2ff}
     .blog-card .body{padding:10px}
-    .blog-card .title{font-weight:900;font-size:1rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .blog-card .title{font-weight:900;font-size:1.02rem;letter-spacing:-.01em;color:var(--ink);margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .blog-card .meta{color:var(--muted);font-size:.85rem}
 
     .center{text-align:center;color:var(--muted)}
@@ -178,6 +178,14 @@
           <span class="sub">Fixed global ranks</span>
         </div>
         <span class="chip" aria-hidden="true">Charts</span>
+      </a>
+    
+      <a class="link3d" href="https://animmunity.github.io/character-list.html" target="_blank" rel="noopener">
+        <div class="txt">
+          <span class="k">Characters</span>
+          <span class="sub">Browse all characters</span>
+        </div>
+        <span class="chip" aria-hidden="true">Browse</span>
       </a>
     </section>
 
