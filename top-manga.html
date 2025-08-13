@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Top Manga — AniMMUnity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Top Manga search by title (EN/JP), filter genres, sort by metric, and browse 50 per page. Fixed global ranks per metric/order." />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- OG / Twitter -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="Top Manga — AniMMUnity">
+  <meta property="og:description" content="Search, filter, sort, and paginate with fixed ranks.">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Top Manga — AniMMUnity">
+  <meta name="twitter:description" content="Search, filter, sort, and paginate with fixed ranks.">
+  <meta name="twitter:image" content="">
+
+  <link id="canonicalLink" rel="canonical" href="">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <!-- Preload CSV (CORS anonimo per evitare warning) -->
+  <link rel="preload" href="/data/manga_core.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
+
+  <!-- JSON-LD: ItemList (dinamico) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
+
+<style>
+  :root{
+    --bg:#f6f7fb;--ink:#0f172a;--muted:#5b6478;--panel:#fff;--soft:#f0f2f8;--border:#e6e9f2;
+    --primary:#4f46e5;--primary-ink:#3532b3;--accent:#06b6d4;--success:#16a34a;--danger:#ef4444;--warning:#f59e0b;
+    --r-lg:18px;--r-md:14px;--r-sm:10px;--shadow-1:0 10px 30px rgba(17,24,39,.06);--shadow-2:0 16px 50px rgba(17,24,39,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  }
+  img{max-width:100%;height:auto;display:block}
+  a{color:var(--primary);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .shell{max-width:1200px;margin:30px auto;padding:0 18px}
+
+  /* Pannelli coerenti */
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-1);padding:18px;
+  }
+  .panel + .panel{ margin-top:18px; }
+
+  .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:22px}
+  .hero h1{margin:0 0 8px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
+  .sub{color:var(--muted);font-size:.95rem;margin:6px 0 14px}
+
+  .block-gap{ margin-top:18px; }
+
+  /* Chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
+
+  /* Search */
+  .search-container{width:100%;margin:12px 0 0}
+  .search-input{
+    width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
+    box-shadow:0 2px 8px rgba(17,24,39,.04);
+  }
+  .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+
+  /* Dropdown (unificati) */
+  .filters-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .filter-dropdown{position:relative}
+  .filter-btn{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 12px;background:#fff;border:1px solid #bbb;border-radius:10px;
+    cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
+  }
+  .filter-btn[aria-expanded="true"]{outline:2px solid #007BFF}
+  .filter-btn .count{background:#007BFF;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}
+  .filter-menu{
+    position:absolute;top:calc(100% + 6px);left:0;min-width:260px;max-height:320px;overflow:auto;background:#fff;border:1px solid #ddd;border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:10px;z-index:1000;display:none
+  }
+  .filter-dropdown.open .filter-menu{display:block}
+  .filter-search{width:100%;border:1px solid #ccc;border-radius:8px;padding:6px 8px;font-size:13px;margin-bottom:8px;outline:none;box-sizing:border-box}
+  .options .option{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer}
+  .options .option:hover{background:#f5f5f5}
+
+  /* Checkbox/radio quadrati + spunta visiva */
+  .options input[type="checkbox"],
+  .options input[type="radio"]{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    width:16px;height:16px;border:2px solid #9aa3b2;border-radius:4px;background:#fff;display:inline-block;position:relative;cursor:pointer;
+    outline:none; flex:0 0 16px;
+  }
+  .options input[type="checkbox"]:focus,
+  .options input[type="radio"]:focus{ box-shadow:0 0 0 3px rgba(79,70,229,.15); }
+  .options input[type="checkbox"]:checked,
+  .options input[type="radio"]:checked{
+    border-color:#4f46e5;background:#4f46e5;
+  }
+  /* ✓ sulla label attiva */
+  .options input:checked + span::before{
+    content:"✓"; display:inline-block; margin-right:6px; color:#4f46e5; font-weight:800;
+  }
+
+  .btn-clear{
+    border:1px solid #bbb;background:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:14px;box-shadow:0 2px 4px rgba(0,0,0,.06)
+  }
+  .btn-clear:hover{background:#f0f0f0}
+
+  /* Lista classifica */
+  .list{display:grid;gap:12px}
+  .rank-card{
+    display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px;box-shadow:var(--shadow-1);
+    animation:pop .35s ease both
+  }
+  .rank{width:52px;height:52px;display:grid;place-items:center;font-weight:800;border-radius:14px;background:var(--soft);color:var(--primary-ink);border:1px solid var(--border)}
+  .thumb{width:80px;height:112px;border-radius:12px;object-fit:cover;background:#e9ecf6}
+  .thumb-wrap{display:block}
+
+  .meta{min-width:0}
+  .meta h3{margin:.2rem 0 .35rem;font-size:1.05rem;color:var(--ink);transition:color 0.2s ease;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .meta h3 a{color:inherit;text-decoration:none}
+  .meta h3 a:hover{color:inherit;text-decoration:none}
+
+  .meta .muted{color:var(--muted);word-break:break-word}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:.35rem}
+  .badge{font-size:.78rem;padding:.25rem .45rem;border-radius:999px;border:1px solid var(--border);background:var(--soft)}
+  .badge.pill{background:#eef2ff;border-color:#e0e7ff;color:#3730a3}
+  .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
+  .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
+
+  /* Paginazione */
+  .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+  .pagination button{
+    padding:8px 11px;border-radius:10px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
+    box-shadow:var(--shadow-1);cursor:pointer
+  }
+  .pagination button[disabled]{opacity:.5;cursor:not-allowed}
+  .pagination button.active{border-color:#4f46e5;color:#3532b3;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+
+  .center{text-align:center;padding:14px;color:var(--muted)}
+  .error{color:var(--danger)}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Preloader */
+  #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
+  .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Responsive fixes */
+  .rank-card, .meta, .meta h3 { min-width:0 }
+
+  @media (max-width: 900px){
+    .rank-card{grid-template-columns:52px 72px 1fr;gap:12px}
+    .thumb{width:72px;height:100px}
+  }
+
+  /* <= 720px: numero sopra, centrato */
+  @media (max-width: 720px){
+    .rank-card{
+      display:flex; flex-direction:column; align-items:center; text-align:center;
+    }
+    .rank{
+      order:-1; margin-bottom:10px;
+      display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 16px;
+      width:auto; height:auto;
+      line-height:1; white-space:nowrap;
+      background:var(--soft); border:1px solid var(--border); border-radius:14px;
+      font-size:1.6rem; font-weight:800; color:var(--primary-ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .thumb-wrap{ order:0; width:100%; display:flex; justify-content:center; }
+    .meta{ order:1; width:100%; }
+  }
+
+  @media (max-width: 440px){
+    .rank{ padding:12px 18px; font-size:1.8rem; }
+    .thumb{ width:100%; height:auto; aspect-ratio:3/4; }
+    .meta h3{ -webkit-line-clamp:3; }
+  }
+
+  @media (max-width: 520px){
+    .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
+  }
+</style>
+</head>
+<body>
+  <!-- Preloader -->
+  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+  <!-- Header/Footer dinamici -->
+  <div id="header"></div>
+
+  <main class="shell">
+    <!-- Top Manga -->
+    <section class="hero panel">
+      <h1>Top Manga</h1>
+      <p class="sub">Explore the ultimate manga rankings: search by title, filter by genres, sort by your preferred metric.</p>
+
+      <!-- SEARCH live -->
+      <div class="search-container">
+        <input id="searchInput" class="search-input" type="search" placeholder="Search for a Manga…" autocomplete="off" />
+      </div>
+
+      <div id="chips" class="chips"></div>
+    </section>
+
+    <!-- Filtri -->
+    <section class="panel block-gap">
+      <div class="filters-bar" id="filtersBar" aria-label="Filters">
+        <!-- Dropdowns via JS -->
+        <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
+      </div>
+      <div class="center" id="resultsInfo"></div>
+    </section>
+
+    <!-- Ranking -->
+    <section class="panel block-gap" aria-label="Ranking">
+      <h2>Ranking</h2>
+      <div id="list" class="list"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+      <div id="status" class="center">Loading…</div>
+    </section>
+  </main>
+
+  <div id="footer"></div>
+
+  <script>
+    // Header/Footer
+    fetch("/header.html").then(r=>r.text()).then(t=>{document.getElementById("header").innerHTML=t}).catch(()=>{});
+    fetch("/footer.html").then(r=>r.text()).then(t=>{document.getElementById("footer").innerHTML=t}).catch(()=>{});
+
+    // Preloader lifecycle
+    let assetsLoaded=false, dataRendered=false;
+    const hidePreloader=()=>{const p=document.getElementById("preloader");if(!p)return;p.style.opacity="0";p.style.pointerEvents="none";setTimeout(()=>p.remove(),400)}
+    const tryHidePreloader=()=>{if(assetsLoaded&&dataRendered)hidePreloader()}
+    window.addEventListener("load",()=>{assetsLoaded=true;tryHidePreloader()});
+    setTimeout(()=>hidePreloader(),8000);
+
+    // Utils
+    const esc=(s='')=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const toNum=v=>{ if(v===null||v===undefined) return NaN; const n=Number(String(v).replace(',', '.')); return isNaN(n)?NaN:n; };
+    const val=(row,...keys)=>{ for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
+    const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
+
+    // Elements
+    const searchInput=document.getElementById('searchInput');
+    const filtersBar=document.getElementById('filtersBar');
+    const clearBtn=document.getElementById('clearFilters');
+    const chipsEl=document.getElementById('chips');
+    const resultsInfo=document.getElementById('resultsInfo');
+    const listEl=document.getElementById('list');
+    const paginationEl=document.getElementById('pagination');
+    const statusEl=document.getElementById('status');
+
+    // Data/state
+    const CSV_URL='/data/manga_core.csv';
+    const ITEMS_PER_PAGE=50;
+    let rows=[], numericColumns=[];
+    let currentPage=1, queryText='';
+    let currentMetric='score', currentOrder='desc';
+
+    // Genres
+    const genreSet=new Set();
+    const selectedGenres=new Set();
+
+    function parseList(value){
+      if(!value) return [];
+      let s=String(value).trim();
+      if(s==="[]"||s==="") return [];
+      try{
+        if(s.includes("'") && !s.includes('"')) s=s.replace(/'/g,'"');
+        const arr=JSON.parse(s);
+        return Array.isArray(arr)? arr.map(v=>String(v).trim()) : [];
+      }catch{
+        return s.replace(/^\[|\]$/g,"").split(",").map(x=>x.replace(/^[\'"\s]+|[\'"\s]+$/g,"")).filter(Boolean);
+      }
+    }
+
+    function collectGenres(row){ parseList(row.genres).forEach(g=>genreSet.add(g)); }
+    const buildHaystack = (r) => [r.title, r.title_english, r.title_japanese].filter(Boolean).join(' ').toLowerCase();
+    const matchesQuery = (r) => (!queryText) || buildHaystack(r).includes(queryText);
+    const matchesGenres = (r) => {
+      if(!selectedGenres.size) return true;
+      const g=parseList(r.genres); if(!g.length) return false;
+      for(const sel of selectedGenres) if(g.includes(sel)) return true;
+      return false;
+    };
+
+    // Slug da MAL url (fallback id)
+    const getMalSlug = (malUrl) => {
+      try {
+        const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean);
+        return decodeURIComponent(p[p.length-1] || "");
+      } catch { return ""; }
+    };
+
+    // Dropdown builder
+    function buildDropdown({key,label,type,options,withSearch=true,onSelect}){
+      const wrap=document.createElement('div');
+      wrap.className='filter-dropdown';
+      wrap.dataset.key=key;
+
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='filter-btn';
+      btn.setAttribute('aria-haspopup','listbox'); btn.setAttribute('aria-expanded','false');
+      btn.innerHTML = type==='multi'
+        ? `<span>${esc(label)}</span> <span class="count" data-count-for="${esc(key)}" style="display:none;">0</span>`
+        : `<span id="btn-label-${esc(key)}">${esc(label)}</span>`;
+
+      const menu=document.createElement('div');
+      menu.className='filter-menu';
+      menu.innerHTML=`
+        ${withSearch ? `<input class="filter-search" type="text" placeholder="Search ${esc(label)}..." data-search-for="${esc(key)}" aria-label="Search ${esc(label)}">` : ''}
+        <div class="options" data-options-for="${esc(key)}" role="listbox"></div>
+      `;
+
+      const optionsBox=menu.querySelector(`[data-options-for="${CSS.escape(key)}"]`);
+
+      options.forEach(opt=>{
+        const row=document.createElement('label'); row.className='option';
+        const input=document.createElement('input');
+        if(type==='multi'){
+          input.type='checkbox'; input.dataset.facet=key; input.value=opt.value;
+          if(opt.selected) input.checked=true;
+        }else{
+          input.type='radio'; input.name=`radio-${key}`; input.value=opt.value; input.checked = opt.value===opt.selected;
+        }
+        const span=document.createElement('span'); span.textContent=opt.label;
+        row.appendChild(input); row.appendChild(span); optionsBox.appendChild(row);
+      });
+
+      btn.addEventListener('click',(e)=>{
+        e.stopPropagation();
+        document.querySelectorAll('.filter-dropdown.open').forEach(dd=>{
+          if(dd!==wrap){ dd.classList.remove('open'); const b=dd.querySelector('.filter-btn'); if(b) b.setAttribute('aria-expanded','false'); }
+        });
+        const isOpen=wrap.classList.toggle('open'); btn.setAttribute('aria-expanded',String(isOpen));
+        const search=menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`); if(isOpen && search) setTimeout(()=>search.focus(),0);
+      });
+      menu.addEventListener('click',e=>e.stopPropagation());
+      menu.addEventListener('keydown',e=>{ if(e.key==='Escape'){ wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false'); btn.focus(); }});
+
+      if(withSearch){
+        menu.querySelector(`[data-search-for="${CSS.escape(key)}"]`).addEventListener('input',e=>{
+          const q=e.target.value.toLowerCase();
+          optionsBox.querySelectorAll('.option').forEach(optEl=>{
+            const text=optEl.textContent.toLowerCase();
+            optEl.style.display = text.includes(q) ? '' : 'none';
+          });
+        });
+      }
+
+      optionsBox.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('change',()=>{
+          onSelect(inp);
+          if(type==='single'){
+            const span = optionsBox.querySelector('input:checked')?.parentElement?.querySelector('span')?.textContent || label;
+            const labelEl=document.getElementById(`btn-label-${key}`); if(labelEl) labelEl.textContent = span;
+            wrap.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+          }
+        });
+      });
+
+      wrap.appendChild(btn); wrap.appendChild(menu);
+      filtersBar.insertBefore(wrap, document.getElementById('clearFilters'));
+    }
+
+    function updateCountBadge(key, count){
+      const pill=document.querySelector(`.count[data-count-for="${CSS.escape(key)}"]`);
+      if(!pill) return;
+      if(count>0){ pill.style.display='inline-block'; pill.textContent=count; } else { pill.style.display='none'; pill.textContent='0'; }
+    }
+
+    // Metric detection
+    function detectNumericColumns(sample){
+      const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
+      const preferred = ['score','scored_by','members','favorites','volumes','chapters','rank'];
+      const ordered=[...new Set([...preferred, ...cands])];
+      return ordered.filter(k=>cands.includes(k));
+    }
+
+    // Ranks globali fissi
+    let globalRankMap = new Map();
+    function computeGlobalRanks(metric, order){
+      const arr = rows.slice().sort((a,b)=>{
+        const av=toNum(a[metric]), bv=toNum(b[metric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return order==='asc' ? av-bv : bv-av;
+      });
+      const map=new Map();
+      let pos=1;
+      for(const r of arr){ map.set(String(r.manga_id||''), pos++); }
+      globalRankMap = map;
+    }
+
+    function formatGenresForCard(r){ return parseList(r.genres).join(', '); }
+
+    function renderChips(){
+      chipsEl.innerHTML='';
+      const chip=t=>{const s=document.createElement('span'); s.className='chip'; s.textContent=t; return s;}
+      chipsEl.append(chip(`Metric: ${currentMetric}`), chip(`Order: ${currentOrder}`));
+      if(queryText) chipsEl.append(chip(`Search: ${queryText}`));
+      if(selectedGenres.size) chipsEl.append(chip(`Genres: ${[...selectedGenres].join(', ')}`));
+    }
+
+    function buildMangaHref(row){
+      const url = val(row,'url');
+      const slug = url ? getMalSlug(url) : "";
+      if(slug) return `/manga.html?slug=${encodeURIComponent(slug)}`;
+      const id = String(val(row,'manga_id')).trim();
+      return id ? `/manga.html?id=${encodeURIComponent(id)}` : '#';
+    }
+
+    function renderListPage(items, startIndex){
+      listEl.innerHTML='';
+      items.forEach((row,idx)=>{
+        const title = val(row,'title','title_english') || 'Untitled';
+        const img = val(row,'main_picture','image_url','image','pic','poster');
+        const start = val(row,'start_date','published_from_year','year');
+        const scoreVal = toNum(val(row,'score'));
+        const popularity = toNum(val(row,'members','favorites','scored_by'));
+        const metricVal = toNum(row[currentMetric]);
+        const genresText = formatGenresForCard(row);
+        const href = buildMangaHref(row);
+
+        const globalPos = globalRankMap.get(String(row.manga_id||'')) || (startIndex+idx+1); // fallback
+
+        const metricPill = (currentMetric==='score')
+          ? ''
+          : `<span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>`;
+
+        const card=document.createElement('article'); card.className='rank-card';
+        card.innerHTML = `
+          <div class="rank">${globalPos}</div>
+          <a class="thumb-wrap" href="${href}" aria-label="${esc(title)}">
+            <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Manga'}" alt="${esc(title)}">
+          </a>
+          <div class="meta">
+            <h3><a href="${href}">${esc(title)}</a></h3>
+            <div class="muted">${start ? esc(start) : ''}${start && genresText ? ' • ' : ''}${genresText ? esc(genresText) : ''}</div>
+            <div class="badges">
+              ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
+              ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
+              ${metricPill}
+            </div>
+          </div>`;
+        listEl.appendChild(card);
+      });
+    }
+
+    function updatePagination(totalPages, current){
+      paginationEl.innerHTML='';
+
+      const makeBtn=(txt,page,active=false,disabled=false)=>{
+        const b=document.createElement('button'); b.type='button'; b.textContent=txt;
+        if(active) b.classList.add('active');
+        if(disabled) b.disabled=true;
+        b.addEventListener('click',()=>!disabled && goToPage(page));
+        return b;
+      };
+
+      // Prev
+      paginationEl.appendChild(makeBtn('Prev', Math.max(1,current-1), false, current===1));
+
+      const dots=()=>{const s=document.createElement('span'); s.textContent='…'; s.style.margin='0 4px'; paginationEl.appendChild(s);};
+
+      if(totalPages<=10){
+        for(let i=1;i<=totalPages;i++) paginationEl.appendChild(makeBtn(String(i),i,i===current));
+      }else{
+        paginationEl.appendChild(makeBtn('1',1,current===1));
+        if(current>3) dots();
+        const start=Math.max(2,current-1), end=Math.min(totalPages-1,current+1);
+        for(let i=start;i<=end;i++) paginationEl.appendChild(makeBtn(String(i),i,i===current));
+        if(current<totalPages-2) dots();
+        paginationEl.appendChild(makeBtn(String(totalPages),totalPages,current===totalPages));
+      }
+
+      // Next
+      paginationEl.appendChild(makeBtn('Next', Math.min(totalPages,current+1), false, current===totalPages));
+    }
+
+    function updateURL(page){
+      const u=new URL(location.href);
+      queryText ? u.searchParams.set('q', queryText) : u.searchParams.delete('q');
+      selectedGenres.size ? u.searchParams.set('genres', [...selectedGenres].join('|')) : u.searchParams.delete('genres');
+      u.searchParams.set('metric', currentMetric);
+      u.searchParams.set('order', currentOrder);
+      page>1 ? u.searchParams.set('page', page) : u.searchParams.delete('page');
+      history.replaceState(null,'',u.toString());
+
+      const full=`${location.origin}${location.pathname}${u.search}`;
+      document.getElementById('canonicalLink').href=full;
+      const og=document.querySelector('meta[property="og:url"]'); if(og) og.setAttribute('content', full);
+    }
+
+    function renderChipsAndList(filtered, page=1){
+      // ordina visivamente per metrica/ordine (il numero mostrato resta fisso su base globale)
+      filtered.sort((a,b)=>{
+        const av=toNum(a[currentMetric]), bv=toNum(b[currentMetric]);
+        if(isNaN(av) && isNaN(bv)) return 0;
+        if(isNaN(av)) return 1;
+        if(isNaN(bv)) return -1;
+        return currentOrder==='asc' ? av-bv : bv-av;
+      });
+
+      const total = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+      currentPage = Math.min(Math.max(1,page), totalPages);
+
+      const start = (currentPage-1)*ITEMS_PER_PAGE;
+      const pageItems = filtered.slice(start, start+ITEMS_PER_PAGE);
+
+      resultsInfo.textContent = `${total} results • Page ${currentPage} / ${totalPages}`;
+      renderChips();
+      renderListPage(pageItems, start);
+      updatePagination(totalPages, currentPage);
+      updateURL(currentPage);
+
+      // JSON-LD (prime 10)
+      const itemList = pageItems.slice(0,10).map((r,i)=>({
+        "@type":"ListItem",
+        "position": (globalRankMap.get(String(r.manga_id||'')) || (start+i+1)),
+        "name": r.title || "Manga",
+        "url": buildMangaHref(r),
+        "image": r.main_picture || undefined
+      }));
+      document.getElementById('ld-itemlist').textContent = JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":itemList});
+    }
+
+    function applyAndRender(page=1){
+      computeGlobalRanks(currentMetric, currentOrder);
+      const filtered = rows.filter(r => matchesQuery(r) && matchesGenres(r));
+      renderChipsAndList(filtered, page);
+    }
+
+    function goToPage(p){ applyAndRender(p); }
+
+    function hydrateFromURL(){
+      const q=new URLSearchParams(location.search);
+      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText.toLowerCase(); searchInput.value=qText; }
+      const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
+      const rawGenres=q.get('genres');
+      if(rawGenres){ rawGenres.split('|').forEach(g=> selectedGenres.add(g)); updateCountBadge('genres', selectedGenres.size); }
+      if(m) currentMetric=m;
+      if(o) currentOrder=o;
+      return Math.max(1, isNaN(p)?1:p);
+    }
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', ()=>{
+      // allineato al preload: CORS anonimo
+      fetch(CSV_URL, { mode:'cors', credentials:'omit' })
+        .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+        .then(text=>{
+          const res=Papa.parse(text,{header:true,skipEmptyLines:true});
+          rows = res.data || [];
+
+          rows.forEach(collectGenres);
+
+          const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
+          numericColumns = sample ? detectNumericColumns(sample) : ['score'];
+
+          // Dropdowns
+          buildDropdown({
+            key:'genres',
+            label:'Genres',
+            type:'multi',
+            options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
+            withSearch:true,
+            onSelect:(inp)=>{
+              if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
+              updateCountBadge('genres', selectedGenres.size);
+              applyAndRender(1);
+            }
+          });
+
+          const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
+          buildDropdown({
+            key:'metric',
+            label:`Metric: ${currentMetric}`,
+            type:'single',
+            options:metricOptions,
+            withSearch:true,
+            onSelect:(inp)=>{
+              currentMetric = inp.value;
+              const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
+              applyAndRender(1);
+            }
+          });
+
+          const orderOptions = [
+            {label:'Highest first', value:'desc', selected: currentOrder==='desc'},
+            {label:'Lowest first',  value:'asc',  selected: currentOrder==='asc' }
+          ];
+          buildDropdown({
+            key:'order',
+            label:`Order: ${currentOrder}`,
+            type:'single',
+            options:orderOptions,
+            withSearch:false,
+            onSelect:(inp)=>{
+              currentOrder = inp.value;
+              const labelEl=document.getElementById('btn-label-order'); if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
+              applyAndRender(1);
+            }
+          });
+
+          const startPage = hydrateFromURL();
+          applyAndRender(startPage);
+
+          dataRendered=true; tryHidePreloader(); statusEl.textContent='';
+        })
+        .catch(err=>{
+          statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
+          dataRendered=true; tryHidePreloader();
+        });
+
+      // Search live
+      searchInput.addEventListener('input', debounce(()=>{
+        queryText=(searchInput.value||'').trim().toLowerCase();
+        applyAndRender(1);
+      }, 250));
+
+      // Reset
+      clearBtn.addEventListener('click', ()=>{
+        selectedGenres.clear();
+        document.querySelectorAll('.filter-menu input[type="checkbox"][data-facet="genres"]').forEach(chk=> chk.checked=false);
+        updateCountBadge('genres', 0);
+        queryText=''; searchInput.value='';
+        currentMetric = 'score';
+        currentOrder = 'desc';
+        const mLabel=document.getElementById('btn-label-metric'); if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
+        const oLabel=document.getElementById('btn-label-order');  if(oLabel)  oLabel.textContent=`Order: ${currentOrder}`;
+        applyAndRender(1);
+      });
+    });
+  </script>
+</body>
+</html>
