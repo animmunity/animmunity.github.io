@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AniMMUnity — OP/ED Gallery</title>
+  <meta name="description" content="Futuristic light gallery of Anime OP/ED with instant search, filters and lazy embeds. Powered by AnimeThemes API or local JSON."/>
+  <meta name="theme-color" content="#ffffff" />
+
+  <style>
+    :root{
+      --bg:#fbfbfe; --ink:#0b1220; --muted:#667085; --panel:#ffffff; --border:#e6e8ef; --ring:#dbeafe; --accent:#2563eb;
+      --r-2xl:24px; --r-xl:18px; --r-lg:14px; --shadow-1:0 10px 30px rgba(11,18,32,.07); --shadow-2:0 14px 40px rgba(11,18,32,.10)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 800px at 10% -10%, #fff 0%, #f7f8ff 45%, #f1f6ff 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",Arial;line-height:1.55}
+    a,a:visited{color:inherit;text-decoration:none}
+    .shell{max-width:1200px;margin:0 auto;padding:18px}
+
+    .hero{background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow-1);padding:18px;margin-top:14px}
+    .hero h1{margin:0 0 6px;font-weight:900;letter-spacing:-.02em;font-size:clamp(1.2rem,1.4vw + 1rem,1.9rem)}
+    .muted{color:var(--muted)}
+
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+    .input{flex:1;min-width:200px;height:48px;padding:0 14px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;font-size:1rem;outline:none}
+    .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 4px var(--ring)}
+    .btn{height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:800;cursor:pointer}
+    .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent}
+
+    .alpha{display:flex;gap:6px;flex-wrap:wrap}
+    .alpha button{height:34px;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
+    .group{grid-column:span 12;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);overflow:hidden}
+    .group-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .group-title{margin:0;font-weight:900;letter-spacing:-.01em}
+    .pill{font-size:.78rem;font-weight:800;padding:6px 10px;border-radius:999px;background:#eef2ff;border:1px solid #e0e7ff}
+
+    .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;padding:12px}
+    .card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
+    @media (max-width:920px){.card{grid-column:span 12}}
+    .card-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
+    .tag{font-weight:900}
+    .meta{color:var(--muted);font-size:.9rem}
+    .card-body{padding:12px}
+    .thumb{width:100%;height:0;padding-top:56%;position:relative;background:#eef2ff;border-radius:12px;overflow:hidden}
+    .thumb .play{position:absolute;inset:0;display:grid;place-items:center;cursor:pointer}
+    .thumb .play button{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900}
+    .embed{position:relative;width:100%;padding-top:56%;border-radius:12px;overflow:hidden}
+    .embed iframe,.embed video{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px;background:#000}
+
+    .skeleton{animation:fade .9s ease-in-out infinite alternate;background:linear-gradient(90deg,#f1f5ff,#fff,#f1f5ff);min-height:80px;border-radius:12px;border:1px solid var(--border)}
+    @keyframes fade{to{opacity:.6}}
+
+    .center{padding:18px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>OP/ED Gallery</h1>
+      <p class="muted">Tutti gli opening e closing in un’unica pagina. Ricerca istantanea, filtri e <em>lazy embed</em>.</p>
+      <div class="toolbar">
+        <input id="q" class="input" placeholder="Cerca anime…" aria-label="Cerca anime" />
+        <div role="group" aria-label="Filtra tipo">
+          <button id="f-all" class="btn" aria-pressed="true">All</button>
+          <button id="f-op" class="btn" aria-pressed="false">OP</button>
+          <button id="f-ed" class="btn" aria-pressed="false">ED</button>
+        </div>
+      </div>
+      <div class="alpha" id="alpha"></div>
+    </section>
+
+    <section id="results" class="grid" aria-live="polite">
+      <div class="center skeleton">Caricamento…</div>
+    </section>
+  </main>
+
+  <script>
+    // ====== CONFIG ======
+    const USE_ANIMETHEMES_API = true; // se false, usa /data/themes.json
+    const PAGE_SIZE = 20; // per pagina quando si usa l'API
+
+    // ====== HELPERS ======
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+    const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    const getArtists = theme => (theme.song?.artists || theme.song?.artist || []).map(a=>a?.name).filter(Boolean).join(', ');
+    const themeCode = t => `${t.type || t.kind || 'OP'}${t.sequence || t.number || ''}`;
+
+    function setPressed(btn){
+      btn.parentElement.querySelectorAll('.btn').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+    }
+
+    // ====== UI BUILD ======
+    const alpha = $('#alpha');
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
+      const b=document.createElement('button'); b.textContent=ch; b.title=`Aperti ${ch}`; b.addEventListener('click',()=>{ state.letter=ch; state.page=1; load(); });
+      alpha.appendChild(b);
+    });
+
+    const state = { q:'', type:'all', letter:null, page:1, busy:false };
+    $('#q').addEventListener('input', e=>{ state.q=e.target.value.trim(); state.page=1; debounceLoad(); });
+    $('#f-all').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='all'; state.page=1; load(); });
+    $('#f-op').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='OP'; state.page=1; load(); });
+    $('#f-ed').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='ED'; state.page=1; load(); });
+
+    let debounceTO=null; function debounceLoad(){ clearTimeout(debounceTO); debounceTO=setTimeout(load, 250); }
+
+    // ====== DATA FETCH LAYERS ======
+    async function fetchFromAnimeThemes(){
+      // JSON:API style — includes themes, entries, videos, song & artists
+      const params = new URLSearchParams();
+      params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
+      params.set('sort','name');
+      params.set('page[size]', String(PAGE_SIZE));
+      params.set('page[number]', String(state.page));
+      params.set('filter[has]','animethemes');
+      if(state.q){ params.set('q', state.q); } // full-text search (fallback)
+      if(state.letter){ params.set('filter[name_starts_with]', state.letter); }
+      const url = `https://api.animethemes.moe/anime?${params}`;
+      const res = await fetch(url, { mode:'cors' });
+      if(!res.ok) throw new Error('API error '+res.status);
+      return res.json();
+    }
+
+    async function fetchFromLocal(){
+      const res = await fetch('/data/themes.json');
+      if(!res.ok) throw new Error('Missing /data/themes.json');
+      return res.json();
+    }
+
+    function pickBestVideo(videos){
+      const arr = Array.isArray(videos)? videos: [];
+      const yt = arr.find(v=>/youtube\.com|youtu\.be/i.test(v?.link||v?.url||''));
+      const hi = arr.filter(v=>/\.webm|\.mp4/i.test(v?.link||v?.url||''))
+                    .sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
+      return yt || hi || arr[0] || null;
+    }
+
+    function normalizeApi(json){
+      // Expect JSON:API { data:[anime], included:[...]} but AnimeThemes returns expanded relations
+      const items = (json?.anime || json?.data || []).map(a=>{
+        const themes = (a.animethemes || a.themes || []).map(t=>({
+          type: t.type || t.kind || 'OP',
+          sequence: t.sequence || t.number || '',
+          song: t.song || {},
+          entries: (t.animethemeentries || t.entries || []).map(e=>({
+            videos: e.videos || []
+          }))
+        }));
+        return { name: a.name || a.slug || a.title, themes };
+      });
+      return items;
+    }
+
+    // ====== RENDER ======
+    function render(items){
+      const target = $('#results');
+      target.innerHTML = '';
+      if(!items.length){ target.innerHTML = '<div class="center">Nessun risultato.</div>'; return; }
+
+      items.forEach(anime=>{
+        // filtro tipo
+        const tFiltered = anime.themes.filter(t=> state.type==='all' ? true : (t.type||'').toUpperCase()===state.type);
+        if(!tFiltered.length) return;
+
+        const g = document.createElement('div'); g.className='group';
+        g.innerHTML = `<div class="group-h"><h3 class="group-title">${esc(anime.name)}</h3><span class="pill">${tFiltered.length} theme(s)</span></div>`;
+        const list = document.createElement('div'); list.className='cards';
+
+        tFiltered.forEach(t=>{
+          const label = themeCode(t);
+          const entry = (t.entries && t.entries[0]) || {};
+          const vid = pickBestVideo(entry.videos);
+          const song = t.song?.title || t.song?.name || '';
+          const artists = getArtists(t);
+
+          const card = document.createElement('div'); card.className='card';
+          const metaText = [song, artists].filter(Boolean).join(' — ');
+          card.innerHTML = `
+            <div class="card-h">
+              <span class="tag">${esc(label)}</span>
+              <span class="meta">${esc(metaText)}</span>
+            </div>
+            <div class="card-body">
+              <div class="thumb">
+                <div class="play"><button type="button">Play</button></div>
+              </div>
+            </div>`;
+
+          const thumb = card.querySelector('.thumb');
+          const btn = card.querySelector('button');
+          btn.addEventListener('click', ()=>{
+            const wrap = document.createElement('div'); wrap.className='embed';
+            if(vid && /youtube\.com|youtu\.be/i.test(vid.link||vid.url||'')){
+              const idMatch = String(vid.link||vid.url).match(/(?:v=|\.be\/)\w+/);
+              const id = idMatch? idMatch[0].replace(/^.*(v=|\.be\/)*/, '') : '';
+              wrap.innerHTML = `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>`;
+            }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
+              const src = vid.link||vid.url; const type = /\.webm$/i.test(src)? 'video/webm':'video/mp4';
+              wrap.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}" type="${type}"></video>`;
+            }else{
+              wrap.innerHTML = `<div class="center">Nessun video embeddabile. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Apri su AnimeThemes</a></div>`;
+            }
+            thumb.replaceWith(wrap);
+          });
+
+          list.appendChild(card);
+        });
+
+        g.appendChild(list);
+        target.appendChild(g);
+      });
+
+      // paginazione semplice
+      const pager = document.createElement('div'); pager.className='center';
+      pager.innerHTML = `<button class="btn" id="more">Carica altri</button>`;
+      pager.querySelector('#more').addEventListener('click', ()=>{ state.page++; load(true); });
+      target.appendChild(pager);
+    }
+
+    // ====== LOAD ======
+    async function load(append=false){
+      if(state.busy) return; state.busy=true;
+      const target = $('#results');
+      if(!append) target.innerHTML = '<div class="center skeleton">Caricamento…</div>';
+      try{
+        const json = USE_ANIMETHEMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
+        const items = normalizeApi(json).filter(a=> !state.q || (a.name||'').toLowerCase().includes(state.q.toLowerCase()));
+        render(items);
+      }catch(err){
+        console.error(err);
+        target.innerHTML = `<div class="center">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
+      }finally{ state.busy=false; }
+    }
+
+    load();
+  </script>
+</body>
+</html>
