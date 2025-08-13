@@ -7,104 +7,95 @@
   <meta name="description" content="Discover AniMMUnity: fast search, clean filters and rankings for Anime & Manga. Random showcases with 20 covers each, plus latest blog posts."/>
   <meta name="theme-color" content="#ffffff" />
 
-  <!-- Performance: preconnects -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-
-  <!-- Papa Parse (CSV) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-
-  <!-- Your site stylesheet -->
   <link rel="stylesheet" href="/styles.css" />
 
   <style>
   /* === STRONG, YOUTHFUL PALETTE (flat, high-contrast) === */
-  :root{
-    /* Core (leave yours) */
-    --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#ffffff; --border:#e6e9f2;
-    --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
-    --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
+:root{
+  /* Core (leave yours) */
+  --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#ffffff; --border:#e6e9f2;
+  --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
+  --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
+}
 
-    /* New brand brights (AA contrast with white text) */
-    --rose:#ff3b6a;     --rose-ink:#ffffff;   --rose-hover:#e13560;   --rose-press:#c92e55;
-    --violet:#6d5efc;   --violet-ink:#ffffff; --violet-hover:#5f53e1; --violet-press:#5148c6;
-    --mint:#10b981;     --mint-ink:#ffffff;   --mint-hover:#0ea572;   --mint-press:#0c8f62;
-    --sky:#0ea5e9;      --sky-ink:#ffffff;    --sky-hover:#0d92cc;    --sky-press:#0b7caf;
-  }
+/* === Tiles (unchanged structure, upgraded visuals) === */
+.tiles{
+  display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:18px;
+}
+.tile{
+  grid-column:span 6;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:22px; border-radius:22px; border:1px solid transparent; box-shadow:var(--shadow-1);
+  transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+  position:relative; isolation:isolate;
+}
+.tile .label{ font-size:clamp(1.1rem,1vw + .6rem,1.5rem); font-weight:900; letter-spacing:-.02em; }
+.tile small{ display:block; opacity:.95; font-weight:600; }
+.tile:focus-visible{
+  outline:none; box-shadow:0 0 0 4px rgba(13,110,253,.15), var(--shadow-1);
+}
 
-  /* === Tiles (unchanged structure, upgraded visuals) === */
-  .tiles{
-    display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:18px;
-  }
-  .tile{
-    grid-column:span 6;
-    display:flex; align-items:center; justify-content:space-between; gap:14px;
-    padding:22px; border-radius:22px; border:1px solid transparent; box-shadow:var(--shadow-1);
-    transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
-    position:relative; isolation:isolate;
-    text-decoration:none;
-  }
-  .tile .label{ font-size:clamp(1.1rem,1vw + .6rem,1.5rem); font-weight:900; letter-spacing:-.02em; }
-  .tile small{ display:block; opacity:.95; font-weight:600; }
-  .tile:focus-visible{
-    outline:none; box-shadow:0 0 0 4px rgba(13,110,253,.15), var(--shadow-1);
-  }
+/* Hover/Active give tactile feel */
+.tile:hover{ transform:translateY(-2px); box-shadow:0 14px 34px rgba(17,24,39,.10); }
+.tile:active{ transform:translateY(0); }
 
-  /* Hover/Active give tactile feel */
-  .tile:hover{ transform:translateY(-2px); box-shadow:0 14px 34px rgba(17,24,39,.10); }
-  .tile:active{ transform:translateY(0); }
+@media (max-width: 920px){ .tile{ grid-column:span 12; } }
 
-  @media (max-width: 920px){ .tile{ grid-column:span 12; } }
+/* === Color variants aggiornati === */
+.tile.rose   { background:#2563eb; color:#fff; border-color:rgba(0,0,0,.06); }
+.tile.lilac  { background:#f97316; color:#fff; border-color:rgba(0,0,0,.06); }
+.tile.aqua   { background:#eab308; color:#fff; border-color:rgba(0,0,0,.06); }
+.tile.peach  { background:#dc2626; color:#fff; border-color:rgba(0,0,0,.06); }
 
-  /* === Color variants (map them to your 4 links) === */
-  .tile.rose   { background:var(--rose);   color:var(--rose-ink);   border-color:rgba(0,0,0,.06); }
-  .tile.lilac  { background:var(--violet); color:var(--violet-ink); border-color:rgba(0,0,0,.06); }
-  .tile.aqua   { background:var(--mint);   color:var(--mint-ink);   border-color:rgba(0,0,0,.06); }
-  .tile.peach  { background:var(--sky);    color:var(--sky-ink);    border-color:rgba(0,0,0,.06); }
+/* Hover */
+.tile.rose:hover   { background:#1d4ed8; }
+.tile.lilac:hover  { background:#ea580c; }
+.tile.aqua:hover   { background:#ca8a04; }
+.tile.peach:hover  { background:#b91c1c; }
 
-  .tile.rose:hover   { background:var(--rose-hover); }
-  .tile.lilac:hover  { background:var(--violet-hover); }
-  .tile.aqua:hover   { background:var(--mint-hover); }
-  .tile.peach:hover  { background:var(--sky-hover); }
+/* Active */
+.tile.rose:active   { background:#1e40af; }
+.tile.lilac:active  { background:#c2410c; }
+.tile.aqua:active   { background:#a16207; }
+.tile.peach:active  { background:#991b1b; }
 
-  .tile.rose:active   { background:var(--rose-press); }
-  .tile.lilac:active  { background:var(--violet-press); }
-  .tile.aqua:active   { background:var(--mint-press); }
-  .tile.peach:active  { background:var(--sky-press); }
+/* Optional: subtle “chevron” affordance on hover (pure CSS) */
+.tile::after{
+  content:"";
+  position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  width:10px; height:10px; border-right:3px solid currentColor; border-top:3px solid currentColor;
+  rotate:45deg; opacity:.4; transition:opacity .12s ease, right .12s ease;
+}
+.tile:hover::after{ right:16px; opacity:.7; }
 
-  /* Optional: subtle “chevron” affordance on hover (pure CSS) */
-  .tile::after{
-    content:"";
-    position:absolute; right:20px; top:50%; transform:translateY(-50%) rotate(45deg);
-    width:10px; height:10px; border-right:3px solid currentColor; border-top:3px solid currentColor;
-    opacity:.4; transition:opacity .12s ease, right .12s ease;
-  }
-  .tile:hover::after{ right:16px; opacity:.7; }
+/* Latest articles heading color */
+.section[aria-label="Latest blog posts"] h2 {
+  color:#2563eb;
+}
 
-  /* Sections */
-  .section{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:16px; margin-top:16px}
-  .section-title{display:flex; align-items:center; justify-content:space-between; margin:6px 0 10px}
+/* Sections */
+.section{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:16px; margin-top:16px}
+.section-title{display:flex; align-items:center; justify-content:space-between; margin:6px 0 10px}
 
-  /* Carousel */
-  .rail{display:flex; gap:10px; overflow:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:6px}
-  .rail::-webkit-scrollbar{height:6px}
-  .rail::-webkit-scrollbar-thumb{background:#00000033; border-radius:50px}
-  .card-mini{width:140px; flex:0 0 140px; scroll-snap-align:start; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden}
-  .card-mini img{width:100%; height:186px; object-fit:cover; background:#e9ecf6}
-  .card-mini .t{padding:8px; font-size:.9rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* Carousel */
+.rail{display:flex; gap:10px; overflow:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:6px}
+.rail::-webkit-scrollbar{height:6px}
+.rail::-webkit-scrollbar-thumb{background:#00000033; border-radius:50px}
+.card-mini{width:140px; flex:0 0 140px; scroll-snap-align:start; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden}
+.card-mini img{width:100%; height:186px; object-fit:cover; background:#e9ecf6}
+.card-mini .t{padding:8px; font-size:.9rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
-  /* Blog */
-  .blog-grid{display:flex; gap:12px; overflow:auto; padding-bottom:6px}
-  .blog-card{flex:0 0 260px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden; display:flex; flex-direction:column}
-  .blog-card .cover{width:100%; height:150px; object-fit:cover; background:#e9ecf6}
-  .blog-card .body{padding:10px}
-  .blog-card .title{font-weight:800; font-size:1rem; margin:0 0 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-  .blog-card .meta{color:var(--muted); font-size:.85rem}
-  .center{text-align:center; color:var(--muted)}
-
-  /* Visually hidden utility for a11y-only elements */
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* Blog */
+.blog-grid{display:flex; gap:12px; overflow:auto; padding-bottom:6px}
+.blog-card{flex:0 0 260px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden; display:flex; flex-direction:column}
+.blog-card .cover{width:100%; height:150px; object-fit:cover; background:#e9ecf6}
+.blog-card .body{padding:10px}
+.blog-card .title{font-weight:800; font-size:1rem; margin:0 0 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.blog-card .meta{color:var(--muted); font-size:.85rem}
+.center{text-align:center; color:var(--muted)}
   </style>
 </head>
 <body>
@@ -115,33 +106,31 @@
     <!-- HERO: only the search field -->
     <section class="hero" aria-label="Search">
       <div class="search-panel" role="search" aria-label="Global search">
-        <label class="sr-only" for="q">Search titles</label>
         <input id="q" class="search-input" type="search" placeholder="Search a title…" autocomplete="off" />
-        <button id="search-go" class="sr-only" aria-label="Run search">Search</button>
       </div>
     </section>
 
     <!-- Main tiles -->
     <section class="tiles" aria-label="Main sections">
-      <a class="tile rose" href="/anime-list.html" aria-label="Browse Anime List">
+      <a class="tile rose" href="/anime-list.html">
         <div>
           <div class="label">Anime List</div>
           <small>Genres, themes & more</small>
         </div>
       </a>
-      <a class="tile lilac" href="/manga-list.html" aria-label="Browse Manga List">
+      <a class="tile lilac" href="/manga-list.html">
         <div>
           <div class="label">Manga List</div>
           <small>Demographics & genres</small>
         </div>
       </a>
-      <a class="tile aqua" href="/top-anime.html" aria-label="View Top Anime">
+      <a class="tile aqua" href="/top-anime.html">
         <div>
           <div class="label">Top Anime</div>
           <small>Scores, members, rank</small>
         </div>
       </a>
-      <a class="tile peach" href="/top-manga.html" aria-label="View Top Manga">
+      <a class="tile peach" href="/top-manga.html">
         <div>
           <div class="label">Top Manga</div>
           <small>Fixed global ranks</small>
@@ -153,7 +142,7 @@
     <section class="section" aria-label="Latest blog posts">
       <div class="section-title">
         <h2 style="margin:0">Latest articles</h2>
-        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener noreferrer">open blog →</a>
+        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a>
       </div>
       <div id="blog-rail" class="blog-grid"></div>
       <div id="blog-status" class="center" style="padding:10px"></div>
@@ -186,16 +175,14 @@
     fetch('header.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('header-placeholder').innerHTML=t||''}).catch(()=>{});
     fetch('footer.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('footer-placeholder').innerHTML=t||''}).catch(()=>{});
 
-    // Simple search: Enter or button → anime list (you can change base to manga-list if you prefer)
+    // Simple search: Enter → anime list (you can change base to manga-list if you prefer)
     const q = document.getElementById('q');
-    const go = document.getElementById('search-go');
     function runSearch(){
       const val = (q.value || '').trim();
       const base = 'anime-list.html';
       location.href = val ? `${base}?q=${encodeURIComponent(val)}` : base;
     }
     q.addEventListener('keydown', e => { if(e.key === 'Enter') runSearch(); });
-    go.addEventListener('click', runSearch);
 
     // Helpers
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
@@ -211,7 +198,7 @@
       }
       imgEl.src=PLACEHOLDER; imgEl.setAttribute('data-state','placeholder');
     }
-    const slugFromMAL=(url)=>{ try{ const u=new URL(url); const p=u.pathname.split('/').filter(Boolean); return decodeURIComponent(p[p.length-1]||''); }catch{ return ''; } };
+    const slugFromMAL=(url)=>{ try{ const u=new URL(url); const p=u.pathname.split('/').filter(Boolean); return decodeURIComponent(p[p.length-1]||''); }catch{return'';} };
     const buildHref=(row,type)=>{
       const url=row.url||row.link||'';
       const slug=url? slugFromMAL(url):'';
@@ -222,35 +209,27 @@
     };
     const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // CSV loader with Papa fallback retry
-    function waitPapa(ms=50){return new Promise(r=>setTimeout(r,ms));}
-    async function ensurePapa(maxWait=1500){
-      const started=performance.now();
-      while(!window.Papa && performance.now()-started<maxWait){ await waitPapa(50); }
-      if(!window.Papa){ throw new Error('PapaParse not available'); }
-      return window.Papa;
-    }
+    // CSV loader
     function loadCSV(url){
       return fetch(url,{mode:'cors',credentials:'omit'})
         .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
-        .then(async t=> (await ensurePapa()).parse(t,{header:true,skipEmptyLines:true}).data);
+        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data);
     }
 
     function renderRail(railId, rows, type){
       const rail=document.getElementById(railId); if(!rail) return; rail.innerHTML='';
-      pick20(rows.filter(r=> (r.main_picture||'').trim()!==''))
-        .forEach(r=>{
-          const title = r.title || r.title_english || r.title_japanese || 'Untitled';
-          const raw = r.main_picture || r.image_url || r.image || '';
-          const src = toHQ(raw) || toThumb(raw) || PLACEHOLDER;
-          const a=document.createElement('a');
-          a.className='card-mini';
-          a.href=buildHref(r,type);
-          a.setAttribute('role','option');
-          a.setAttribute('aria-label',title);
-          a.innerHTML=`<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>`;
-          rail.appendChild(a);
-        });
+      pick20(rows.filter(r=> (r.main_picture||'').trim()!=='')).forEach(r=>{
+        const title = r.title || r.title_english || r.title_japanese || 'Untitled';
+        const raw = r.main_picture || r.image_url || r.image || '';
+        const src = toHQ(raw) || toThumb(raw) || PLACEHOLDER;
+        const a=document.createElement('a');
+        a.className='card-mini';
+        a.href=buildHref(r,type);
+        a.setAttribute('role','option');
+        a.setAttribute('aria-label',title);
+        a.innerHTML=`<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>`;
+        rail.appendChild(a);
+      });
     }
 
     // Data boot
@@ -319,8 +298,8 @@
               const nice=d? d.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'}) : '';
               const a=document.createElement('a');
               a.className='blog-card';
-              a.href=link; a.target='_blank'; a.rel='noopener noreferrer';
-              a.innerHTML=`<img class="cover" loading="lazy" decoding="async" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
+              a.href=link; a.target='_blank'; a.rel='noopener';
+              a.innerHTML=`<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
               rail.appendChild(a);
             });
             status.textContent='';
