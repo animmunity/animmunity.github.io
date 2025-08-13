@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>AniMMUnity — Characters Explorer</title>
+  <meta name="description" content="Browse AniMMUnity's anime characters. Fast search, favorites filter, clean cards, and detail links to MyAnimeList.">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https://animmunity.github.io/characters.html">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://animmunity.github.io/characters.html">
+  <meta property="og:title" content="AniMMUnity — Characters Explorer">
+  <meta property="og:description" content="Search and filter characters by name, nickname and favorites. Clean cards with MAL links.">
+  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AniMMUnity — Characters Explorer">
+  <meta name="twitter:description" content="Search and filter characters by name, nickname and favorites.">
+  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
+
+  <!-- Sitemap hint -->
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+  <!-- Performance hints (solo esterni usati) -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <!-- Prev/Next per SEO pagination (aggiornati via JS) -->
+  <link id="relPrev" rel="prev" href="" />
+  <link id="relNext" rel="next" href="" />
+
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
+
+  <style>
+    /* Layout helpers */
+    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0; }
+    .toolbar .grow { flex:1 1 280px; }
+    .toolbar .inline { display:flex; gap:8px; align-items:center; }
+
+    /* Inputs */
+    .input, .select, .btn {
+      padding: 8px 12px; border: 1px solid #bbb; border-radius: 10px; background:#fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06); font-size:14px; box-sizing:border-box;
+    }
+    .btn { cursor:pointer; }
+    .btn:hover { background:#f5f5f5; }
+
+    /* Grid & cards */
+    .characters-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:16px; }
+    .card { background:#fff; border:1px solid #e6e6e6; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); display:flex; flex-direction:column; }
+    .card a { text-decoration: none; color: inherit; }
+    .card img { width:100%; height:auto; display:block; border-radius:8px; object-fit:contain; background:#fff; }
+    .card h3 { font-size:16px; margin:8px 0 4px; line-height:1.3; }
+    .sub { color:#666; font-size:13px; }
+    .fav { font-weight:600; font-size:13px; margin-top:4px; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .chip { font-size:12px; padding:4px 8px; background:#f5f7fb; border:1px solid #e3e6ef; border-radius:999px; }
+    .about { font-size:13px; color:#444; margin-top:8px; }
+    .about .more { display:none; }
+    .toggle-more { font-size:12px; color:#0b67ff; cursor:pointer; margin-top:6px; background:none; border:none; padding:0; text-align:left; }
+
+    /* Preloader */
+    #preloader { position:fixed; inset:0; background:#ffffff; display:grid; place-items:center; transition:opacity .4s ease; z-index:9999; }
+    .spinner { width:44px; height:44px; border-radius:50%; border:4px solid #e3e3e3; border-top-color:#007BFF; animation:spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .results-info { margin: 8px 0; font-size: 14px; color: #555; text-align:center; display:block; }
+  </style>
+
+  <!-- JSON-LD: WebSite + SearchAction -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebSite",
+    "name":"AniMMUnity",
+    "url":"https://animmunity.github.io/characters.html",
+    "potentialAction":{
+      "@type":"SearchAction",
+      "target":"https://animmunity.github.io/characters.html?q={search_term_string}",
+      "query-input":"required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: ItemList (dinamico, aggiornato via JS) -->
+  <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
+</head>
+<body>
+  <!-- 🔄 Preloader -->
+  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+  <!-- Header -->
+  <div id="header-placeholder"></div>
+
+  <main class="anime-main">
+    <h1 class="page-title" style="text-align:center;">Characters Explorer</h1>
+
+    <section class="seo-intro" style="background:#fff;padding:12px 16px;border-radius:12px;margin:0 0 12px 0;">
+      <h2>Search, Filter & Discover Characters</h2>
+      <p>Consulta migliaia di personaggi anime. Ricerca istantanea su <strong>nome</strong>, <strong>nickname</strong> e testo <strong>about</strong>, filtro per <strong>favorites</strong> e paginazione SEO‑friendly. Le schede rimandano alla pagina ufficiale su MyAnimeList.</p>
+    </section>
+
+    <div class="toolbar">
+      <div class="grow">
+        <label class="visually-hidden" for="searchInput">Search characters</label>
+        <input id="searchInput" class="input" type="text" placeholder="Search characters… (e.g. Spike, Ed, Sasuke)" autocomplete="off" />
+      </div>
+      <div class="inline">
+        <label for="minFav" style="font-size:13px;color:#555;">Min favorites</label>
+        <input id="minFav" class="input" type="number" min="0" step="1" value="0" style="width:110px" />
+      </div>
+      <div class="inline">
+        <label class="inline" style="gap:6px;">
+          <input type="checkbox" id="onlyWithImage" />
+          <span style="font-size:13px;color:#555;">Only with image</span>
+        </label>
+      </div>
+      <button id="clearBtn" class="btn" type="button">Reset</button>
+    </div>
+
+    <span class="results-info" id="resultsInfo" aria-live="polite"></span>
+
+    <section aria-label="Results">
+      <div id="grid" class="characters-grid" aria-live="polite"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <div id="footer-placeholder"></div>
+
+  <noscript>
+    <div style="max-width:900px;margin:20px auto;background:#fff;border-radius:12px;padding:16px">
+      <p><strong>JavaScript is disabled.</strong> Enable it to use search and filters.</p>
+      <p>Datasets:</p>
+      <ul>
+        <li><a href="/data/anime_characters_part1.csv">anime_characters_part1.csv</a></li>
+        <li><a href="/data/anime_characters_part2.csv">anime_characters_part2.csv</a></li>
+        <li><a href="/data/anime_characters_part3.csv">anime_characters_part3.csv</a></li>
+        <li><a href="/data/anime_characters_part4.csv">anime_characters_part4.csv</a></li>
+        <li><a href="/data/anime_characters_part5.csv">anime_characters_part5.csv</a></li>
+        <li><a href="/data/anime_characters_part6.csv">anime_characters_part6.csv</a></li>
+      </ul>
+    </div>
+  </noscript>
+
+  <script>
+    // ===== Utilities =====
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
+
+    // Header/Footer include
+    fetch("header.html").then(r=>r.text()).then(html=>{
+      document.getElementById("header-placeholder").innerHTML = html;
+      const toggle = document.querySelector('.menu-toggle');
+      const headerInner = document.querySelector('.header-inner');
+      if (toggle && headerInner) toggle.addEventListener("click", () => headerInner.classList.toggle("active"));
+    });
+    fetch("footer.html").then(r=>r.text()).then(html=>{
+      document.getElementById("footer-placeholder").innerHTML = html;
+    });
+
+    // Preloader lifecycle
+    let assetsLoaded = false; let dataRendered = false;
+    function hidePreloader(){ const pre = document.getElementById('preloader'); if (!pre) return; pre.style.opacity='0'; pre.style.pointerEvents='none'; setTimeout(()=> pre && pre.remove(), 400); }
+    function tryHidePreloader(){ if (assetsLoaded && dataRendered) hidePreloader(); }
+    window.addEventListener('load', ()=>{ assetsLoaded = true; tryHidePreloader(); });
+    setTimeout(()=> hidePreloader(), 8000);
+
+    document.addEventListener('DOMContentLoaded', function(){
+      const FILES = [
+        'data/anime_characters_part1.csv',
+        'data/anime_characters_part2.csv',
+        'data/anime_characters_part3.csv',
+        'data/anime_characters_part4.csv',
+        'data/anime_characters_part5.csv',
+        'data/anime_characters_part6.csv',
+      ];
+
+      const ITEMS_PER_PAGE = 24;
+      let characters = []; // normalized
+      let currentPage = 1;
+
+      const url = new URL(location.href);
+      const initialQ = (url.searchParams.get('q') || '').trim();
+      const initialPage = parseInt(url.searchParams.get('page') || '1', 10);
+      if (initialQ) document.getElementById('searchInput').value = initialQ;
+
+      function normalizeRow(r){
+        // Columns expected (per example):
+        // mal_id,url,name,name_kanji,nicknames,favorites,about,image_jpg_url,image_webp_url,image_webp_small_url
+        const id = String(r.mal_id || '').trim();
+        const url = String(r.url || '').trim();
+        const name = (r.name || '').trim();
+        const name_kanji = (r.name_kanji || '').trim();
+        const fav = Number(String(r.favorites||'').replace(/[^0-9.-]/g,'')) || 0;
+        const about = (r.about || '').trim();
+        const nick = (r.nicknames || '').trim();
+        const nicks = nick ? nick.split(/\s*,\s*/).map(s=>s).filter(Boolean) : [];
+        const img = (r.image_webp_url || r.image_jpg_url || '').trim();
+        const imgSmall = (r.image_webp_small_url || '').trim();
+        return { id, url, name, name_kanji, favorites: fav, about, nicknames: nicks, image: img || imgSmall, imageSmall: imgSmall };
+      }
+
+      function fetchAndParse(path){
+        return fetch(path).then(res=>{ if(!res.ok) throw new Error(`HTTP ${res.status} on ${path}`); return res.text(); })
+          .then(text => Papa.parse(text, { header:true, skipEmptyLines:true }).data.map(normalizeRow));
+      }
+
+      function safeImg(src){
+        return src && src.length > 6 ? src : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+      }
+
+      function truncate(text, max=180){
+        const t = String(text||'');
+        if (t.length <= max) return { short: t, rest: '' };
+        return { short: t.slice(0, max).replace(/\s+\S*$/, '') + '…', rest: t.slice(t.slice(0,max).replace(/\s+\S*$/, '').length) };
+      }
+
+      function updateItemListLD(items){
+        const script = document.getElementById('ld-itemlist');
+        const itemListElement = items.map((c, idx) => ({
+          "@type":"ListItem",
+          "position": idx + 1,
+          "url": c.url || `${location.origin}/characters.html#${encodeURIComponent(c.id)}`,
+          "name": c.name,
+          "image": c.image || undefined
+        }));
+        script.textContent = JSON.stringify({ "@context":"https://schema.org", "@type":"ItemList", itemListElement });
+      }
+
+      function updateRelPrevNext(totalPages, current, query){
+        const relPrev = document.getElementById('relPrev');
+        const relNext = document.getElementById('relNext');
+        const buildUrl = (p) => {
+          const u = new URL(location.href);
+          const q = (query||'').trim();
+          if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+          if (p > 1) u.searchParams.set('page', p); else u.searchParams.delete('page');
+          return u.toString();
+        };
+        relPrev.setAttribute('href', (current > 1) ? buildUrl(current - 1) : '');
+        relNext.setAttribute('href', (current < totalPages) ? buildUrl(current + 1) : '');
+      }
+
+      function getHaystack(c){
+        return [c.name, c.name_kanji, ...(c.nicknames||[]), c.about].filter(Boolean).join(' ').toLowerCase();
+      }
+
+      function applyFilters(list){
+        const q = (document.getElementById('searchInput').value || '').toLowerCase();
+        const minFav = parseInt(document.getElementById('minFav').value || '0', 10) || 0;
+        const onlyImg = document.getElementById('onlyWithImage').checked;
+        return list.filter(c => {
+          if (q && !getHaystack(c).includes(q)) return false;
+          if (c.favorites < minFav) return false;
+          if (onlyImg && (!c.image || c.image.endsWith('No-Image-Placeholder.svg'))) return false;
+          return true;
+        });
+      }
+
+      function renderPage(page=1){
+        const grid = document.getElementById('grid');
+        const filtered = applyFilters(characters);
+
+        const info = document.getElementById('resultsInfo');
+        info.textContent = `${filtered.length} results`;
+
+        const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+        page = Math.max(1, Math.min(page, totalPages));
+        currentPage = page;
+
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        const pageItems = filtered.slice(start, start + ITEMS_PER_PAGE);
+
+        grid.innerHTML = '';
+        for (const c of pageItems){
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.id = c.id ? `c-${c.id}` : '';
+          card.setAttribute('itemscope','');
+          card.setAttribute('itemtype','https://schema.org/Person');
+
+          const link = document.createElement('a');
+          link.href = c.url || '#';
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.setAttribute('itemprop','url');
+
+          const img = document.createElement('img');
+          img.loading = 'lazy';
+          img.src = safeImg(c.image);
+          img.alt = c.name ? `${c.name} portrait` : 'Character portrait';
+          img.onerror = function(){ this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'; };
+          img.setAttribute('itemprop','image');
+
+          const h3 = document.createElement('h3');
+          h3.textContent = c.name || 'Unnamed';
+          h3.setAttribute('itemprop','name');
+
+          const sub = document.createElement('div');
+          sub.className = 'sub';
+          sub.textContent = c.name_kanji || '';
+
+          const fav = document.createElement('div');
+          fav.className = 'fav';
+          fav.textContent = `❤ ${c.favorites.toLocaleString()} favorites`;
+
+          const chips = document.createElement('div');
+          chips.className = 'chips';
+          (c.nicknames||[]).slice(0,6).forEach(n => {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = n;
+            chips.appendChild(chip);
+          });
+
+          const about = document.createElement('div');
+          about.className = 'about';
+          const { short, rest } = truncate(c.about, 200);
+          const spanShort = document.createElement('span');
+          spanShort.textContent = short;
+          about.appendChild(spanShort);
+          if (rest){
+            const spanRest = document.createElement('span');
+            spanRest.className = 'more';
+            spanRest.textContent = rest;
+            about.appendChild(spanRest);
+            const toggle = document.createElement('button');
+            toggle.className = 'toggle-more';
+            toggle.type = 'button';
+            toggle.textContent = 'Show more';
+            toggle.addEventListener('click', ()=>{
+              const open = spanRest.style.display === 'inline';
+              spanRest.style.display = open ? 'none' : 'inline';
+              toggle.textContent = open ? 'Show more' : 'Show less';
+            });
+            about.appendChild(toggle);
+          }
+
+          link.appendChild(img);
+          link.appendChild(h3);
+          const container = document.createElement('div');
+          container.appendChild(link);
+          if (c.name_kanji) container.appendChild(sub);
+          container.appendChild(fav);
+          if ((c.nicknames||[]).length) container.appendChild(chips);
+          if (c.about) container.appendChild(about);
+
+          card.appendChild(container);
+          grid.appendChild(card);
+        }
+
+        // SEO JSON-LD
+        updateItemListLD(pageItems);
+        // Rel prev/next
+        updateRelPrevNext(totalPages, page, document.getElementById('searchInput').value);
+        // Pagination UI
+        renderPagination(totalPages, page);
+      }
+
+      function renderPagination(totalPages, current){
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        const makeBtn = (label, pageNum, active=false) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = label;
+          if (active) b.classList.add('active');
+          b.addEventListener('click', () => {
+            currentPage = pageNum;
+            renderPage(pageNum);
+            const u = new URL(location.href);
+            const q = (document.getElementById('searchInput').value||'').trim();
+            if (q) u.searchParams.set('q', q); else u.searchParams.delete('q');
+            if (pageNum > 1) u.searchParams.set('page', pageNum); else u.searchParams.delete('page');
+            history.replaceState(null, '', u.toString());
+          });
+          return b;
+        };
+
+        const dots = () => { const s = document.createElement('span'); s.textContent = '…'; s.style.margin='0 4px'; pagination.appendChild(s); };
+
+        if (totalPages <= 10){
+          for (let i=1; i<=totalPages; i++) pagination.appendChild(makeBtn(i, i, i===current));
+        } else {
+          pagination.appendChild(makeBtn(1,1,current===1));
+          if (current > 3) dots();
+          const start = Math.max(2, current-1); const end = Math.min(totalPages-1, current+1);
+          for (let i=start; i<=end; i++) pagination.appendChild(makeBtn(i,i,i===current));
+          if (current < totalPages-2) dots();
+          pagination.appendChild(makeBtn(totalPages,totalPages,current===totalPages));
+        }
+      }
+
+      // Events
+      const onChange = debounce(()=> renderPage(1), 250);
+      document.getElementById('searchInput').addEventListener('input', onChange);
+      document.getElementById('minFav').addEventListener('input', onChange);
+      document.getElementById('onlyWithImage').addEventListener('change', ()=> renderPage(1));
+      document.getElementById('clearBtn').addEventListener('click', ()=>{
+        document.getElementById('searchInput').value = '';
+        document.getElementById('minFav').value = 0;
+        document.getElementById('onlyWithImage').checked = false;
+        renderPage(1);
+        const u = new URL(location.href); u.searchParams.delete('q'); u.searchParams.delete('page'); history.replaceState(null,'',u.toString());
+      });
+
+      // Load & merge CSVs
+      Promise.all(FILES.map(fetchAndParse))
+        .then(parts => {
+          const flat = parts.flat();
+          // de-duplicate by mal_id, keep the one with higher favorites / or first occurrence
+          const map = new Map();
+          for (const c of flat){
+            if (!c.id) continue;
+            if (!map.has(c.id) || (c.favorites > (map.get(c.id).favorites||0))) map.set(c.id, c);
+          }
+          characters = Array.from(map.values());
+          // Sort by favorites desc by default (classic catalog feel)
+          characters.sort((a,b)=> b.favorites - a.favorites || a.name.localeCompare(b.name));
+
+          // Prefill page & search from URL
+          renderPage(Math.max(1, isFinite(initialPage) ? initialPage : 1));
+
+          dataRendered = true; tryHidePreloader();
+        })
+        .catch(err => {
+          console.error('Failed to load characters CSVs:', err);
+          const grid = document.getElementById('grid');
+          if (grid) grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">Error loading data. Please try again later.</div>`;
+          dataRendered = true; tryHidePreloader();
+        });
+    });
+  </script>
+</body>
+</html>
