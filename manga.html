@@ -114,6 +114,10 @@
   #preloader{ position: fixed; inset:0; background:#ffffff; display:grid; place-items:center; transition: opacity .4s ease; z-index:9999; }
   .spinner{ width:44px; height:44px; border-radius:50%; border:4px solid #e3e3e3; border-top-color:#007BFF; animation: spin 1s linear infinite; }
   @keyframes spin{ to{ transform: rotate(360deg) } }
+
+  /* Authors block */
+  .authors-list{ display:grid; gap:8px; margin-top:8px; }
+  .authors-list .author-item{ padding:10px; border:1px solid var(--border); background:var(--soft); border-radius:12px; }
 </style>
 </head>
 <body>
@@ -168,7 +172,7 @@ const columnLabels = {
   real_start_date:'Real Start Date', real_end_date:'Real End Date',
   members:'Members', favorites:'Favorites', sfw:'SFW', approved:'Approved',
   genres:'Genres', themes:'Themes', demographics:'Demographics',
-  serializations:'Serializations', authors:'Authors', url:'Source URL',
+  serializations:'Serializations', authors:'Authors', /* url:'Source URL',  <-- rimosso dal rendering */
   synopsis:'Synopsis', background:'Background', main_picture:'Main Image',
   created_at_before:'Created At', updated_at:'Updated At'
 };
@@ -179,7 +183,7 @@ const sections = {
   'Volumes & Chapters': ['volumes','chapters'],
   'Dates': ['start_date','end_date','real_start_date','real_end_date'],
   'Popularity & Insight': ['members','favorites','genres','themes','demographics'],
-  'Publishing': ['serializations','authors','url'],
+  'Publishing': ['serializations','authors'], // <-- tolto 'url'
   'Technical': ['created_at_before','updated_at']
 };
 
@@ -194,39 +198,52 @@ function prettyList(val){
   return s;
 }
 
+/** 🔧 Authors → [{ name, role }] con parsing robusto */
 function parseAuthors(str){
   if (!str) return [];
   let s = String(str).trim();
+
+  const mapItem = (a) => {
+    const first = (a.first_name || '').trim();
+    const last  = (a.last_name  || '').trim();
+    const name  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
+    const role  = (a.role || '').trim();
+    if (!name && !role) return null;
+    return { name, role };
+  };
+
   try {
-    // prova JSON diretto
     const arr = JSON.parse(s);
-    return Array.isArray(arr) ? arr.map(a=>[a.first_name,a.last_name,a.role].filter(Boolean).join(' ').trim()) : [];
-  } catch{
+    if (Array.isArray(arr)) return arr.map(mapItem).filter(Boolean);
+  } catch {
     try {
-      // converti apici singoli -> doppi, chiavi -> doppi apici
-      s = s.replace(/\b(id|first_name|last_name|role)\b/g,'"$1"').replace(/'/g,'"');
+      // apici singoli / chiavi non quotate
+      s = s.replace(/\b(id|first_name|last_name|role|name)\b/g,'"$1"').replace(/'/g,'"');
       const arr = JSON.parse(s);
-      return Array.isArray(arr) ? arr.map(a=>[a.first_name,a.last_name,a.role].filter(Boolean).join(' ').trim()) : [];
-    } catch { return [s]; }
+      if (Array.isArray(arr)) return arr.map(mapItem).filter(Boolean);
+    } catch {
+      // fallback: stringa semplice → solo name
+      return [{ name: s, role: '' }];
+    }
   }
+  return [];
 }
 
 function renderDetails(manga){
-  const genresArr = parseArray(manga.genres);
-  const demoArr   = parseArray(manga.demographics);
-  const serialsArr= parseArray(manga.serializations);
-  const authorsArr= parseAuthors(manga.authors);
+  const genresArr  = parseArray(manga.genres);
+  const demoArr    = parseArray(manga.demographics);
+  const serialsArr = parseArray(manga.serializations);
+  const authorsArr = parseAuthors(manga.authors); // [{name, role}]
 
-  const genresList = genresArr.join(', ') || '—';
-  const serialsList= serialsArr.join(', ') || '—';
-  const demoList   = demoArr.join(', ') || '—';
-  const authorsList= authorsArr.join(', ') || '—';
+  const genresList  = genresArr.join(', ') || '—';
+  const serialsList = serialsArr.join(', ') || '—';
+  const demoList    = demoArr.join(', ') || '—';
 
   const imgSrc = (manga.main_picture && manga.main_picture.trim())
     ? manga.main_picture
     : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
 
-  const chips = [...genresArr, ...demoArr].slice(0, 24); // non esageriamo
+  const chips = [...genresArr, ...demoArr].slice(0, 24);
 
   return `
     <div class="layout">
@@ -264,10 +281,28 @@ function renderDetails(manga){
         ${Object.entries(sections).map(([name, fields])=>{
           const parts = [];
           for (const f of fields){
+            // salta vuoti
             let v = manga[f];
             if (v===null || v===undefined || v==='' || (typeof v==='string' && v.trim()==='[]')) continue;
+
+            // liste semplici
             if (['genres','themes','demographics','serializations','title_synonyms'].includes(f)) v = prettyList(v);
-            if (f==='authors') v = authorsList;
+
+            // authors → blocco personalizzato
+            if (f === 'authors') {
+              const items = parseAuthors(manga.authors);
+              if (!items.length) continue;
+              const inner = items.map(a => `
+                <div class="author-item">
+                  <div><strong>Name:</strong> ${esc(a.name || '—')}</div>
+                  <div><strong>Role:</strong> ${esc(a.role || '—')}</div>
+                </div>
+              `).join('');
+              parts.push(`<div class="authors-block"><strong>Authors:</strong><div class="authors-list">${inner}</div></div>`);
+              continue; // evita push standard
+            }
+
+            // default
             parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(String(v)))}</p>`);
           }
           return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
@@ -304,7 +339,7 @@ function setDynamicMeta(manga){
   ]};
   document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
 
-  const schemaType = 'Book'; // più adeguato ai manga
+  const schemaType = 'Book';
   const entity = {
     "@context":"https://schema.org",
     "@type": schemaType,
@@ -315,11 +350,11 @@ function setDynamicMeta(manga){
     datePublished: manga.start_date || undefined,
     dateEnded: manga.end_date || undefined,
     dateModified: manga.updated_at || undefined,
-    sameAs: manga.url || undefined,
+    sameAs: manga.url || undefined, // ok tenerlo nello schema, anche se non lo mostri a UI
     numberOfVolumes: (manga.volumes && !isNaN(manga.volumes)) ? Number(manga.volumes) : undefined,
     numberOfPages: (manga.chapters && !isNaN(manga.chapters)) ? Number(manga.chapters) : undefined,
     description: desc,
-    author: parseAuthors(manga.authors).map(a=>({"@type":"Person","name":a}))
+    author: parseAuthors(manga.authors).map(a=>({"@type":"Person","name":a.name}))
   };
   document.getElementById('ld-entity').textContent = JSON.stringify(entity);
 }
@@ -335,7 +370,7 @@ function renderPrevNext(navRoot, core, detailsMap, current){
     const det = detailsMap.get(rec.manga_id) || {};
     if (det.url) return `/manga.html?slug=${encodeURIComponent(getMalSlug(det.url))}`;
     return `/manga.html?id=${encodeURIComponent(rec.manga_id)}`;
-  }
+    }
 
   navRoot.innerHTML = `
     <div>${prev ? `<a class="link-btn" href="${hrefFor(prev)}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
