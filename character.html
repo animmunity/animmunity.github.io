@@ -1,1 +1,316 @@
-test
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Character Detail — AniMMUnity</title>
+  <meta name="description" content="Character detail page on AniMMUnity with name, kanji, nicknames, favorites and full biography.">
+
+  <!-- Robots -->
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Open Graph / Twitter (filled via JS) -->
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:title" content="">
+  <meta property="og:description" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="">
+  <meta name="twitter:description" content="">
+  <meta name="twitter:image" content="">
+  <link id="canonicalLink" rel="canonical" href="">
+
+  <!-- JSON-LD placeholders -->
+  <script id="ld-breadcrumbs" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}</script>
+  <script id="ld-entity" type="application/ld+json">{"@context":"https://schema.org","@type":"Person"}</script>
+
+  <!-- Assets -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+
+  <!-- 🚀 Preload CSV (facoltativo) -->
+  <link rel="preload" href="/data/anime_characters_part1.csv" as="fetch" type="text/csv">
+  <link rel="preload" href="/data/anime_characters_part2.csv" as="fetch" type="text/csv">
+
+  <style>
+    :root{
+      --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#fff; --soft:#f0f2f8; --border:#e6e9f2;
+      --primary:#4f46e5; --accent:#06b6d4;
+      --r-lg:18px; --r-md:14px; --r-sm:10px;
+      --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
+      --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+              radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      background-image:var(--grad); background-attachment:fixed;
+    }
+    a{color:var(--primary); text-decoration:none} a:hover{text-decoration:underline}
+    .shell{max-width:1200px;margin:30px auto;padding:0 18px}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:24px}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}}
+    .aside{position:sticky;top:84px;align-self:start;display:grid;gap:16px}
+    .poster{border-radius:var(--r-lg);overflow:hidden;background:var(--panel);border:1px solid var(--border);box-shadow:var(--shadow-2)}
+    .poster img{width:100%;display:block;aspect-ratio:3/4;object-fit:cover}
+    .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;box-shadow:var(--shadow-1)}
+    .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;font-size:.95rem}
+    .stat-row p{margin:0;color:var(--muted)} .stat-row strong{color:var(--ink)}
+    .main{display:grid;gap:18px}
+    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-2);padding:18px;position:relative;overflow:clip}
+    .hero::after{content:"";position:absolute;inset:auto -20% -50% -20%;height:180px;background:radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%)}
+    .hero h1{margin:6px 0 10px;font-size:clamp(1.6rem,2.1vw + 1rem,2.3rem)}
+    .sub{color:var(--muted);font-size:.95rem}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-1);padding:16px}
+    .panel h2{margin:0 0 10px;font-size:1.05rem}
+    .desc{line-height:1.8;color:#1f2937;white-space:pre-line}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--panel);box-shadow:var(--shadow-1)}
+    .btn:hover{transform:translateY(-1px);transition:transform .15s ease;text-decoration:none}
+
+    /* Preloader */
+    #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
+    .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Responsive fixes */
+    @media (max-width:980px){.aside{position:static;top:auto}.hero{overflow:visible}}
+    @media (max-width:980px),(hover:none) and (pointer:coarse){body{background-attachment:scroll}}
+  </style>
+</head>
+<body>
+
+<!-- 🔄 Preloader -->
+<div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
+
+<div id="header"></div>
+
+<div class="shell">
+  <main id="content" role="main" aria-live="polite">
+    <div class="hero"><h1>Loading…</h1></div>
+  </main>
+</div>
+
+<div id="footer"></div>
+
+<script>
+  // ===== Utils =====
+  const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+  const safe = v => (v===null||v===undefined||v==='') ? '—' : String(v);
+  const debounce = (fn, wait=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; };
+  const slugify = str => String(str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/-{2,}/g,'-');
+  const numberFmt = n => (isFinite(n) ? Number(n).toLocaleString() : String(n||'0'));
+
+  function parseNicknames(s){
+    if(!s) return [];
+    // i CSV di esempio usano virgole semplici separate
+    return String(s).split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
+  }
+
+  function normalizeRow(r){
+    return {
+      id: String(r.mal_id || '').trim(),
+      url: String(r.url || '').trim(),
+      name: (r.name || '').trim(),
+      name_kanji: (r.name_kanji || '').trim(),
+      nicknames: parseNicknames(r.nicknames || ''),
+      favorites: Number(String(r.favorites||'').replace(/[^0-9.-]/g,'')) || 0,
+      about: (r.about || '').trim(),
+      image: (r.image_webp_url || r.image_jpg_url || r.image_webp_small_url || '').trim()
+    };
+  }
+
+  function safeImg(src){
+    return (src && src.length > 6) ? src : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+  }
+
+  // Header/Footer
+  fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
+  fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+
+  // Preloader lifecycle
+  let assetsLoaded=false, dataRendered=false;
+  function hidePreloader(){ const pre=document.getElementById('preloader'); if(!pre) return; pre.style.opacity='0'; pre.style.pointerEvents='none'; setTimeout(()=>pre&&pre.remove(),400); }
+  function tryHidePreloader(){ if(assetsLoaded && dataRendered) hidePreloader(); }
+  window.addEventListener('load', ()=>{ assetsLoaded=true; tryHidePreloader(); });
+  setTimeout(()=>hidePreloader(), 8000);
+
+  // ===== Render =====
+  function renderCharacter(c){
+    const img = safeImg(c.image);
+    const chips = (c.nicknames||[]).map(n=>`<span class="chip">${esc(n)}</span>`).join('');
+    const favs = numberFmt(c.favorites);
+
+    return `
+      <div class="layout">
+        <aside class="aside" aria-label="Portrait and quick facts">
+          <figure class="poster">
+            <img src="${esc(img)}" alt="${esc(c.name || 'Character portrait')}"
+                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
+          </figure>
+          <div class="stat-card" aria-label="Quick stats">
+            <div class="stat-row">
+              <p>Favorites</p><strong>❤ ${esc(favs)}</strong>
+              <p>Kanji</p><strong>${esc(safe(c.name_kanji))}</strong>
+            </div>
+          </div>
+          <div class="actions">
+            ${c.url ? `<a class="btn" href="${esc(c.url)}" target="_blank" rel="noopener">Open on MyAnimeList ↗</a>` : ''}
+            <a class="btn" href="characters.html">← Back to Characters</a>
+          </div>
+        </aside>
+
+        <section class="main">
+          <header class="hero">
+            <h1>${esc(c.name || 'Character')}</h1>
+            ${c.name_kanji ? `<div class="sub">${esc(c.name_kanji)}</div>` : ''}
+            ${chips ? `<div class="chips" aria-label="Nicknames">${chips}</div>` : ''}
+          </header>
+
+          ${c.about ? `
+          <section class="panel" aria-label="Biography">
+            <h2>About</h2>
+            <p class="desc">${esc(c.about)}</p>
+          </section>` : ''}
+
+          <nav class="panel" id="prevnext" aria-label="Previous/Next" style="display:none"></nav>
+        </section>
+      </div>
+    `;
+  }
+
+  // ===== Meta / SEO =====
+  function setDynamicMeta(c){
+    const title = (c.name || "Character").trim();
+    const desc  = (c.about || "").replace(/\s+/g,' ').slice(0, 160);
+    const slug  = slugify(title);
+    const url   = `${location.origin}/character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slug)}`;
+    const img   = safeImg(c.image);
+
+    document.title = `${title} — AniMMUnity`;
+    const set = (sel, val) => { const el=document.querySelector(sel); if (el) el.setAttribute('content', val); };
+    const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute('content', desc);
+    const can = document.getElementById('canonicalLink'); if (can) can.href = url;
+
+    set('meta[property="og:title"]', title);
+    set('meta[property="og:description"]', desc);
+    set('meta[property="og:url"]', url);
+    set('meta[property="og:image"]', img);
+    set('meta[name="twitter:title"]', title);
+    set('meta[name="twitter:description"]', desc);
+    set('meta[name="twitter:image"]', img);
+
+    const bc = {
+      "@context":"https://schema.org","@type":"BreadcrumbList",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
+        {"@type":"ListItem","position":2,"name":"Characters","item":`${location.origin}/characters.html`},
+        {"@type":"ListItem","position":3,"name":title,"item":url}
+      ]
+    };
+    document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
+
+    // Person schema
+    const entity = {
+      "@context":"https://schema.org",
+      "@type":"Person",
+      "name": title,
+      "alternateName": (c.nicknames && c.nicknames.length) ? c.nicknames : undefined,
+      "image": img,
+      "url": url,
+      "sameAs": c.url || undefined,
+      "description": desc,
+      "interactionStatistic": {
+        "@type":"InteractionCounter",
+        "interactionType":"https://schema.org/LikeAction",
+        "userInteractionCount": Number(c.favorites) || 0
+      }
+    };
+    document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+  }
+
+  // ===== Prev/Next (alphabetical by name) =====
+  function renderPrevNext(root, list, current){
+    const arr = [...list].sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+    const idx = arr.findIndex(x=> x.id === current.id);
+    if (idx === -1) return;
+    const prev = idx>0 ? arr[idx-1] : null;
+    const next = idx < arr.length-1 ? arr[idx+1] : null;
+
+    const href = c => `character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slugify(c.name||c.id))}`;
+
+    root.style.display = (prev||next) ? '' : 'none';
+    root.innerHTML = `
+      <div class="actions" style="justify-content:space-between;">
+        <div>${prev ? `<a class="btn" href="${href(prev)}">⬅️ ${esc(prev.name || 'Previous')}</a>` : ''}</div>
+        <div>${next ? `<a class="btn" href="${href(next)}">${esc(next.name || 'Next')} ➡️</a>` : ''}</div>
+      </div>
+    `;
+  }
+
+  // ===== Boot =====
+  window.addEventListener('DOMContentLoaded', () => {
+    const FILES = [
+      '/data/anime_characters_part1.csv',
+      '/data/anime_characters_part2.csv',
+      '/data/anime_characters_part3.csv',
+      '/data/anime_characters_part4.csv',
+      '/data/anime_characters_part5.csv',
+      '/data/anime_characters_part6.csv',
+    ];
+    const params = new URLSearchParams(location.search);
+    const idParam = (params.get('id') || '').trim();
+    const slugParam = (params.get('slug') || '').trim().toLowerCase();
+
+    Promise.all(FILES.map(p => fetch(p).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status} on ${p}`); return r.text(); })
+      .then(t => Papa.parse(t,{header:true,skipEmptyLines:true}).data.map(normalizeRow))))
+      .then(parts => {
+        const flat = parts.flat();
+        // dedup per id (tieni quello con più favorites)
+        const map = new Map();
+        for (const c of flat){
+          if (!c.id) continue;
+          if (!map.has(c.id) || c.favorites > (map.get(c.id).favorites||0)) map.set(c.id, c);
+        }
+        const characters = Array.from(map.values());
+
+        let current = null;
+        if (idParam) {
+          current = characters.find(x => x.id === idParam);
+        }
+        if (!current && slugParam) {
+          current = characters.find(x => slugify(x.name) === slugParam);
+        }
+        if (!current) {
+          document.getElementById('content').innerHTML = `<div class="panel"><h2>Character not found</h2><p>Id: <code>${esc(idParam||'—')}</code> — Slug: <code>${esc(slugParam||'—')}</code></p><p><a class="btn" href="characters.html">← Back to Characters</a></p></div>`;
+          dataRendered = true; tryHidePreloader(); return;
+        }
+
+        const root = document.getElementById('content');
+        root.innerHTML = renderCharacter(current);
+        setDynamicMeta(current);
+        const pn = document.getElementById('prevnext');
+        if (pn) renderPrevNext(pn, characters, current);
+
+        dataRendered = true; tryHidePreloader();
+      })
+      .catch(err => {
+        document.getElementById('content').innerHTML = `<div class="panel"><h2>Error</h2><p style="color:#b00">${esc(err?.message || err)}</p></div>`;
+        dataRendered = true; tryHidePreloader();
+      });
+  });
+</script>
+</body>
+</html>
