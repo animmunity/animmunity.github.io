@@ -113,8 +113,19 @@
   @keyframes spin{ to{ transform: rotate(360deg) } }
 
   /* Authors block */
-  .authors-list{ display:grid; gap:8px; margin-top:8px; }
-  .authors-list .author-item{ padding:10px; border:1px solid var(--border); background:var(--soft); border-radius:12px; }
+/* Authors block - versione uniforme */
+.authors-list {
+  display: grid;
+  gap: 4px; /* meno spazio tra righe */
+  margin-top: 4px;
+}
+.authors-list .author-item {
+  padding: 0;                /* rimuove padding */
+  border: none;              /* rimuove bordo */
+  background: transparent;   /* rimuove sfondo grigio */
+  border-radius: 0;          /* nessun arrotondamento */
+  color: var(--ink);         /* testo uniforme */
+}
 </style>
 </head>
 <body>
