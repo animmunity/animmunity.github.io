@@ -36,15 +36,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
 
-  <!-- Preload split CSVs -->
-  <link rel="preload" href="/data/manga_core.csv" as="fetch" type="text/csv">
-  <link rel="preload" href="/data/manga_text_part1.csv" as="fetch" type="text/csv">
-  <link rel="preload" href="/data/manga_text_part2.csv" as="fetch" type="text/csv">
+  <!-- Preload split CSVs (con CORS allineato) -->
+  <link rel="preload" href="/data/manga_core.csv" as="fetch" type="text/csv" crossorigin="anonymous">
+  <link rel="preload" href="/data/manga_text_part1.csv" as="fetch" type="text/csv" crossorigin="anonymous">
+  <link rel="preload" href="/data/manga_text_part2.csv" as="fetch" type="text/csv" crossorigin="anonymous">
 
 <style>
-  /* =====================
-     NOVA WHITE UI — Same look & feel as anime detail
-     ===================== */
   :root{
     --bg: #f6f7fb; --ink: #0f172a; --muted: #5b6478; --panel: #ffffff; --soft: #f0f2f8; --border: #e6e9f2;
     --primary: #4f46e5; --accent: #06b6d4; --danger:#ef4444;
@@ -172,7 +169,7 @@ const columnLabels = {
   real_start_date:'Real Start Date', real_end_date:'Real End Date',
   members:'Members', favorites:'Favorites', sfw:'SFW', approved:'Approved',
   genres:'Genres', themes:'Themes', demographics:'Demographics',
-  serializations:'Serializations', authors:'Authors', /* url:'Source URL',  <-- rimosso dal rendering */
+  serializations:'Serializations', authors:'Authors',
   synopsis:'Synopsis', background:'Background', main_picture:'Main Image',
   created_at_before:'Created At', updated_at:'Updated At'
 };
@@ -183,11 +180,15 @@ const sections = {
   'Volumes & Chapters': ['volumes','chapters'],
   'Dates': ['start_date','end_date','real_start_date','real_end_date'],
   'Popularity & Insight': ['members','favorites','genres','themes','demographics'],
-  'Publishing': ['serializations','authors'], // <-- tolto 'url'
+  'Publishing': ['serializations','authors'],
   'Technical': ['created_at_before','updated_at']
 };
 
-function formatMultiline(text){ if(!text) return '—'; const stripped=String(text).replace(/\[Written by MAL Rewrite\]$/,''); return esc(stripped).replace(/\r\n|\r|\n/g,'<br>'); }
+function formatMultiline(text){
+  if(!text) return '—';
+  const stripped=String(text).replace(/\[Written by MAL Rewrite\]$/,'');
+  return esc(stripped).replace(/\r\n|\r|\n/g,'<br>');
+}
 
 function prettyList(val){
   if (val === null || val === undefined || val === '') return '—';
@@ -198,8 +199,7 @@ function prettyList(val){
   return s;
 }
 
-/** 🔧 Authors → [{ name, role }] con parsing robusto */
-// Decodifica minima entità HTML (per "Story &amp; Art" → "Story & Art")
+// ========== AUTHORS PARSER ROBUSTO ==========
 function decodeHTML(str='') {
   return String(str)
     .replace(/&amp;/g, '&')
@@ -209,57 +209,74 @@ function decodeHTML(str='') {
     .replace(/&#39;/g, "'");
 }
 
-/** ✅ Autori robusto: gestisce CSV con doppi apici (""), apici singoli e chiavi non quotate */
-function parseAuthors(str){
-  if (!str) return [];
-  let s = String(str).trim();
+// Assicura che il testo rappresenti un array JSON di oggetti autori
+function normalizeAuthorsText(raw=''){
+  let s = String(raw).trim();
 
-  // Caso tipico CSV: intero JSON con doppi apici e apici raddoppiati
+  // Caso CSV: tutto tra doppi apici con apici raddoppiati
   if (s.includes('""') || (s.startsWith('"') && s.endsWith('"'))) {
-    s = s.replace(/^"(.*)"$/s, '$1'); // rimuove apici esterni
-    s = s.replace(/""/g, '"');        // normalizza doppi apici interni
+    s = s.replace(/^"(.*)"$/s, '$1');   // rimuovi apici esterni
+    s = s.replace(/""/g, '"');          // normalizza apici interni
   }
 
+  // Se manca l'array [] ma ci sono più oggetti separati da "},"
+  if (!/^\s*\[/.test(s) && /}\s*,\s*{/.test(s)) {
+    s = `[${s}]`;
+  }
+  // Se è un singolo oggetto { ... } senza []
+  if (!/^\s*\[/.test(s) && /^\s*{/.test(s) && /}\s*$/.test(s)) {
+    s = `[${s}]`;
+  }
+
+  // Metti le chiavi non quotate tra doppi apici: id: → "id":
+  s = s.replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/g, '$1"$2":');
+
+  // Converti apici singoli in doppi apici
+  s = s.replace(/'/g, '"');
+
+  // Rimuovi virgole finali in oggetti/array: {"a":1,} → {"a":1}
+  s = s.replace(/,\s*([}\]])/g, '$1');
+
+  return s;
+}
+
+function parseAuthors(input){
+  if (!input) return [];
+  const s = normalizeAuthorsText(input);
   try {
     const arr = JSON.parse(s);
-    if (Array.isArray(arr)) {
-      return arr.map(a => {
-        if (a && typeof a === 'object') {
-          const first = (a.first_name || '').trim();
-          const last  = (a.last_name  || '').trim();
-          const full  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
-          const role  = decodeHTML((a.role || '').trim());
-          if (!full && !role) return null;
-          return { name: full, role };
-        } else {
-          const name = String(a || '').trim();
-          return name ? { name, role: '' } : null;
-        }
-      }).filter(Boolean);
-    }
-  } catch(_) {}
-
-  // Fallback per apici singoli / chiavi non quotate
-  try {
-    let t = s.replace(/\b(id|first_name|last_name|role|name)\b/g, '"$1"').replace(/'/g, '"');
-    const arr = JSON.parse(t);
-    if (Array.isArray(arr)) {
-      return arr.map(a => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map(a => {
+      if (a && typeof a === 'object') {
         const first = (a.first_name || '').trim();
         const last  = (a.last_name  || '').trim();
-        const full  = [first, last].filter(Boolean).join(' ') || (a.name || '').trim() || last || first;
+        const full  = [first, last].filter(Boolean).join(' ')
+                   || (a.name || '').trim() || last || first;
         const role  = decodeHTML((a.role || '').trim());
         if (!full && !role) return null;
         return { name: full, role };
-      }).filter(Boolean);
+      }
+      const name = String(a || '').trim();
+      return name ? { name, role: '' } : null;
+    }).filter(Boolean);
+  } catch {
+    // Ultimo fallback duro: prova split per "},{"
+    try {
+      const parts = String(input).split(/}\s*,\s*{/g).map((chunk,i,all)=>{
+        let c = chunk.trim();
+        if (i===0 && !c.startsWith('{')) c = '{'+c;
+        if (i===all.length-1 && !c.endsWith('}')) c = c+'}';
+        return c;
+      });
+      const fixed = `[${parts.join(',')}]`;
+      return parseAuthors(fixed); // ricicla pipeline
+    } catch {
+      const name = String(input).replace(/^\[|\]$/g,'').trim();
+      return name ? [{ name, role: '' }] : [];
     }
-  } catch(_) {}
-
-  // Ultimo fallback: tutto come singolo nome
-  const name = s.replace(/^\[|\]$/g,'').trim();
-  return name ? [{ name, role: '' }] : [];
+  }
 }
-
+// ========== FINE PARSER ==========
 function renderDetails(manga){
   const genresArr  = parseArray(manga.genres);
   const demoArr    = parseArray(manga.demographics);
@@ -310,16 +327,15 @@ function renderDetails(manga){
         ${Object.entries(sections).map(([name, fields])=>{
           const parts = [];
           for (const f of fields){
-            // salta vuoti
             let v = manga[f];
             if (v===null || v===undefined || v==='' || (typeof v==='string' && v.trim()==='[]')) continue;
 
-            // liste semplici
             if (['genres','themes','demographics','serializations','title_synonyms'].includes(f)) v = prettyList(v);
 
-            // authors → blocco personalizzato
             if (f === 'authors') {
-              const items = parseAuthors(manga.authors);
+              // Dedup + ordine alfabetico (facoltativo ma utile)
+              const items = Array.from(new Map(parseAuthors(manga.authors).map(a=>[a.name, a])).values())
+                                .sort((a,b)=> a.name.localeCompare(b.name));
               if (!items.length) continue;
               const inner = items.map(a => `
                 <div class="author-item">
@@ -328,10 +344,9 @@ function renderDetails(manga){
                 </div>
               `).join('');
               parts.push(`<div class="authors-block"><strong>Authors:</strong><div class="authors-list">${inner}</div></div>`);
-              continue; // evita push standard
+              continue;
             }
 
-            // default
             parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(String(v)))}</p>`);
           }
           return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
@@ -379,7 +394,7 @@ function setDynamicMeta(manga){
     datePublished: manga.start_date || undefined,
     dateEnded: manga.end_date || undefined,
     dateModified: manga.updated_at || undefined,
-    sameAs: manga.url || undefined, // ok tenerlo nello schema, anche se non lo mostri a UI
+    sameAs: manga.url || undefined,
     numberOfVolumes: (manga.volumes && !isNaN(manga.volumes)) ? Number(manga.volumes) : undefined,
     numberOfPages: (manga.chapters && !isNaN(manga.chapters)) ? Number(manga.chapters) : undefined,
     description: desc,
@@ -399,7 +414,7 @@ function renderPrevNext(navRoot, core, detailsMap, current){
     const det = detailsMap.get(rec.manga_id) || {};
     if (det.url) return `/manga.html?slug=${encodeURIComponent(getMalSlug(det.url))}`;
     return `/manga.html?id=${encodeURIComponent(rec.manga_id)}`;
-    }
+  }
 
   navRoot.innerHTML = `
     <div>${prev ? `<a class="link-btn" href="${hrefFor(prev)}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
@@ -414,11 +429,13 @@ window.addEventListener('DOMContentLoaded', () => {
   const slugFromQuery = normalizeSlug(params.get('slug'));
   const slugFromPath  = normalizeSlug(getSlugFromPath());
 
-  // carica tutti i CSV necessari
+  // carica tutti i CSV necessari (allineati a preload: CORS anonimi)
+  const fetchOpts = { mode: 'cors', credentials: 'omit', cache: 'force-cache' };
+
   Promise.all([
-    fetch('/data/manga_core.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
-    fetch('/data/manga_text_part1.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
-    fetch('/data/manga_text_part2.csv').then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+    fetch('/data/manga_core.csv', fetchOpts).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+    fetch('/data/manga_text_part1.csv', fetchOpts).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+    fetch('/data/manga_text_part2.csv', fetchOpts).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
   ])
   .then(([coreCsv, d1Csv, d2Csv]) => {
     const core = parseCSV(coreCsv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
@@ -430,7 +447,6 @@ window.addEventListener('DOMContentLoaded', () => {
     for (const row of [...d1, ...d2]){
       if (!row.manga_id) continue;
       const prev = detailsMap.get(row.manga_id) || {};
-      // merge non distruttivo: tieni il valore più lungo come più informativo
       const merged = { ...prev };
       for (const k of Object.keys(row)){
         const nv = row[k];
@@ -448,7 +464,6 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
       const wanted = slugFromQuery || slugFromPath;
       if (wanted){
-        // cerca per slug di MAL dentro details
         for (const [id, det] of detailsMap.entries()){
           const slug = det.url ? getMalSlug(det.url) : '';
           if (normalizeSlug(slug) === wanted){ recCore = core.find(a=>a.manga_id===id); recDetails = det; break; }
