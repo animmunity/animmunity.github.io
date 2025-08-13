@@ -254,6 +254,31 @@
     const val=(row,...keys)=>{ for(const k of keys){ if(k in row && row[k]!==undefined && row[k]!==null && row[k]!=='') return row[k]; } return ''; };
     const debounce=(fn,wait=250)=>{ let t; return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),wait)} };
 
+    // ---------- Helpers immagini (MAL l.jpg -> t.jpg + fallback) ----------
+    const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+
+    const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
+    const toThumbUrl = (url) => {
+      const u = cleanImageUrl(url);
+      if (!u) return '';
+      // solo CDN MAL e solo se termina con l.jpg
+      if (/^https?:\/\/cdn\.myanimelist\.net\/.+\/[0-9]+l\.jpg$/i.test(u)) {
+        return u.replace(/l\.jpg$/i, 't.jpg');
+      }
+      return u;
+    };
+    function imgOnErrorFallback(imgEl, originalUrl) {
+      const cur = imgEl.getAttribute('data-state') || 'thumb';
+      if (cur === 'thumb') {
+        imgEl.src = cleanImageUrl(originalUrl);     // passa alla large
+        imgEl.setAttribute('data-state', 'large');
+      } else if (cur === 'large') {
+        imgEl.src = PLACEHOLDER;                    // ultimo fallback
+        imgEl.setAttribute('data-state', 'placeholder');
+      }
+    }
+    // ----------------------------------------------------------------------
+
     // Elements
     const searchInput=document.getElementById('searchInput');
     const filtersBar=document.getElementById('filtersBar');
@@ -429,15 +454,16 @@
       listEl.innerHTML='';
       items.forEach((row,idx)=>{
         const title = val(row,'title','title_english') || 'Untitled';
-        const img = val(row,'main_picture','image_url','image','pic','poster');
-        const start = val(row,'start_date','published_from_year','year');
+        const rawImg = val(row,'main_picture','image_url','image','pic','poster');
+        const thumb  = toThumbUrl(rawImg);
+        const start  = val(row,'start_date','published_from_year','year');
         const scoreVal = toNum(val(row,'score'));
         const popularity = toNum(val(row,'members','favorites','scored_by'));
         const metricVal = toNum(row[currentMetric]);
         const genresText = formatGenresForCard(row);
         const href = buildMangaHref(row);
 
-        const globalPos = globalRankMap.get(String(row.manga_id||'')) || (startIndex+idx+1); // fallback
+        const globalPos = globalRankMap.get(String(row.manga_id||'')) || (startIndex+idx+1);
 
         const metricPill = (currentMetric==='score')
           ? ''
@@ -447,7 +473,14 @@
         card.innerHTML = `
           <div class="rank">${globalPos}</div>
           <a class="thumb-wrap" href="${href}" aria-label="${esc(title)}">
-            <img class="thumb" loading="lazy" src="${img || 'https://via.placeholder.com/80x112?text=Manga'}" alt="${esc(title)}">
+            <img class="thumb"
+                 loading="lazy"
+                 decoding="async"
+                 width="80" height="112"
+                 src="${esc(thumb || PLACEHOLDER)}"
+                 data-state="thumb"
+                 onerror="imgOnErrorFallback(this, '${esc(cleanImageUrl(rawImg))}')"
+                 alt="${esc(title)}">
           </a>
           <div class="meta">
             <h3><a href="${href}">${esc(title)}</a></h3>
