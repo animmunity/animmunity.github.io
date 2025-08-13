@@ -13,52 +13,68 @@
   <link rel="stylesheet" href="/styles.css" />
 
   <style>
-    :root{
-      --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#ffffff; --border:#e6e9f2; --soft:#eef1f8;
-      --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
-      --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
-      /* Pastel solid buttons */
-      --rose:#ffe1e9;  --rose-ink:#a83b57;
-      --lilac:#ece7ff; --lilac-ink:#4f46e5;
-      --aqua:#ddf6f6;  --aqua-ink:#0e807a;
-      --peach:#ffe9d6; --peach-ink:#b1642e;
-    }
-    *{box-sizing:border-box}
-    body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg)}
-    img{max-width:100%; display:block; height:auto}
-    a{color:inherit; text-decoration:none}
+  /* === STRONG, YOUTHFUL PALETTE (flat, high-contrast) === */
+:root{
+  /* Core (leave yours) */
+  --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#ffffff; --border:#e6e9f2;
+  --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
+  --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
 
-    /* Shell */
-    .shell{max-width:1200px; margin:28px auto; padding:0 18px}
+  /* New brand brights (AA contrast with white text) */
+  --rose:#ff3b6a;     --rose-ink:#ffffff;   --rose-hover:#e13560;   --rose-press:#c92e55;
+  --violet:#6d5efc;   --violet-ink:#ffffff; --violet-hover:#5f53e1; --violet-press:#5148c6;
+  --mint:#10b981;     --mint-ink:#ffffff;   --mint-hover:#0ea572;   --mint-press:#0c8f62;
+  --sky:#0ea5e9;      --sky-ink:#ffffff;    --sky-hover:#0d92cc;    --sky-press:#0b7caf;
+}
 
-    /* Hero with ONLY the search field */
-    .hero{background:#fff; border:1px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--shadow-2); padding:22px}
-    .search-panel{margin:4px 0}
-    .search-input{
-      width:100%;
-      padding:1rem 1.2rem;
-      font-size:1rem;
-      border:1px solid #dfe4f5;
-      border-radius:14px;
-      box-shadow:0 3px 8px rgba(0,0,0,0.05);
-      transition:border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .search-input:focus{
-      outline:none; border-color:#cfd6f2;
-      box-shadow:0 0 0 4px rgba(79,70,229,0.15);
-    }
+/* === Tiles (unchanged structure, upgraded visuals) === */
+.tiles{
+  display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:18px;
+}
+.tile{
+  grid-column:span 6;
+  display:flex; align-items:center; justify-content:space-between; gap:14px;
+  padding:22px; border-radius:22px; border:1px solid transparent; box-shadow:var(--shadow-1);
+  transition:transform .12s ease, box-shadow .12s ease, background-color .12s ease, border-color .12s ease;
+  position:relative; isolation:isolate;
+}
+.tile .label{ font-size:clamp(1.1rem,1vw + .6rem,1.5rem); font-weight:900; letter-spacing:-.02em; }
+.tile small{ display:block; opacity:.95; font-weight:600; }
+.tile:focus-visible{
+  outline:none; box-shadow:0 0 0 4px rgba(13,110,253,.15), var(--shadow-1);
+}
 
-    /* Tiles (solid pastel, no gradients) */
-    .tiles{display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:18px}
-    .tile{grid-column:span 6; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:22px; border-radius:22px; box-shadow:var(--shadow-1); border:1px solid var(--border); transition:transform .15s ease}
-    .tile:hover{transform:translateY(-2px)}
-    .tile .label{font-size:clamp(1.15rem,1vw + .7rem,1.5rem); font-weight:900; letter-spacing:-.02em}
-    .tile small{display:block; color:#334155; opacity:.9; font-weight:600}
-    .tile.rose {background:var(--rose);  color:var(--rose-ink)}
-    .tile.lilac{background:var(--lilac); color:var(--lilac-ink)}
-    .tile.aqua {background:var(--aqua);  color:var(--aqua-ink)}
-    .tile.peach{background:var(--peach); color:var(--peach-ink)}
-    @media (max-width: 920px){ .tile{grid-column:span 12} }
+/* Hover/Active give tactile feel */
+.tile:hover{ transform:translateY(-2px); box-shadow:0 14px 34px rgba(17,24,39,.10); }
+.tile:active{ transform:translateY(0); }
+
+@media (max-width: 920px){ .tile{ grid-column:span 12; } }
+
+/* === Color variants (map them to your 4 links) === */
+.tile.rose   { background:var(--rose);   color:var(--rose-ink);   border-color:rgba(0,0,0,.06); }
+.tile.lilac  { background:var(--violet); color:var(--violet-ink); border-color:rgba(0,0,0,.06); }
+.tile.aqua   { background:var(--mint);   color:var(--mint-ink);   border-color:rgba(0,0,0,.06); }
+.tile.peach  { background:var(--sky);    color:var(--sky-ink);    border-color:rgba(0,0,0,.06); }
+
+.tile.rose:hover   { background:var(--rose-hover); }
+.tile.lilac:hover  { background:var(--violet-hover); }
+.tile.aqua:hover   { background:var(--mint-hover); }
+.tile.peach:hover  { background:var(--sky-hover); }
+
+.tile.rose:active   { background:var(--rose-press); }
+.tile.lilac:active  { background:var(--violet-press); }
+.tile.aqua:active   { background:var(--mint-press); }
+.tile.peach:active  { background:var(--sky-press); }
+
+/* Optional: subtle “chevron” affordance on hover (pure CSS) */
+.tile::after{
+  content:"";
+  position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  width:10px; height:10px; border-right:3px solid currentColor; border-top:3px solid currentColor;
+  rotate:45deg; opacity:.4; transition:opacity .12s ease, right .12s ease;
+}
+.tile:hover::after{ right:16px; opacity:.7; }
+
 
     /* Sections */
     .section{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:16px; margin-top:16px}
