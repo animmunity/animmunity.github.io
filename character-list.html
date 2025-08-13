@@ -5,42 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <title>AniMMUnity — Characters Explorer</title>
-  <meta name="description" content="Browse AniMMUnity's anime characters. Fast search, favorites filter, clean cards, and internal detail links.">
+  <meta name="description" content="Browse AniMMUnity's anime characters. Full-width search, filters under the search, clean cards, and internal detail links.">
 
-  <!-- Canonical -->
   <link rel="canonical" href="https://animmunity.github.io/characters.html">
-
-  <!-- Robots -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
-  <!-- Favicons -->
   <link rel="icon" href="/favicon.ico">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-  <!-- Theme color -->
   <meta name="theme-color" content="#ffffff">
 
-  <!-- Open Graph -->
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://animmunity.github.io/characters.html">
   <meta property="og:title" content="AniMMUnity — Characters Explorer">
-  <meta property="og:description" content="Search and filter characters by name, nickname and favorites. Clean cards and internal detail links.">
+  <meta property="og:description" content="Search and filter characters with a full-width search bar and filters below.">
   <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AniMMUnity — Characters Explorer">
-  <meta name="twitter:description" content="Search and filter characters by name, nickname and favorites.">
+  <meta name="twitter:description" content="Search and filter characters with a full-width search bar and filters below.">
   <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
 
-  <!-- Sitemap hint -->
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
-
-  <!-- Performance hints (solo esterni usati) -->
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
-  <!-- Prev/Next per SEO pagination (aggiornati via JS) -->
   <link id="relPrev" rel="prev" href="" />
   <link id="relNext" rel="next" href="" />
 
@@ -48,23 +36,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
 
   <style>
-    /* Layout helpers */
-    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0; }
-    .toolbar .grow { flex:1 1 280px; }
-    .toolbar .inline { display:flex; gap:8px; align-items:center; }
-
-    /* Inputs */
-    .input, .select, .btn {
-      padding: 8px 12px; border: 1px solid #bbb; border-radius: 10px; background:#fff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06); font-size:14px; box-sizing:border-box;
-    }
+    /* Inputs & buttons */
+    .input, .btn { padding: 10px 14px; border: 1px solid #bbb; border-radius: 12px; background:#fff; box-shadow: 0 2px 4px rgba(0,0,0,0.06); font-size:14px; box-sizing:border-box; }
     .btn { cursor:pointer; }
     .btn:hover { background:#f5f5f5; }
+
+    /* Full-width search */
+    .search-container { width:100%; margin:16px 0 8px; }
+    #searchInput { width:100%; max-width:100%; box-sizing:border-box; padding:14px 16px; font-size:16px; border-radius:14px; }
+
+    /* Filters row under the search */
+    .filters-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0 16px; }
+    .filters-row .inline { display:flex; gap:8px; align-items:center; }
+    .filters-row .label { font-size:13px; color:#555; }
 
     /* Grid & cards */
     .characters-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap:16px; }
     .card { background:#fff; border:1px solid #e6e6e6; border-radius:12px; padding:12px; box-shadow:0 2px 8px rgba(0,0,0,.06); display:flex; flex-direction:column; }
-    .card a { text-decoration: none; color: inherit; }
+    .card a { text-decoration:none; color:inherit; }
     .card img { width:100%; height:auto; display:block; border-radius:8px; object-fit:contain; background:#fff; }
     .card h3 { font-size:16px; margin:8px 0 4px; line-height:1.3; }
     .sub { color:#666; font-size:13px; }
@@ -94,7 +83,7 @@
   }
   </script>
 
-  <!-- JSON-LD: ItemList (dinamico, aggiornato via JS) -->
+  <!-- JSON-LD: ItemList (dinamico) -->
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 </head>
 <body>
@@ -109,22 +98,25 @@
 
     <section class="seo-intro" style="background:#fff;padding:12px 16px;border-radius:12px;margin:0 0 12px 0;">
       <h2>Search, Filter & Discover Characters</h2>
-      <p>Consulta migliaia di personaggi anime. Ricerca istantanea su <strong>nome</strong>, <strong>nickname</strong> e testo <strong>about</strong>, filtro per <strong>favorites</strong> e paginazione SEO-friendly. Le schede ora aprono una <strong>pagina interna</strong> di dettaglio.</p>
+      <p>Ricerca a <strong>tutto schermo</strong> e filtri <strong>sotto</strong> il campo di ricerca per coerenza con le altre pagine.</p>
     </section>
 
-    <div class="toolbar">
-      <div class="grow">
-        <label class="visually-hidden" for="searchInput">Search characters</label>
-        <input id="searchInput" class="input" type="text" placeholder="Search characters… (e.g. Spike, Ed, Sasuke)" autocomplete="off" />
-      </div>
+    <!-- 🔎 Full-width search -->
+    <div class="search-container" aria-labelledby="search-label">
+      <label id="search-label" class="visually-hidden" for="searchInput">Search characters</label>
+      <input id="searchInput" class="input" type="text" placeholder="Search characters… (e.g. Spike, Ed, Sasuke)" autocomplete="off" />
+    </div>
+
+    <!-- ⚙️ Filters under the search -->
+    <div class="filters-row" id="filtersRow" aria-label="Filters">
       <div class="inline">
-        <label for="minFav" style="font-size:13px;color:#555;">Min favorites</label>
-        <input id="minFav" class="input" type="number" min="0" step="1" value="0" style="width:110px" />
+        <label for="minFav" class="label">Min favorites</label>
+        <input id="minFav" class="input" type="number" min="0" step="1" value="0" />
       </div>
       <div class="inline">
         <label class="inline" style="gap:6px;">
           <input type="checkbox" id="onlyWithImage" />
-          <span style="font-size:13px;color:#555;">Only with image</span>
+          <span class="label">Only with image</span>
         </label>
       </div>
       <button id="clearBtn" class="btn" type="button">Reset</button>
@@ -163,7 +155,7 @@
     function slugify(str){
       return String(str||'')
         .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g,'') // rimuove diacritici in modo compatibile
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
         .replace(/[^a-z0-9]+/g,'-')
         .replace(/^-+|-+$/g,'')
         .replace(/-{2,}/g,'-');
@@ -197,7 +189,7 @@
         'data/anime_characters_part6.csv',
       ];
 
-      const ITEMS_PER_PAGE = 25;
+      const ITEMS_PER_PAGE = 24;
       let characters = []; // normalized
       let currentPage = 1;
 
@@ -207,7 +199,6 @@
       if (initialQ) document.getElementById('searchInput').value = initialQ;
 
       function normalizeRow(r){
-        // Columns expected (per example):
         // mal_id,url,name,name_kanji,nicknames,favorites,about,image_jpg_url,image_webp_url,image_webp_small_url
         const id = String(r.mal_id || '').trim();
         const url = String(r.url || '').trim();
@@ -335,11 +326,8 @@
           grid.appendChild(card);
         }
 
-        // SEO JSON-LD
         updateItemListLD(pageItems);
-        // Rel prev/next
         updateRelPrevNext(totalPages, page, document.getElementById('searchInput').value);
-        // Pagination UI
         renderPagination(totalPages, page);
       }
 
@@ -395,19 +383,14 @@
       Promise.all(FILES.map(fetchAndParse))
         .then(parts => {
           const flat = parts.flat();
-          // de-duplicate by mal_id, keep the one with higher favorites / or first occurrence
           const map = new Map();
           for (const c of flat){
             if (!c.id) continue;
             if (!map.has(c.id) || (c.favorites > (map.get(c.id).favorites||0))) map.set(c.id, c);
           }
           characters = Array.from(map.values());
-          // Sort by favorites desc by default (classic catalog feel)
           characters.sort((a,b)=> b.favorites - a.favorites || a.name.localeCompare(b.name));
-
-          // Prefill page & search from URL
           renderPage(Math.max(1, isFinite(initialPage) ? initialPage : 1));
-
           dataRendered = true; tryHidePreloader();
         })
         .catch(err => {
