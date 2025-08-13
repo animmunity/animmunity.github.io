@@ -39,8 +39,8 @@
     .seg .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:none}
     .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent}
 
-    .alpha{display:flex;gap:6px;flex-wrap:wrap}
-    .alpha button{height:34px;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+    .alpha{display:none !important}
+    .alpha button{display:none !important}
 
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
     .group{grid-column:span 12;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);overflow:hidden}
@@ -56,6 +56,8 @@
     .meta{color:var(--muted);font-size:.9rem}
     .card-body{padding:12px}
     .thumb{width:100%;height:0;padding-top:56%;position:relative;background:#eef2ff;border-radius:12px;overflow:hidden}
+    .thumb .preview,.thumb .preview-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .play-ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900;display:inline-grid;place-items:center;box-shadow:var(--shadow-1);cursor:pointer}
     .thumb .play{position:absolute;inset:0;display:grid;place-items:center;cursor:pointer}
     .thumb .play button{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900}
     .embed{position:relative;width:100%;padding-top:56%;border-radius:12px;overflow:hidden}
@@ -99,11 +101,10 @@
           <button id="f-ed" class="btn" aria-pressed="false">ED</button>
         </div>
       </div>
-      <div class="alpha" id="alpha"></div>
+      
     </section>
 
-    <section id="results" class="grenter skeleton">Caricamento…</div>
-    </section>
+    <section id="results" class="grid" aria-live="polite"><div class="center" style="padding:20px;font-weight:800;">Loading...</div></section>
   </main>
 
   <!-- Footer -->
@@ -131,9 +132,7 @@
     }
 
     // ====== UI BUILD ======
-    const alpha = $('#alpha');
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
-      const b=document.createElement('button'); b.textContent=ch; b.title=`Aperti ${ch}`; b.addEventListener('click',()=>{ state.letter=ch; state.page=1; load(); });
+    const alpha = document.getElementById('alpha'); if(alpha) alpha.remove(); state.letter=null;
       alpha.appendChild(b);
     });
 
@@ -155,7 +154,7 @@
       params.set('page[number]', String(state.page));
       params.set('filter[has]','animethemes');
       if(state.q){ params.set('q', state.q); } // full-text search (fallback)
-      if(state.letter){ params.set('filter[name_starts_with]', state.letter); }
+      
       const url = `https://api.animethemes.moe/anime?${params}`;
       const res = await fetch(url, { mode:'cors' });
       if(!res.ok) throw new Error('API error '+res.status);
@@ -216,19 +215,46 @@
 
           const card = document.createElement('div'); card.className='card';
           const metaText = [song, artists].filter(Boolean).join(' — ');
+          let previewHTML=''; let ytId='';
+          if(vid && /youtube\.com|youtu\.be/i.test(vid.link||vid.url||'')){
+            const m = String(vid.link||vid.url).match(/(?:v=|\.be\/)([A-Za-z0-9_-]{6,})/);
+            ytId = m ? m[1] : '';
+            const thumbUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '';
+            previewHTML = thumbUrl ? `<img class=\"preview\" src=\"${esc(thumbUrl)}\" alt=\"${esc(label)} preview\">` : '';
+          }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
+            const src = vid.link||vid.url;
+            previewHTML = `<video class=\"preview-video\" src=\"${esc(src)}#t=0.1\" muted playsinline preload=\"metadata\" loop autoplay></video>`;
+          }
+          if(!previewHTML) previewHTML = `<div class=\"no-preview center\" style=\"padding:20px;\">No preview</div>`;
+
           card.innerHTML = `
-            <div class="card-h">
-              <span class="tag">${esc(label)}</span>
-              <span class="meta">${esc(metaText)}</span>
+            <div class=\"card-h\">
+              <span class=\"tag\">${esc(label)}</span>
+              <span class=\"meta\">${esc(metaText)}</span>
             </div>
-            <div class="card-body">
-              <div class="thumb">
-                <div class="play"><button type="button">Play</button></div>
+            <div class=\"card-body\">
+              <div class=\"thumb\">
+                ${previewHTML}
+                <button class=\"play-ico\" type=\"button\" aria-label=\"Play\">
+                  <svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\"><path d=\"M8 5v14l11-7z\"></path></svg>
+                </button>
               </div>
             </div>`;
 
           const thumb = card.querySelector('.thumb');
-          const btn = card.querySelector('button');
+          const playBtn = card.querySelector('.play-ico');
+          playBtn.addEventListener('click', ()=>{
+            const wrap = document.createElement('div'); wrap.className='embed';
+            if(ytId){
+              wrap.innerHTML = `<iframe allow=\"autoplay; encrypted-media\" allowfullscreen src=\"https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1\"></iframe>`;
+            }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
+              const src = vid.link||vid.url; const type = /\.webm$/i.test(src)? 'video/webm':'video/mp4';
+              wrap.innerHTML = `<video controls playsinline autoplay><source src=\"${esc(src)}\" type=\"${type}\"></video>`;
+            }else{
+              wrap.innerHTML = `<div class=\"center\">Nessun video embeddabile. <a href=\"https://animethemes.moe/\" target=\"_blank\" rel=\"noopener\">Apri su AnimeThemes</a></div>`;
+            }
+            thumb.replaceWith(wrap);
+          });
           btn.addEventListener('click', ()=>{
             const wrap = document.createElement('div'); wrap.className='embed';
             if(vid && /youtube\.com|youtu\.be/i.test(vid.link||vid.url||'')){
@@ -258,35 +284,26 @@
       target.appendChild(pager);
     }
 
-    // ====== LOAD ======
-    async function lo// ====== SKELETON UI ======
-    function showSkeleton(){
-      const target = document.getElementById('results'); if(!target) return;
-      target.innerHTML='';
-      const wrap=document.createElement('div'); wrap.className='sk-wrap';
-      for(let g=0; g<3; g++){
-        const group=document.createElement('div'); group.className='sk-group';
-        group.innerHTML='<div class="sk-head shimmer"></div>'+
-                        '<div class="sk-cards">'+
-                        Array.from({length:4}).map(()=>'<div class="sk-card"><div class="sk-thumb shimmer"></div><div class="sk-line shimmer"></div></div>').join('')+
-                        '</div>';
-        wrap.appendChild(group);
-      }
-      target.appendChild(wrap);
-    }
+    // ====== SKELETON UI ======
+    function showSkeleton(){ const target=document.getElementById('results'); if(!target) return; target.innerHTML='<div class="center" style="padding:20px;font-weight:800;">Loading...</div>'; }
     function clearSkeleton(){ const target=document.getElementById('results'); if(target) target.innerHTML=''; }
 
-    // ====== LOAD ======   if(state.busy) return; state.busy=true;
+    function clearSkeleton(){ const target=document.getElementById('results'); if(target) target.innerHTML=''; }
+
+    // ====== LOAD ======
+    async function load(append=false){
+      if(state.busy) return; state.busy=true;
       const target = $('#results');
-      if(!append) target.innerHTML = '<div class=if(!append) showSkeleton();
-EMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
+      if(!append) showSkeleton();
+      try{
+        const json = USE_ANIMETHEMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
         const items = normalizeApi(json).filter(a=> !state.q || (a.name||'').toLowerCase().includes(state.q.toLowerCase()));
+        clearSkeleton();
         render(items);
       }catch(err){
-        cclearSkeleton();
-        render(items);rr);
-        target.innerHTMconsole.error(err);
-        clearSkeleton();nter">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
+        console.error(err);
+        clearSkeleton();
+        target.innerHTML = `<div class="center">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
       }finally{ state.busy=false; }
     }
 
