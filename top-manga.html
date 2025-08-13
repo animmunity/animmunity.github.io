@@ -28,6 +28,8 @@
 
   <!-- Preload CSV (CORS anonimo per evitare warning) -->
   <link rel="preload" href="/data/manga_core.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
+  <link rel="preload" href="/data/manga_text_part1.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
+  <link rel="preload" href="/data/manga_text_part2.csv" as="fetch" type="text/csv" crossorigin="anonymous" />
 
   <!-- JSON-LD: ItemList (dinamico) -->
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
@@ -50,7 +52,6 @@
   a:hover{text-decoration:underline}
   .shell{max-width:1200px;margin:30px auto;padding:0 18px}
 
-  /* Pannelli coerenti */
   .panel{
     background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);
     box-shadow:var(--shadow-1);padding:18px;
@@ -63,11 +64,9 @@
 
   .block-gap{ margin-top:18px; }
 
-  /* Chips */
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .chip{background:#eef2ff;color:#3730a3;border:1px solid #e0e7ff;padding:6px 10px;border-radius:999px;font-size:.8rem}
 
-  /* Search */
   .search-container{width:100%;margin:12px 0 0}
   .search-input{
     width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid #dfe4f5;background:#fff;font-size:16px;
@@ -75,7 +74,6 @@
   }
   .search-input:focus{outline:none;border-color:#cfd6f2;box-shadow:0 0 0 3px rgba(79,70,229,.12)}
 
-  /* Dropdown (unificati) */
   .filters-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
   .filter-dropdown{position:relative}
   .filter-btn{
@@ -93,20 +91,15 @@
   .options .option{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer}
   .options .option:hover{background:#f5f5f5}
 
-  /* Checkbox/radio quadrati + spunta visiva */
   .options input[type="checkbox"],
   .options input[type="radio"]{
-    appearance:none; -webkit-appearance:none; -moz-appearance:none;
-    width:16px;height:16px;border:2px solid #9aa3b2;border-radius:4px;background:#fff;display:inline-block;position:relative;cursor:pointer;
-    outline:none; flex:0 0 16px;
+    appearance:none;width:16px;height:16px;border:2px solid #9aa3b2;border-radius:4px;background:#fff;display:inline-block;position:relative;cursor:pointer;
+    outline:none;flex:0 0 16px;
   }
   .options input[type="checkbox"]:focus,
   .options input[type="radio"]:focus{ box-shadow:0 0 0 3px rgba(79,70,229,.15); }
   .options input[type="checkbox"]:checked,
-  .options input[type="radio"]:checked{
-    border-color:#4f46e5;background:#4f46e5;
-  }
-  /* ✓ sulla label attiva */
+  .options input[type="radio"]:checked{ border-color:#4f46e5;background:#4f46e5; }
   .options input:checked + span::before{
     content:"✓"; display:inline-block; margin-right:6px; color:#4f46e5; font-weight:800;
   }
@@ -116,7 +109,6 @@
   }
   .btn-clear:hover{background:#f0f0f0}
 
-  /* Lista classifica */
   .list{display:grid;gap:12px}
   .rank-card{
     display:grid;grid-template-columns:60px 80px 1fr;gap:14px;align-items:center;
@@ -139,7 +131,6 @@
   .badge.score{border-color:#e0f2e9;background:#f0fbf5;color:#1f6c3e}
   .badge.pop{border-color:#e0f2ff;background:#f0f8ff;color:#13527a}
 
-  /* Paginazione */
   .pagination{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:14px}
   .pagination button{
     padding:8px 11px;border-radius:10px;border:1px solid #dfe4f5;background:linear-gradient(180deg,#fff,#f4f6fb);
@@ -152,44 +143,32 @@
   .error{color:var(--danger)}
   @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* Preloader */
   #preloader{position:fixed;inset:0;background:#fff;display:grid;place-items:center;transition:opacity .4s ease;z-index:9999}
   .spinner{width:44px;height:44px;border-radius:50%;border:4px solid #e3e3e3;border-top-color:#007BFF;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Responsive fixes */
   .rank-card, .meta, .meta h3 { min-width:0 }
 
   @media (max-width: 900px){
     .rank-card{grid-template-columns:52px 72px 1fr;gap:12px}
     .thumb{width:72px;height:100px}
   }
-
-  /* <= 720px: numero sopra, centrato */
   @media (max-width: 720px){
-    .rank-card{
-      display:flex; flex-direction:column; align-items:center; text-align:center;
-    }
+    .rank-card{ display:flex; flex-direction:column; align-items:center; text-align:center; }
     .rank{
-      order:-1; margin-bottom:10px;
-      display:inline-flex; align-items:center; justify-content:center;
-      padding:10px 16px;
-      width:auto; height:auto;
-      line-height:1; white-space:nowrap;
-      background:var(--soft); border:1px solid var(--border); border-radius:14px;
-      font-size:1.6rem; font-weight:800; color:var(--primary-ink);
+      order:-1; margin-bottom:10px; display:inline-flex; align-items:center; justify-content:center;
+      padding:10px 16px; width:auto; height:auto; line-height:1; white-space:nowrap;
+      background:var(--soft); border:1px solid var(--border); border-radius:14px; font-size:1.6rem; font-weight:800; color:var(--primary-ink);
       font-variant-numeric: tabular-nums;
     }
     .thumb-wrap{ order:0; width:100%; display:flex; justify-content:center; }
     .meta{ order:1; width:100%; }
   }
-
   @media (max-width: 440px){
     .rank{ padding:12px 18px; font-size:1.8rem; }
     .thumb{ width:100%; height:auto; aspect-ratio:3/4; }
     .meta h3{ -webkit-line-clamp:3; }
   }
-
   @media (max-width: 520px){
     .filter-menu{left:auto;right:0;min-width:220px;max-width:90vw}
   }
@@ -203,12 +182,10 @@
   <div id="header"></div>
 
   <main class="shell">
-    <!-- Top Manga -->
     <section class="hero panel">
       <h1>Top Manga</h1>
       <p class="sub">Explore the ultimate manga rankings: search by title, filter by genres, sort by your preferred metric.</p>
 
-      <!-- SEARCH live -->
       <div class="search-container">
         <input id="searchInput" class="search-input" type="search" placeholder="Search for a Manga…" autocomplete="off" />
       </div>
@@ -216,16 +193,13 @@
       <div id="chips" class="chips"></div>
     </section>
 
-    <!-- Filtri -->
     <section class="panel block-gap">
       <div class="filters-bar" id="filtersBar" aria-label="Filters">
-        <!-- Dropdowns via JS -->
         <button id="clearFilters" class="btn-clear" type="button">Reset filters</button>
       </div>
       <div class="center" id="resultsInfo"></div>
     </section>
 
-    <!-- Ranking -->
     <section class="panel block-gap" aria-label="Ranking">
       <h2>Ranking</h2>
       <div id="list" class="list"></div>
@@ -256,15 +230,11 @@
 
     // ---------- Helpers immagini (MAL l.jpg -> t.jpg + fallback) ----------
     const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
-
     const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
     const toThumbUrl = (url) => {
       const u = cleanImageUrl(url);
       if (!u) return '';
-      // solo CDN MAL e solo se termina con l.jpg
-      if (/^https?:\/\/cdn\.myanimelist\.net\/.+\/[0-9]+l\.jpg$/i.test(u)) {
-        return u.replace(/l\.jpg$/i, 't.jpg');
-      }
+      if (/^https?:\/\/cdn\.myanimelist\.net\/.+\/[0-9]+l\.jpg$/i.test(u)) return u.replace(/l\.jpg$/i, 't.jpg');
       return u;
     };
     function imgOnErrorFallback(imgEl, originalUrl) {
@@ -290,7 +260,9 @@
     const statusEl=document.getElementById('status');
 
     // Data/state
-    const CSV_URL='/data/manga_core.csv';
+    const CORE_URL='/data/manga_core.csv';
+    const D1_URL  ='/data/manga_text_part1.csv';
+    const D2_URL  ='/data/manga_text_part2.csv';
     const ITEMS_PER_PAGE=50;
     let rows=[], numericColumns=[];
     let currentPage=1, queryText='';
@@ -323,15 +295,11 @@
       return false;
     };
 
-    // Slug da MAL url (fallback id)
     const getMalSlug = (malUrl) => {
-      try {
-        const u = new URL(malUrl); const p = u.pathname.split('/').filter(Boolean);
-        return decodeURIComponent(p[p.length-1] || "");
-      } catch { return ""; }
+      try { const u=new URL(malUrl); const p=u.pathname.split('/').filter(Boolean); return decodeURIComponent(p[p.length-1]||""); }
+      catch { return ""; }
     };
 
-    // Dropdown builder
     function buildDropdown({key,label,type,options,withSearch=true,onSelect}){
       const wrap=document.createElement('div');
       wrap.className='filter-dropdown';
@@ -408,7 +376,6 @@
       if(count>0){ pill.style.display='inline-block'; pill.textContent=count; } else { pill.style.display='none'; pill.textContent='0'; }
     }
 
-    // Metric detection
     function detectNumericColumns(sample){
       const cands = Object.keys(sample).filter(k => toNum(sample[k]) || toNum(sample[k])===0);
       const preferred = ['score','scored_by','members','favorites','volumes','chapters','rank'];
@@ -506,7 +473,6 @@
         return b;
       };
 
-      // Prev
       paginationEl.appendChild(makeBtn('Prev', Math.max(1,current-1), false, current===1));
 
       const dots=()=>{const s=document.createElement('span'); s.textContent='…'; s.style.margin='0 4px'; paginationEl.appendChild(s);};
@@ -522,7 +488,6 @@
         paginationEl.appendChild(makeBtn(String(totalPages),totalPages,current===totalPages));
       }
 
-      // Next
       paginationEl.appendChild(makeBtn('Next', Math.min(totalPages,current+1), false, current===totalPages));
     }
 
@@ -541,7 +506,6 @@
     }
 
     function renderChipsAndList(filtered, page=1){
-      // ordina visivamente per metrica/ordine (il numero mostrato resta fisso su base globale)
       filtered.sort((a,b)=>{
         const av=toNum(a[currentMetric]), bv=toNum(b[currentMetric]);
         if(isNaN(av) && isNaN(bv)) return 0;
@@ -563,7 +527,6 @@
       updatePagination(totalPages, currentPage);
       updateURL(currentPage);
 
-      // JSON-LD (prime 10)
       const itemList = pageItems.slice(0,10).map((r,i)=>({
         "@type":"ListItem",
         "position": (globalRankMap.get(String(r.manga_id||'')) || (start+i+1)),
@@ -593,74 +556,100 @@
       return Math.max(1, isNaN(p)?1:p);
     }
 
-    // Boot
+    // ======== BOOT: carica e MERGE dei 3 CSV (per avere main_picture) ========
     window.addEventListener('DOMContentLoaded', ()=>{
-      // allineato al preload: CORS anonimo
-      fetch(CSV_URL, { mode:'cors', credentials:'omit' })
-        .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-        .then(text=>{
-          const res=Papa.parse(text,{header:true,skipEmptyLines:true});
-          rows = res.data || [];
+      Promise.all([
+        fetch(CORE_URL, { mode:'cors', credentials:'omit' }).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+        fetch(D1_URL,   { mode:'cors', credentials:'omit' }).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+        fetch(D2_URL,   { mode:'cors', credentials:'omit' }).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      ])
+      .then(([coreCsv, d1Csv, d2Csv])=>{
+        const core = Papa.parse(coreCsv,{header:true,skipEmptyLines:true}).data.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d1   = Papa.parse(d1Csv,  {header:true,skipEmptyLines:true}).data.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d2   = Papa.parse(d2Csv,  {header:true,skipEmptyLines:true}).data.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
 
-          rows.forEach(collectGenres);
+        // Mappa dettagli (preferisce valore più lungo/ricco)
+        const detailsMap = new Map();
+        for(const row of [...d1, ...d2]){
+          if(!row.manga_id) continue;
+          const prev = detailsMap.get(row.manga_id) || {};
+          const merged = { ...prev };
+          for(const k of Object.keys(row)){
+            const nv=row[k], ov=prev[k];
+            merged[k] = (!ov || String(nv||'').length > String(ov||'').length) ? nv : ov;
+          }
+          detailsMap.set(row.manga_id, merged);
+        }
 
-          const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
-          numericColumns = sample ? detectNumericColumns(sample) : ['score'];
-
-          // Dropdowns
-          buildDropdown({
-            key:'genres',
-            label:'Genres',
-            type:'multi',
-            options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
-            withSearch:true,
-            onSelect:(inp)=>{
-              if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
-              updateCountBadge('genres', selectedGenres.size);
-              applyAndRender(1);
-            }
-          });
-
-          const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
-          buildDropdown({
-            key:'metric',
-            label:`Metric: ${currentMetric}`,
-            type:'single',
-            options:metricOptions,
-            withSearch:true,
-            onSelect:(inp)=>{
-              currentMetric = inp.value;
-              const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
-              applyAndRender(1);
-            }
-          });
-
-          const orderOptions = [
-            {label:'Highest first', value:'desc', selected: currentOrder==='desc'},
-            {label:'Lowest first',  value:'asc',  selected: currentOrder==='asc' }
-          ];
-          buildDropdown({
-            key:'order',
-            label:`Order: ${currentOrder}`,
-            type:'single',
-            options:orderOptions,
-            withSearch:false,
-            onSelect:(inp)=>{
-              currentOrder = inp.value;
-              const labelEl=document.getElementById('btn-label-order'); if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
-              applyAndRender(1);
-            }
-          });
-
-          const startPage = hydrateFromURL();
-          applyAndRender(startPage);
-
-          dataRendered=true; tryHidePreloader(); statusEl.textContent='';
-        })
-        .catch(err=>{
-          statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
-          dataRendered=true; tryHidePreloader();
+        // Crea righe MERGE (core + details) così abbiamo main_picture/url ecc.
+        rows = core.map(c=>{
+          const det = detailsMap.get(c.manga_id) || {};
+          const merged = { ...c, ...det };
+          // normalizza alcune chiavi utili
+          merged.title = merged.title || merged.title_english || merged.title_japanese || 'Untitled';
+          merged.main_picture = merged.main_picture || '';
+          merged.genres = merged.genres || c.genres || '[]';
+          collectGenres(merged);
+          return merged;
         });
+
+        const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
+        numericColumns = sample ? detectNumericColumns(sample) : ['score'];
+
+        // Dropdowns
+        buildDropdown({
+          key:'genres',
+          label:'Genres',
+          type:'multi',
+          options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
+          withSearch:true,
+          onSelect:(inp)=>{
+            if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
+            updateCountBadge('genres', selectedGenres.size);
+            applyAndRender(1);
+          }
+        });
+
+        const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
+        buildDropdown({
+          key:'metric',
+          label:`Metric: ${currentMetric}`,
+          type:'single',
+          options:metricOptions,
+          withSearch:true,
+          onSelect:(inp)=>{
+            currentMetric = inp.value;
+            const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
+            applyAndRender(1);
+          }
+        });
+
+        const orderOptions = [
+          {label:'Highest first', value:'desc', selected: currentOrder==='desc'},
+          {label:'Lowest first',  value:'asc',  selected: currentOrder==='asc' }
+        ];
+        buildDropdown({
+          key:'order',
+          label:`Order: ${currentOrder}`,
+          type:'single',
+          options:orderOptions,
+          withSearch:false,
+          onSelect:(inp)=>{
+            currentOrder = inp.value;
+            const labelEl=document.getElementById('btn-label-order'); if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
+            applyAndRender(1);
+          }
+        });
+
+        const startPage = hydrateFromURL();
+        applyAndRender(startPage);
+
+        dataRendered=true; tryHidePreloader(); statusEl.textContent='';
+      })
+      .catch(err=>{
+        statusEl.innerHTML = `<span class="error">Load error: ${esc(err?.message||err)}</span>`;
+        dataRendered=true; tryHidePreloader();
+      });
 
       // Search live
       searchInput.addEventListener('input', debounce(()=>{
