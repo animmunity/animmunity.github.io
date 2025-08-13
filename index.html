@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AniMMUnity — Home (Alt Light)</title>
-  <meta name="description" content="AniMMUnity: light, minimal home with fast search, clean tiles, latest blog posts and random anime/manga showcases."/>
+  <title>AniMMUnity — Home · Neo Light</title>
+  <meta name="description" content="AniMMUnity: ultra-clean, futuristic light theme with fast search, curated tiles, latest blog posts and random showcases."/>
   <meta name="theme-color" content="#ffffff" />
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,93 +13,113 @@
   <link rel="stylesheet" href="/styles.css" />
 
   <style>
-    /* =====================
-       Alt Light Theme — "Paper Minimal"
-       Clean borders, soft shadows, roomy spacing
-       ===================== */
+    /* =============================
+       NEO LIGHT — Futuristic minimal
+       airy layout, mesh gradient bg,
+       glass cards, subtle motion
+       ============================= */
     :root{
-      --bg: #fafafa;         /* page background */
-      --ink: #101828;        /* main text */
-      --muted:#667085;       /* secondary text */
-      --panel:#ffffff;       /* surfaces */
-      --border:#e5e7eb;      /* borders */
-      --ring:#dbeafe;        /* focus ring */
-      --accent:#2563eb;      /* primary */
-      --accent-ink:#ffffff;  /* on primary */
-      --accent-soft:#eff6ff; /* soft background */
+      /* Base palette */
+      --bg: #fbfbfe;             /* page background */
+      --ink: #0b1220;            /* main text */
+      --muted:#667085;           /* secondary text */
+      --panel:#ffffff;           /* surfaces */
+      --border:#e6e8ef;          /* borders */
+      --ring:#dbeafe;            /* focus ring */
+      --accent:#2563eb;          /* primary */
+      --accent-ink:#ffffff;      /* on primary */
+      --accent-soft:#eef2ff;     /* soft background */
 
+      /* Radii + Shadow */
       --r-2xl: 28px;
       --r-xl: 20px;
       --r-lg: 16px;
       --r-md: 12px;
-      --shadow-1: 0 8px 24px rgba(16,24,40,.06);
-      --shadow-2: 0 10px 32px rgba(16,24,40,.08);
+      --shadow-1: 0 10px 30px rgba(11,18,32,.07);
+      --shadow-2: 0 12px 40px rgba(11,18,32,.10);
+
+      /* Accents for tinted tiles */
+      --rose:#0ea5e9;   --rose-soft:#e0f2fe;   --rose-brd:#cfe8ff;
+      --lilac:#7c3aed;  --lilac-soft:#ede9fe;  --lilac-brd:#e6e1ff;
+      --aqua:#10b981;   --aqua-soft:#e7f7f0;   --aqua-brd:#d6f1e6;
+      --peach:#f59e0b;  --peach-soft:#fff4e5;  --peach-brd:#ffe6c7;
     }
 
     html,body{height:100%}
     body{
-      background:var(--bg);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, #ffffff 0%, #f7f8ff 45%, #f2f6ff 100%),
+        var(--bg);
       color:var(--ink);
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
       line-height:1.5;
       -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
-    .shell{max-width:1200px;margin:0 auto;padding:20px}
+    .shell{max-width:1180px;margin:0 auto;padding:20px}
 
-    /* ======= Header Slot ======= */
+    /* Header/Footer slots keep original includes */
     .header-wrap, .footer-wrap{isolation:isolate}
 
-    /* ======= Hero Search ======= */
-    .hero{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);padding:24px;margin-top:16px}
-    .hero-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
-    .hero-title{font-size:clamp(1.25rem, 1.2vw + 1rem, 1.8rem);font-weight:800;letter-spacing:-.015em;margin:0}
+    /* ======= HERO (Command-Search) ======= */
+    .hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#fff,rgba(255,255,255,.9));border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);padding:26px;margin-top:18px}
+    .orb{position:absolute;inset:auto -120px -120px auto;width:280px;height:280px;background:radial-gradient(circle at 30% 30%, rgba(37,99,235,.22), rgba(16,185,129,.18) 55%, transparent 60%);filter:blur(28px);pointer-events:none}
+    .hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
+    .hero h1{margin:0;font-size:clamp(1.3rem,1.4vw + 1rem,2rem);font-weight:800;letter-spacing:-.015em}
+    .tagline{margin:0;color:var(--muted)}
+
     .searchbar{display:flex;gap:10px;align-items:center}
-    .input{flex:1;min-width:180px;height:46px;padding:0 46px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff;outline:none;font-size:1rem;transition:box-shadow .15s ease, border-color .15s ease;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');background-repeat:no-repeat;background-position:16px center}
-    .input:focus{border-color:#bfdbfe;box-shadow:0 0 0 4px var(--ring)}
-    .btn{height:46px;padding:0 16px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer;transition:transform .06s ease, box-shadow .15s ease, background .15s ease}
+    .input{flex:1;min-width:200px;height:50px;padding:0 16px 0 48px;border-radius:14px;border:1px solid var(--border);background:#fff;outline:none;font-size:1.02rem;transition:box-shadow .15s ease, border-color .15s ease;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');background-repeat:no-repeat;background-position:16px center}
+    .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 4px var(--ring)}
+    .btn{height:50px;padding:0 18px;border-radius:14px;border:1px solid var(--border);background:#fff;font-weight:800;cursor:pointer;transition:transform .06s ease, box-shadow .15s ease, background .15s ease}
     .btn:active{transform:translateY(1px)}
-    .btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 8px 18px rgba(37,99,235,.27)}
+    .btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 10px 22px rgba(37,99,235,.28)}
     .btn-primary:hover{filter:brightness(.98)}
     .btn-ghost:hover{background:#f8fafc}
-    .btn-icon{width:46px;display:inline-flex;align-items:center;justify-content:center}
+    .btn-icon{width:50px;display:inline-flex;align-items:center;justify-content:center}
 
-    /* ======= Tiles ======= */
+    /* ======= TILES (Glass-tinted) ======= */
     .tiles{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
-    .tile{grid-column:span 6;background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-1);padding:18px;text-decoration:none;color:inherit;display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;overflow:hidden}
+    .tile{grid-column:span 6;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px;border-radius:22px;border:1px solid var(--border);background:linear-gradient(180deg,#ffffff 30%, #fbfbff 100%);box-shadow:var(--shadow-1);text-decoration:none;color:inherit;position:relative;overflow:hidden}
     .tile:hover{box-shadow:var(--shadow-2)}
     .tile .txt{display:flex;flex-direction:column}
-    .tile .k{font-weight:800;font-size:1.3rem;letter-spacing:-.01em}
+    .tile .k{font-weight:900;font-size:clamp(1.1rem,1vw + .6rem,1.5rem);letter-spacing:-.02em}
     .tile small{color:var(--muted);font-weight:600}
-    .tile .tag{font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:999px;background:var(--accent-soft);border:1px solid #e0e7ff}
-    .tile::after{content:"→";font-weight:800;opacity:.22}
+    .chip{font-size:.78rem;font-weight:800;padding:7px 12px;border-radius:999px;background:var(--accent-soft);border:1px solid #e0e7ff}
+    .tile::after{content:"";position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(45deg);width:10px;height:10px;border-right:3px solid currentColor;border-top:3px solid currentColor;opacity:.22}
+    .rose{background:linear-gradient(180deg,#fff, var(--rose-soft)); border-color: var(--rose-brd)}
+    .lilac{background:linear-gradient(180deg,#fff, var(--lilac-soft)); border-color: var(--lilac-brd)}
+    .aqua{ background:linear-gradient(180deg,#fff, var(--aqua-soft));  border-color: var(--aqua-brd)}
+    .peach{background:linear-gradient(180deg,#fff, var(--peach-soft)); border-color: var(--peach-brd)}
     @media (max-width: 920px){.tile{grid-column:span 12}}
 
-    /* ======= Sections ======= */
+    /* ======= SECTIONS ======= */
     .section{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-1);padding:16px;margin-top:16px}
     .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .section-h h2{margin:0;font-size:1.1rem;font-weight:800;letter-spacing:-.01em}
-    .section-h a{font-weight:700;text-decoration:none;color:var(--accent)}
+    .section-h h2{margin:0;font-size:1.08rem;font-weight:900;letter-spacing:-.01em}
+    .section-h a{font-weight:800;text-decoration:none;color:var(--accent)}
 
-    /* ======= Rails (cards) ======= */
+    /* ======= RAILS ======= */
     .rail{display:flex;gap:10px;overflow:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px}
     .rail::-webkit-scrollbar{height:6px}
     .rail::-webkit-scrollbar-thumb{background:#00000033;border-radius:50px}
-    .card-mini{width:146px;flex:0 0 146px;scroll-snap-align:start;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-1);overflow:hidden}
-    .ph{width:100%;height:190px;background:#eef2ff}
-    .card-mini img{width:100%;height:190px;object-fit:cover;background:#eef2ff}
-    .card-mini .t{padding:8px 9px;font-size:.92rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* ======= Blog ======= */
+    .card-mini{width:146px;flex:0 0 146px;scroll-snap-align:start;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden}
+    .card-mini img{width:100%;height:190px;object-fit:cover;background:#eef2ff}
+    .card-mini .t{padding:8px 10px;font-size:.92rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* ======= BLOG ======= */
     .blog-grid{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
-    .blog-card{flex:0 0 268px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;display:flex;flex-direction:column}
+    .blog-card{flex:0 0 268px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-1);overflow:hidden;display:flex;flex-direction:column}
     .blog-card .cover{width:100%;height:150px;object-fit:cover;background:#eef2ff}
     .blog-card .body{padding:10px}
-    .blog-card .title{font-weight:800;font-size:1rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .blog-card .title{font-weight:900;font-size:1rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .blog-card .meta{color:var(--muted);font-size:.85rem}
     .center{text-align:center;color:var(--muted)}
 
-    /* Utility */
-    .hidden{display:none}
+    /* Motion preferences */
+    @media (prefers-reduced-motion: reduce){
+      *{animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+    }
   </style>
 </head>
 <body>
@@ -109,48 +129,49 @@
   <main class="shell">
     <!-- HERO / SEARCH -->
     <section class="hero" aria-label="Search">
-      <div class="hero-head">
-        <h1 class="hero-title">Find your next Anime / Manga</h1>
+      <div class="orb" aria-hidden="true"></div>
+      <div class="hero-top">
+        <h1>Discover, filter, and rank your next watch & read</h1>
         <div class="searchbar" role="search">
           <input id="q" class="input" type="search" placeholder="Search a title…" autocomplete="off" aria-label="Search by title" />
-          <button id="clear-q" class="btn btn-ghost btn-icon hidden" title="Clear" aria-label="Clear">
+          <button id="clear-q" class="btn btn-ghost btn-icon" title="Clear" aria-label="Clear" style="display:none">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <button id="search-go" class="btn btn-primary" aria-label="Search">Search</button>
         </div>
       </div>
-      <p style="margin:0;color:var(--muted)">Clean lists, fixed top rankings, and fresh articles from our blog.</p>
+      <p class="tagline">Blazing-fast lists, fixed global rankings, and fresh articles from our blog.</p>
     </section>
 
-    <!-- MAIN TILES -->
+    <!-- TILES (new visual) -->
     <section class="tiles" aria-label="Main sections">
-      <a class="tile" href="/anime-list.html">
+      <a class="tile rose" href="/anime-list.html">
         <div class="txt">
           <span class="k">Anime List</span>
           <small>Genres, themes & filters</small>
         </div>
-        <span class="tag" aria-hidden="true">Browse</span>
+        <span class="chip" aria-hidden="true">Browse</span>
       </a>
-      <a class="tile" href="/manga-list.html">
+      <a class="tile lilac" href="/manga-list.html">
         <div class="txt">
           <span class="k">Manga List</span>
           <small>Demographics & genres</small>
         </div>
-        <span class="tag" aria-hidden="true">Explore</span>
+        <span class="chip" aria-hidden="true">Explore</span>
       </a>
-      <a class="tile" href="/top-anime.html">
+      <a class="tile aqua" href="/top-anime.html">
         <div class="txt">
           <span class="k">Top Anime</span>
           <small>Scores, members, rank</small>
         </div>
-        <span class="tag" aria-hidden="true">Charts</span>
+        <span class="chip" aria-hidden="true">Charts</span>
       </a>
-      <a class="tile" href="/top-manga.html">
+      <a class="tile peach" href="/top-manga.html">
         <div class="txt">
           <span class="k">Top Manga</span>
           <small>Fixed global ranks</small>
         </div>
-        <span class="tag" aria-hidden="true">Charts</span>
+        <span class="chip" aria-hidden="true">Charts</span>
       </a>
     </section>
 
@@ -187,15 +208,14 @@
   <div class="footer-wrap" id="footer-placeholder"></div>
 
   <script>
-    // ========== Header / Footer includes (non-blocking) ==========
+    // ===== Header / Footer include (non-blocking) =====
     fetch('header.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('header-placeholder').innerHTML=t||''}).catch(()=>{});
     fetch('footer.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('footer-placeholder').innerHTML=t||''}).catch(()=>{});
 
-    // ========== Search logic (unchanged behavior) ==========
+    // ===== Search logic (same behavior) =====
     const q = document.getElementById('q');
     const go = document.getElementById('search-go');
     const clearBtn = document.getElementById('clear-q');
-
     function runSearch(){
       const val = (q.value || '').trim();
       const base = 'anime-list.html';
@@ -203,12 +223,12 @@
     }
     q.addEventListener('keydown', e => { if(e.key === 'Enter') runSearch(); });
     go.addEventListener('click', runSearch);
-    q.addEventListener('input', ()=>{ clearBtn.classList.toggle('hidden', !q.value); });
-    clearBtn.addEventListener('click', ()=>{ q.value=''; q.focus(); clearBtn.classList.add('hidden'); });
+    q.addEventListener('input', ()=>{ clearBtn.style.display = q.value ? 'inline-flex' : 'none'; });
+    clearBtn.addEventListener('click', ()=>{ q.value=''; q.focus(); clearBtn.style.display='none'; });
 
-    // ========== Helpers ==========
+    // ===== Helpers =====
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
-    const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const clean=(u)=> (u? String(u).trim().replace(/^\"+|\"+$/g,'') : '');
     const toHQ=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'$1') : '';};
     const toThumb=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'t$1') : '';};
@@ -231,7 +251,7 @@
     };
     const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // CSV loader
+    // ===== CSV loader =====
     function loadCSV(url){
       return fetch(url,{mode:'cors',credentials:'omit'})
         .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
@@ -254,7 +274,7 @@
       });
     }
 
-    // ========== Data boot ==========
+    // ===== Data boot =====
     document.addEventListener('DOMContentLoaded', ()=>{
       // Manga (merge parts)
       Promise.allSettled([
@@ -321,7 +341,7 @@
               const a=document.createElement('a');
               a.className='blog-card';
               a.href=link; a.target='_blank'; a.rel='noopener';
-              a.innerHTML=`<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
+              a.innerHTML=`<img class=\"cover\" src=\"${esc(thumb)}\" alt=\"${esc(title)}\"><div class=\"body\"><h3 class=\"title\">${esc(title)}</h3><div class=\"meta\">${esc(nice)}</div></div>`;
               rail.appendChild(a);
             });
             status.textContent='';
