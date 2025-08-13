@@ -1,19 +1,15 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AniMMUnity — Home</title>
-  <meta name="description" content="Esplora AniMMUnity: ricerca veloce, filtri puliti e classifiche per Anime & Manga. Vetrine casuali con 20 anteprime ciascuna."/>
+  <meta name="description" content="Discover AniMMUnity: fast search, clean filters and rankings for Anime & Manga. Random showcases with 20 covers each, plus latest blog posts."/>
   <meta name="theme-color" content="#ffffff" />
-  <link id="canonicalLink" rel="canonical" href="/" />
 
-  <!-- Font + PapaParse -->
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-
-  <!-- Facoltativo: tuo CSS globale -->
   <link rel="stylesheet" href="/styles.css" />
 
   <style>
@@ -21,394 +17,259 @@
       --bg:#f6f7fb; --ink:#0f172a; --muted:#5b6478; --panel:#ffffff; --border:#e6e9f2; --soft:#eef1f8;
       --r-xl:28px; --r-lg:18px; --r-md:14px; --r-sm:10px;
       --shadow-1:0 10px 30px rgba(17,24,39,.06); --shadow-2:0 16px 50px rgba(17,24,39,.08);
-
-      /* Pastelli armonici per bottoni/tile */
-      --pastel-rose:#ffe1e9;   --rose-ink:#a83b57;
-      --pastel-lilac:#ece7ff;  --lilac-ink:#4f46e5;
-      --pastel-aqua:#ddf6f6;   --aqua-ink:#0e807a;
-      --pastel-peach:#ffe9d6;  --peach-ink:#b1642e;
+      /* Pastel solid buttons */
+      --rose:#ffe1e9;  --rose-ink:#a83b57;
+      --lilac:#ece7ff; --lilac-ink:#4f46e5;
+      --aqua:#ddf6f6;  --aqua-ink:#0e807a;
+      --peach:#ffe9d6; --peach-ink:#b1642e;
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--ink); background:
-        radial-gradient(1100px 700px at 120% -10%, rgba(0,0,0,.04), transparent 60%),
-        radial-gradient(900px 600px at -10% 110%, rgba(0,0,0,.04), transparent 60%),
-        var(--bg);
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-    }
+    body{margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--ink); background:var(--bg)}
+    img{max-width:100%; display:block; height:auto}
     a{color:inherit; text-decoration:none}
-    img{max-width:100%; height:auto; display:block}
+
+    /* Shell */
     .shell{max-width:1200px; margin:28px auto; padding:0 18px}
 
-    /* Preloader */
-    #preloader{position:fixed; inset:0; background:#fff; display:grid; place-items:center; z-index:9999; transition:opacity .35s ease}
-    .spinner{width:44px; height:44px; border-radius:50%; border:4px solid #e3e3e3; border-top-color:#4f46e5; animation:spin 1s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Header/Footer placeholders (you already have header.html/footer.html) */
+    header, footer{ background:#fff; border-bottom:1px solid var(--border) }
 
-    /* Pannelli */
-    .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1);}
-
-    /* ===== HERO ===== */
-    .hero{position:relative; overflow:hidden; border-radius:var(--r-xl); padding:24px; box-shadow:var(--shadow-2); background:linear-gradient(180deg,#ffffff,#f9fbff)}
-    .hero-grid{display:grid; grid-template-columns: 1.15fr .85fr; gap:18px; align-items:center}
-    .hero h1{margin:0 0 8px; font-weight:800; letter-spacing:-.02em; font-size:clamp(1.7rem,2.4vw + 1rem,2.6rem)}
-    .hero p{margin:0; color:var(--muted); font-size:clamp(.95rem,1.2vw + .3rem,1.05rem)}
+    /* Hero */
+    .hero{background:linear-gradient(180deg,#fff,#fafbff); border:1px solid var(--border); border-radius:var(--r-xl); box-shadow:var(--shadow-2); padding:24px}
+    .hero h1{margin:0 0 8px; font-size:clamp(1.7rem,2.4vw + 1rem,2.6rem); font-weight:800; letter-spacing:-.02em}
+    .hero p{margin:0; color:var(--muted)}
     .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
     .chip{background:#eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius:999px; font-size:.8rem; font-weight:800}
 
-    .search{display:flex; gap:8px; align-items:center; background:#fff; border:1px solid var(--border); border-radius:14px; padding:8px; box-shadow:0 4px 16px rgba(17,24,39,.06); margin-top:12px}
-    .seg{display:inline-flex; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+    /* Search block (separate, above buttons) */
+    .search-panel{margin-top:14px; display:flex; gap:10px; align-items:center; background:#fff; border:1px solid var(--border); border-radius:14px; padding:10px; box-shadow:var(--shadow-1)}
+    .seg{display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden}
     .seg button{appearance:none; background:#fff; border:0; padding:8px 12px; cursor:pointer; font-weight:700; color:#475069}
     .seg button[aria-pressed="true"]{background:#eef2ff; color:#3730a3}
-    .search input{flex:1; padding:.85rem 1rem; border:1px solid #dfe4f5; border-radius:10px; font-size:16px}
-    .search input:focus{outline:none; border-color:#cfd6f2; box-shadow:0 0 0 3px rgba(79,70,229,.12)}
-    .search .go{padding:.85rem 1rem; border-radius:10px; border:1px solid #dfe4f5; background:linear-gradient(180deg,#fff,#f4f6fb); font-weight:800; cursor:pointer}
+    .search-input{flex:1; padding:.85rem 1rem; border:1px solid #dfe4f5; border-radius:10px; font-size:16px}
+    .search-input:focus{outline:none; border-color:#cfd6f2; box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+    .search-go{padding:.85rem 1rem; border-radius:10px; border:1px solid #dfe4f5; background:#fff; font-weight:800; cursor:pointer}
 
-    /* ===== TILES (bottoni pastello) ===== */
+    /* Tiles (solid pastel, no gradients) */
     .tiles{display:grid; grid-template-columns:repeat(12,1fr); gap:14px; margin-top:18px}
-    .tile{grid-column:span 6; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:22px; border-radius:22px; position:relative; overflow:hidden; transition:transform .15s ease, box-shadow .15s ease}
+    .tile{grid-column:span 6; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:22px; border-radius:22px; box-shadow:var(--shadow-1); border:1px solid var(--border); transition:transform .15s ease}
     .tile:hover{transform:translateY(-2px)}
     .tile .label{font-size:clamp(1.15rem,1vw + .7rem,1.5rem); font-weight:900; letter-spacing:-.02em}
     .tile small{display:block; color:#334155; opacity:.9; font-weight:600}
-    .tile .icon{width:54px; height:54px; flex:0 0 54px; opacity:.9}
-    .tile .arrow{position:absolute; right:18px; bottom:16px; width:28px; height:28px; opacity:.7}
-    .tile.rose {background:linear-gradient(180deg,var(--pastel-rose),#fff);   color:var(--rose-ink)}
-    .tile.lilac{background:linear-gradient(180deg,var(--pastel-lilac),#fff);  color:var(--lilac-ink)}
-    .tile.aqua {background:linear-gradient(180deg,var(--pastel-aqua),#fff);   color:var(--aqua-ink)}
-    .tile.peach{background:linear-gradient(180deg,var(--pastel-peach),#fff);  color:var(--peach-ink)}
+    .tile.rose {background:var(--rose);  color:var(--rose-ink)}
+    .tile.lilac{background:var(--lilac); color:var(--lilac-ink)}
+    .tile.aqua {background:var(--aqua);  color:var(--aqua-ink)}
+    .tile.peach{background:var(--peach); color:var(--peach-ink)}
     @media (max-width: 920px){ .tile{grid-column:span 12} }
 
-    /* ===== CAROUSEL (vetrine) ===== */
-    .section-title{display:flex; align-items:center; justify-content:space-between; margin:22px 0 10px}
-    .carousel{position:relative;}
+    /* Section title */
+    .section{background:var(--panel); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-1); padding:16px; margin-top:16px}
+    .section-title{display:flex; align-items:center; justify-content:space-between; margin:6px 0 10px}
+
+    /* Carousel */
+    .carousel{position:relative}
     .rail{display:flex; gap:10px; overflow:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding-bottom:6px}
     .rail::-webkit-scrollbar{height:6px}
     .rail::-webkit-scrollbar-thumb{background:#00000033; border-radius:50px}
-    .cbtn{position:absolute; top:50%; transform:translateY(-50%); z-index:5; border:1px solid var(--border); background:#fff; width:38px; height:38px; border-radius:999px; display:grid; place-items:center; box-shadow:var(--shadow-1); cursor:pointer}
-    .cbtn[disabled]{opacity:.5; cursor:not-allowed}
-    .cbtn.prev{left:-6px}
-    .cbtn.next{right:-6px}
-
     .card-mini{width:140px; flex:0 0 140px; scroll-snap-align:start; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden}
     .card-mini img{width:100%; height:186px; object-fit:cover; background:#e9ecf6}
     .card-mini .t{padding:8px; font-size:.9rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
-    /* ===== Blog ===== */
-    .blog-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-    .blog-card{grid-column:span 4;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-1);overflow:hidden;display:flex;flex-direction:column}
-    .blog-card .cover{width:100%;height:160px;object-fit:cover;background:#e9ecf6}
-    .blog-card .body{padding:12px}
-    .blog-card .title{font-weight:800;font-size:1rem;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-    .blog-card .meta{color:var(--muted);font-size:.85rem}
-    @media(max-width:920px){.blog-card{grid-column:span 6}}
-    @media(max-width:620px){.blog-card{grid-column:span 12}}
+    /* Blog cards */
+    .blog-grid{display:flex; gap:12px; overflow:auto; padding-bottom:6px}
+    .blog-card{flex:0 0 260px; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-1); overflow:hidden; display:flex; flex-direction:column}
+    .blog-card .cover{width:100%; height:150px; object-fit:cover; background:#e9ecf6}
+    .blog-card .body{padding:10px}
+    .blog-card .title{font-weight:800; font-size:1rem; margin:0 0 6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+    .blog-card .meta{color:var(--muted); font-size:.85rem}
 
-    /* Footer spacer */
-    .spacer{height:24px}
+    .center{ text-align:center; color:var(--muted) }
   </style>
 </head>
 <body>
-  <!-- Preloader -->
-  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
-
-  <!-- Header -->
+  <!-- Header slots -->
   <div id="header-placeholder"></div>
 
   <main class="shell">
     <!-- HERO -->
-    <section class="hero panel" aria-label="Intro">
-      <div class="hero-grid">
-        <div>
-          <h1>AniMMUnity</h1>
-          <p>Scopri, filtra e classifica Anime & Manga con un'interfaccia moderna, pulita e veloce.</p>
-          <div class="chips">
-            <span class="chip">Ricerca istantanea</span>
-            <span class="chip">Filtri multipli</span>
-            <span class="chip">Top list affidabili</span>
-          </div>
+    <section class="hero" aria-label="Intro">
+      <h1>AniMMUnity</h1>
+      <p>Clean lists and powerful filters for Anime & Manga. Explore top titles, random showcases, and fresh articles.</p>
+      <div class="chips">
+        <span class="chip">Instant search</span>
+        <span class="chip">Multi filters</span>
+        <span class="chip">Modern UI</span>
+      </div>
 
-          <div class="search" role="search">
-            <div class="seg" role="tablist" aria-label="Ambito di ricerca">
-              <button type="button" id="tab-anime" role="tab" aria-pressed="true" aria-controls="searchInput">Anime</button>
-              <button type="button" id="tab-manga" role="tab" aria-pressed="false" aria-controls="searchInput">Manga</button>
-            </div>
-            <input id="searchInput" type="search" placeholder="Cerca un titolo…" autocomplete="off" aria-label="Cerca" />
-            <button class="go" id="searchGo" type="button">Cerca</button>
-          </div>
+      <!-- Search block ABOVE the buttons -->
+      <div class="search-panel" role="search" aria-label="Global search">
+        <div class="seg" role="tablist" aria-label="Search scope">
+          <button type="button" id="tab-anime" role="tab" aria-pressed="true" aria-controls="q">Anime</button>
+          <button type="button" id="tab-manga" role="tab" aria-pressed="false" aria-controls="q">Manga</button>
         </div>
-
-        <!-- Mini dashboard a colori -->
-        <div class="panel" style="display:grid;place-items:center; padding:14px; border-radius:20px">
-          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;width:100%;max-width:520px">
-            <a class="tile rose"  style="grid-column:span 3; padding:16px" href="/anime-list.html"><div class="label">Anime</div></a>
-            <a class="tile lilac" style="grid-column:span 3; padding:16px" href="/manga-list.html"><div class="label">Manga</div></a>
-            <a class="tile aqua"  style="grid-column:span 4; padding:16px" href="/top-anime.html"><div class="label">Top Anime</div></a>
-            <a class="tile peach" style="grid-column:span 2; padding:16px" href="/top-manga.html"><div class="label">Top Manga</div></a>
-          </div>
-        </div>
+        <input id="q" class="search-input" type="search" placeholder="Search a title…" autocomplete="off" />
+        <button id="go" class="search-go" type="button">Search</button>
       </div>
     </section>
 
-    <!-- TILES PRINCIPALI -->
-    <section class="tiles" aria-label="Sezioni principali">
+    <!-- Main tiles (solid pastel buttons) -->
+    <section class="tiles" aria-label="Main sections">
       <a class="tile rose" href="/anime-list.html">
         <div>
           <div class="label">Anime List</div>
-          <small>Generi, temi e altro</small>
+          <small>Genres, themes & more</small>
         </div>
-        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
       <a class="tile lilac" href="/manga-list.html">
         <div>
           <div class="label">Manga List</div>
-          <small>Demografie e generi</small>
+          <small>Demographics & genres</small>
         </div>
-        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 5h10a3 3 0 013 3v11H7a3 3 0 01-3-3V5z" stroke="currentColor" stroke-width="2"/><path d="M17 8h3a2 2 0 012 2v9h-5" stroke="currentColor" stroke-width="2"/></svg>
-        <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
       <a class="tile aqua" href="/top-anime.html">
         <div>
           <div class="label">Top Anime</div>
-          <small>Score, members e altro</small>
+          <small>Scores, members, rank</small>
         </div>
-        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M8 21l4-2 4 2V3H8v18z" stroke="currentColor" stroke-width="2"/></svg>
-        <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
       <a class="tile peach" href="/top-manga.html">
         <div>
           <div class="label">Top Manga</div>
-          <small>Rank globali per metrica</small>
+          <small>Fixed global ranks</small>
         </div>
-        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 17.27L18.18 21 16.54 13.97 22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21z" stroke="currentColor" stroke-width="2"/></svg>
-        <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </a>
     </section>
 
-    <!-- VETRINA: Anime (20 random) -->
-    <section class="panel" style="margin-top:18px" aria-label="Vetrina Anime">
+    <!-- BLOG first -->
+    <section class="section" aria-label="Latest blog posts">
       <div class="section-title">
-        <h2 style="margin:0">Vetrina Anime</h2>
-        <a href="/anime-list.html">vedi tutti →</a>
+        <h2 style="margin:0">Latest articles</h2>
+        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a>
+      </div>
+      <div id="blog-rail" class="blog-grid"></div>
+      <div id="blog-status" class="center" style="padding:10px"></div>
+    </section>
+
+    <!-- Anime showcase -->
+    <section class="section" aria-label="Anime showcase">
+      <div class="section-title">
+        <h2 style="margin:0">Anime showcase</h2>
+        <a href="/anime-list.html">see all →</a>
       </div>
       <div class="carousel">
-        <button class="cbtn prev" id="an-prev" aria-label="Scorri indietro" disabled>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-        <div class="rail" id="anime-rail" role="listbox" aria-label="Anime showcase"></div>
-        <button class="cbtn next" id="an-next" aria-label="Scorri avanti">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
+        <div id="anime-rail" class="rail" role="listbox" aria-label="Anime covers"></div>
       </div>
     </section>
 
-    <!-- ULTIMI ARTICOLI (Blogger) -->
-    <section class="panel" style="margin-top:14px" aria-label="Ultimi articoli dal blog">
+    <!-- Manga showcase -->
+    <section class="section" aria-label="Manga showcase">
       <div class="section-title">
-        <h2 style="margin:0">Ultimi articoli</h2>
-        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">vai al blog →</a>
-      </div>
-      <div id="blog-list" class="blog-grid"></div>
-      <div id="blog-status" class="center" style="padding:10px;color:#5b6478"></div>
-    </section>
-
-    <!-- VETRINA: Manga (20 random) -->
-    <section class="panel" style="margin-top:14px" aria-label="Vetrina Manga">
-      <div class="section-title">
-        <h2 style="margin:0">Vetrina Manga</h2>
-        <a href="/manga-list.html">vedi tutti →</a>
+        <h2 style="margin:0">Manga showcase</h2>
+        <a href="/manga-list.html">see all →</a>
       </div>
       <div class="carousel">
-        <button class="cbtn prev" id="mg-prev" aria-label="Scorri indietro" disabled>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-        <div class="rail" id="manga-rail" role="listbox" aria-label="Manga showcase"></div>
-        <button class="cbtn next" id="mg-next" aria-label="Scorri avanti">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
+        <div id="manga-rail" class="rail" role="listbox" aria-label="Manga covers"></div>
       </div>
     </section>
-
-    <div class="spacer"></div>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer slot -->
   <div id="footer-placeholder"></div>
 
   <script>
-    /* ===== Header/Footer non bloccanti ===== */
-    fetch('header.html').then(r=>r.ok?r.text():'').then(h=>{document.getElementById('header-placeholder').innerHTML=h||''}).catch(()=>{});
-    fetch('footer.html').then(r=>r.ok?r.text():'').then(f=>{document.getElementById('footer-placeholder').innerHTML=f||''}).catch(()=>{});
+    // Header / Footer include (non-blocking)
+    fetch('header.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('header-placeholder').innerHTML=t||''}).catch(()=>{});
+    fetch('footer.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('footer-placeholder').innerHTML=t||''}).catch(()=>{});
 
-    /* ===== Preloader lifecycle ===== */
-    let assetsLoaded=false, uiReady=false;
-    const hidePreloader=()=>{const p=document.getElementById('preloader'); if(!p) return; p.style.opacity='0'; p.style.pointerEvents='none'; setTimeout(()=>p.remove(),350)};
-    const tryHide=()=>{ if(assetsLoaded&&uiReady) hidePreloader(); };
-    window.addEventListener('load',()=>{assetsLoaded=true;tryHide()});
-    document.addEventListener('DOMContentLoaded',()=>{uiReady=true;tryHide(); setTimeout(hidePreloader,7000)});
-
-    /* ===== Search switcher ===== */
-    const tabAnime=document.getElementById('tab-anime');
-    const tabManga=document.getElementById('tab-manga');
-    const input=document.getElementById('searchInput');
-    const go=document.getElementById('searchGo');
+    // --- Small router for search ---
+    const tabA=document.getElementById('tab-anime');
+    const tabM=document.getElementById('tab-manga');
+    const q=document.getElementById('q');
+    const go=document.getElementById('go');
     let scope='anime';
-    function setScope(s){scope=s; tabAnime.setAttribute('aria-pressed', String(s==='anime')); tabManga.setAttribute('aria-pressed', String(s==='manga'));}
-    tabAnime.addEventListener('click',()=>setScope('anime'));
-    tabManga.addEventListener('click',()=>setScope('manga'));
-    function runSearch(){ const q=(input.value||'').trim(); const base= scope==='anime' ? 'anime-list.html' : 'manga-list.html'; const url = q? `${base}?q=${encodeURIComponent(q)}` : base; location.href=url; }
+    function setScope(s){scope=s; tabA.setAttribute('aria-pressed', String(s==='anime')); tabM.setAttribute('aria-pressed', String(s==='manga'));}
+    tabA.addEventListener('click',()=>setScope('anime'));
+    tabM.addEventListener('click',()=>setScope('manga'));
+    function runSearch(){ const val=(q.value||'').trim(); const base= scope==='anime' ? 'anime-list.html' : 'manga-list.html'; location.href = val? `${base}?q=${encodeURIComponent(val)}` : base; }
     go.addEventListener('click', runSearch);
-    input.addEventListener('keydown', e=>{ if(e.key==='Enter') runSearch(); });
+    q.addEventListener('keydown', e=>{ if(e.key==='Enter') runSearch(); });
 
-    /* ===== Utils ===== */
+    // --- Helpers ---
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
     const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-    const toHighResUrl = (url) => { const u=(url||'').trim().replace(/^"+|"+$/g,''); return u? u.replace(/l(\.(?:jpe?g|png))$/i,'$1') : ''; };
-    const toThumbUrl = (url) => { const u=(url||'').trim().replace(/^"+|"+$/g,''); if(!u) return ''; if(/l\.(?:jpe?g|png)$/i.test(u)) return u.replace(/l(\.(?:jpe?g|png))$/i,'t$1'); return u; };
-    function imgOnErrorSmart(imgEl, originalUrl){ const cur=imgEl.getAttribute('data-state')||'hq'; if(cur==='hq'){ const t=toThumbUrl(originalUrl); if(t && t!==imgEl.src){ imgEl.src=t; imgEl.setAttribute('data-state','thumb'); return; } } imgEl.src=PLACEHOLDER; imgEl.setAttribute('data-state','placeholder'); }
-    const getMalSlug=(malUrl)=>{ try{ const u=new URL(malUrl); const parts=u.pathname.split('/').filter(Boolean); return decodeURIComponent(parts[parts.length-1]||''); }catch{return'';} };
-    const buildHref=(row, type)=>{ const url=row.url||row.link||''; const slug = url? getMalSlug(url):''; const base = type==='anime' ? 'anime.html' : 'manga.html'; if(slug) return `${base}?slug=${encodeURIComponent(slug)}`; const id=String(row[ type==='anime' ? 'anime_id' : 'manga_id' ]||'').trim(); return id ? `${base}?id=${encodeURIComponent(id)}` : '#'; };
-    function shufflePick(arr, n){ const a=arr.slice(); for(let i=a.length-1;i>0;i++){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0, n); }
+    const clean=(u)=> (u? String(u).trim().replace(/^"+|"+$/g,'') : '');
+    const toHQ=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'$1') : '';};
+    const toThumb=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'t$1') : '';};
+    function imgOnErrorSmart(imgEl, original){ const cur=imgEl.getAttribute('data-state')||'hq'; if(cur==='hq'){ const t=toThumb(original); if(t && t!==imgEl.src){ imgEl.src=t; imgEl.setAttribute('data-state','thumb'); return; } } imgEl.src=PLACEHOLDER; imgEl.setAttribute('data-state','placeholder'); }
+    const slugFromMAL=(url)=>{ try{ const u=new URL(url); const p=u.pathname.split('/').filter(Boolean); return decodeURIComponent(p[p.length-1]||''); }catch{return'';} };
+    const buildHref=(row,type)=>{ const url=row.url||row.link||''; const slug=url? slugFromMAL(url):''; const base= type==='anime' ? 'anime.html' : 'manga.html'; if(slug) return `${base}?slug=${encodeURIComponent(slug)}`; const id=String(row[type==='anime'?'anime_id':'manga_id']||'').trim(); return id? `${base}?id=${encodeURIComponent(id)}` : '#'; };
+    const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    /* ===== Caroselli ===== */
-    function mountCarousel(railId, prevId, nextId){
-      const rail=document.getElementById(railId); const prev=document.getElementById(prevId); const next=document.getElementById(nextId); if(!rail||!prev||!next) return;
-      function sync(){ prev.disabled = rail.scrollLeft <= 4; next.disabled = (rail.scrollLeft + rail.clientWidth) >= (rail.scrollWidth - 4); }
-      prev.addEventListener('click', ()=>{ rail.scrollBy({left:-(rail.clientWidth*0.9), behavior:'smooth'}); setTimeout(sync, 240); });
-      next.addEventListener('click', ()=>{ rail.scrollBy({left:(rail.clientWidth*0.9), behavior:'smooth'}); setTimeout(sync, 240); });
-      rail.addEventListener('scroll', sync, {passive:true});
-      const ro=new ResizeObserver(sync); ro.observe(rail);
-      setTimeout(sync, 350);
+    // --- CSV loader ---
+    function loadCSV(url){
+      return fetch(url,{mode:'cors',credentials:'omit'})
+        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
+        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data);
     }
 
-    function renderShowcase(railId, rows, type){
+    function renderRail(railId, rows, type){
       const rail=document.getElementById(railId); if(!rail) return; rail.innerHTML='';
-      const picks = shufflePick(rows.filter(r=> (r.main_picture||'').trim()!==''), 20);
-      picks.forEach(r=>{
+      pick20(rows.filter(r=> (r.main_picture||'').trim()!=='')).forEach(r=>{
         const title = r.title || r.title_english || r.title_japanese || 'Untitled';
         const raw = r.main_picture || r.image_url || r.image || '';
-        const hq = toHighResUrl(raw) || toThumbUrl(raw) || PLACEHOLDER;
-        const a=document.createElement('a'); a.className='card-mini snap'; a.href=buildHref(r,type); a.setAttribute('role','option'); a.setAttribute('aria-label',title);
-        a.innerHTML = `
-          <img loading="lazy" decoding="async" src="${esc(hq)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}">
-          <div class="t" title="${esc(title)}">${esc(title)}</div>
-        `;
+        const src = toHQ(raw) || toThumb(raw) || PLACEHOLDER;
+        const a=document.createElement('a'); a.className='card-mini'; a.href=buildHref(r,type); a.setAttribute('role','option'); a.setAttribute('aria-label',title);
+        a.innerHTML=`<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>`;
         rail.appendChild(a);
       });
     }
 
-    /* ===== CSV loader ===== */
-    function parseCSV(text){
-      if(window.Papa){ return Papa.parse(text,{header:true,skipEmptyLines:true}).data; }
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if(!lines.length) return [];
-      const headers = lines[0].split(',');
-      return lines.slice(1).map(line=>{
-        const cols = line.split(',');
-        const o={};
-        headers.forEach((h,i)=>o[h.trim()]=cols[i]||'');
-        return o;
-      });
-    }
-    function loadCSV(url){
-      return fetch(url,{mode:'cors',credentials:'omit'})
-        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
-        .then(parseCSV);
-    }
-
-    /* ===== Caricamento dati ===== */
+    // --- Data boot ---
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Manga dataset
-      const M_CORE='data/manga_core.csv';
-      const M_D1  ='data/manga_text_part1.csv';
-      const M_D2  ='data/manga_text_part2.csv';
-      // Anime dataset (file singolo reale)
-      const A_CORE='data/anime.csv';
-
-      // Manga (merge preferendo stringhe più lunghe)
-      Promise.allSettled([ loadCSV(M_CORE), loadCSV(M_D1), loadCSV(M_D2) ]).then(parts=>{
-        const [coreP,d1P,d2P]=parts; if(coreP.status!=='fulfilled'){ return; }
+      // Manga (merge)
+      Promise.allSettled([
+        loadCSV('data/manga_core.csv'),
+        loadCSV('data/manga_text_part1.csv'),
+        loadCSV('data/manga_text_part2.csv')
+      ]).then(([coreP,d1P,d2P])=>{
+        if(coreP.status!=='fulfilled') return;
         const core=(coreP.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
         const d1=(d1P.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
         const d2=(d2P.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
-
-        const detailsMap = new Map();
-        [...d1, ...d2].forEach(row=>{
-          if(!row.manga_id) return;
-          const prev = detailsMap.get(row.manga_id) || {};
-          const merged = {...prev};
-          for(const k of Object.keys(row)){
-            const nv=row[k], ov=prev[k];
-            merged[k] = (!ov || String(nv||'').length > String(ov||'').length) ? nv : ov;
-          }
-          detailsMap.set(row.manga_id, merged);
-        });
-
-        const rows = core.map(c=>{
-          const det = detailsMap.get(c.manga_id) || {};
-          return {
-            ...c, ...det,
-            title: (c.title||det.title||c.title_english||det.title_english||'').trim() || 'Untitled',
-            main_picture: String(det.main_picture||c.main_picture||'').trim(),
-            url: det.url || c.url || ''
-          };
-        });
-        if(rows.length){
-          renderShowcase('manga-rail', rows, 'manga');
-          mountCarousel('manga-rail','mg-prev','mg-next');
-        }
+        const map=new Map();
+        [...d1,...d2].forEach(row=>{ if(!row.manga_id) return; const prev=map.get(row.manga_id)||{}; const merged={...prev}; for(const k of Object.keys(row)){ const nv=row[k], ov=prev[k]; merged[k]= (!ov || String(nv||'').length>String(ov||'').length)? nv:ov; } map.set(row.manga_id, merged); });
+        const rows = core.map(c=>{ const det=map.get(c.manga_id)||{}; return { ...c, ...det, title:(c.title||det.title||'').trim()||'Untitled', main_picture:String(det.main_picture||c.main_picture||'').trim(), url:det.url||c.url||'' }; });
+        if(rows.length) renderRail('manga-rail', rows, 'manga');
       }).catch(()=>{});
 
-      // Anime (file singolo)
-      loadCSV(A_CORE).then(core=>{
-        const rows = (core||[]).map(r=>({
-          ...r,
-          anime_id: String(r.anime_id||'').trim(),
-          title: (r.title||r.title_english||r.title_japanese||'').trim() || 'Untitled',
-          main_picture: String(r.main_picture||r.image_url||'').trim(),
-          url: r.url || ''
-        }));
-        if(rows.length){
-          renderShowcase('anime-rail', rows, 'anime');
-          mountCarousel('anime-rail','an-prev','an-next');
-        }
+      // Anime (single CSV)
+      loadCSV('data/anime.csv').then(core=>{
+        const rows=(core||[]).map(r=>({ ...r, anime_id:String(r.anime_id||'').trim(), title:(r.title||r.title_english||r.title_japanese||'').trim()||'Untitled', main_picture:String(r.main_picture||r.image_url||'').trim(), url:r.url||'' }));
+        if(rows.length) renderRail('anime-rail', rows, 'anime');
       }).catch(()=>{});
 
-      // Blogger feed (JSONP)
+      // Blogger feed via JSONP to avoid CORS issues
       (function loadBlogger(){
-        const status = document.getElementById('blog-status');
-        const list = document.getElementById('blog-list');
-        if(!list) return;
-        status.textContent = 'Carico gli articoli…';
-        window.__bloggerCB = function(json){
+        const status=document.getElementById('blog-status'); const rail=document.getElementById('blog-rail'); if(!rail) return; status.textContent='Loading posts…';
+        window.__bloggerCB=function(json){
           try{
-            const entries = (json && json.feed && json.feed.entry) ? json.feed.entry : [];
-            list.innerHTML='';
-            if(!entries.length){ status.textContent='Nessun articolo trovato.'; return; }
-            entries.slice(0,6).forEach(e=>{
-              const title = (e.title && e.title.$t) || 'Articolo';
-              const link = (e.link||[]).find(l=>l.rel==='alternate')?.href || '#';
-              const thumb = (e['media$thumbnail'] && e['media$thumbnail'].url) || PLACEHOLDER;
-              const dateStr = (e.published && e.published.$t) || '';
-              const d = dateStr ? new Date(dateStr) : null;
-              const nice = d ? d.toLocaleDateString('it-IT',{year:'numeric',month:'short',day:'2-digit'}) : '';
-              const a = document.createElement('a'); a.className='blog-card'; a.href=link; a.target='_blank'; a.rel='noopener';
-              a.innerHTML = `
-                <img class="cover" loading="lazy" decoding="async" src="${esc(thumb)}" alt="${esc(title)}">
-                <div class="body">
-                  <h3 class="title">${esc(title)}</h3>
-                  <div class="meta">${esc(nice)}</div>
-                </div>`;
-              list.appendChild(a);
+            const entries=(json&&json.feed&&json.feed.entry)? json.feed.entry : [];
+            rail.innerHTML='';
+            if(!entries.length){ status.textContent='No articles found.'; return; }
+            entries.slice(0,8).forEach(e=>{
+              const title=(e.title&&e.title.$t)||'Article';
+              const link=(e.link||[]).find(l=>l.rel==='alternate')?.href||'#';
+              const thumb=(e['media$thumbnail']&&e['media$thumbnail'].url)||PLACEHOLDER;
+              const dateStr=(e.published&&e.published.$t)||''; const d=dateStr? new Date(dateStr):null; const nice=d? d.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'}) : '';
+              const a=document.createElement('a'); a.className='blog-card'; a.href=link; a.target='_blank'; a.rel='noopener';
+              a.innerHTML=`<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
+              rail.appendChild(a);
             });
             status.textContent='';
-          }catch(err){ status.textContent='Impossibile caricare gli articoli.'; }
+          }catch(err){ status.textContent='Unable to load posts.'; }
         };
         const s=document.createElement('script');
-        s.src='https://animmunity.blogspot.com/feeds/posts/default?alt=json-in-script&max-results=6&callback=__bloggerCB';
-        s.async=true; s.onerror=()=>{ status.textContent='Feed non disponibile.'; };
+        s.src='https://animmunity.blogspot.com/feeds/posts/default?alt=json-in-script&max-results=8&callback=__bloggerCB'; s.async=true; s.onerror=()=>{ status.textContent='Feed unavailable.'; };
         document.body.appendChild(s);
       })();
     });
