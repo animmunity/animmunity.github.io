@@ -32,6 +32,11 @@
     .btn:hover{background:#f7f7f7}
     .btn:focus{outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
     .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(37,99,235,.25)}
+    /* segmented control */
+    .seg{display:inline-flex;border:1px solid #bbb;border-radius:12px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.06)}
+    .seg .btn{border:0;border-right:1px solid #bbb;border-radius:0;height:40px}
+    .seg .btn:last-child{border-right:0}
+    .seg .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:none}
     .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent}
 
     .alpha{display:flex;gap:6px;flex-wrap:wrap}
@@ -60,6 +65,18 @@
     @keyframes fade{to{opacity:.6}}
 
     .center{padding:18px;text-align:center;color:var(--muted)}
+  /* --- Skeleton shimmer for coherence --- */
+    .skeleton{display:none}
+    .sk-wrap{display:grid;gap:14px}
+    .sk-group{border:1px solid var(--border);border-radius:var(--r-2xl);background:linear-gradient(180deg,#fff,#f7f9ff);box-shadow:var(--shadow-1);padding:12px}
+    .sk-head{height:18px;width:40%;border-radius:8px;background:#eef2ff;position:relative;overflow:hidden}
+    .sk-cards{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+    .sk-card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#fff}
+    .sk-thumb{height:196px;background:#eef2ff;position:relative;overflow:hidden}
+    .sk-line{height:14px;margin:8px;border-radius:6px;background:#eef2ff;position:relative;overflow:hidden}
+    .shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);transform:translateX(-100%);animation:shimmer 1.2s infinite}
+    @keyframes shimmer{to{transform:translateX(100%)}}
+    @media (max-width:920px){.sk-card{grid-column:span 12}}
   </style>
 </head>
 <body>
@@ -76,7 +93,7 @@
       <p class="muted">Tutti gli opening e closing in un’unica pagina. Ricerca istantanea, filtri e <em>lazy embed</em>.</p>
       <div class="toolbar">
         <input id="q" class="input" placeholder="Cerca anime…" aria-label="Cerca anime" />
-        <div role="group" aria-label="Filtra tipo">
+        <div class="seg" role="group" aria-label="Filter type">
           <button id="f-all" class="btn" aria-pressed="true">All</button>
           <button id="f-op" class="btn" aria-pressed="false">OP</button>
           <button id="f-ed" class="btn" aria-pressed="false">ED</button>
@@ -85,8 +102,7 @@
       <div class="alpha" id="alpha"></div>
     </section>
 
-    <section id="results" class="grid" aria-live="polite">
-      <div class="center skeleton">Caricamento…</div>
+    <section id="results" class="grenter skeleton">Caricamento…</div>
     </section>
   </main>
 
@@ -243,17 +259,34 @@
     }
 
     // ====== LOAD ======
-    async function load(append=false){
-      if(state.busy) return; state.busy=true;
+    async function lo// ====== SKELETON UI ======
+    function showSkeleton(){
+      const target = document.getElementById('results'); if(!target) return;
+      target.innerHTML='';
+      const wrap=document.createElement('div'); wrap.className='sk-wrap';
+      for(let g=0; g<3; g++){
+        const group=document.createElement('div'); group.className='sk-group';
+        group.innerHTML='<div class="sk-head shimmer"></div>'+
+                        '<div class="sk-cards">'+
+                        Array.from({length:4}).map(()=>'<div class="sk-card"><div class="sk-thumb shimmer"></div><div class="sk-line shimmer"></div></div>').join('')+
+                        '</div>';
+        wrap.appendChild(group);
+      }
+      target.appendChild(wrap);
+    }
+    function clearSkeleton(){ const target=document.getElementById('results'); if(target) target.innerHTML=''; }
+
+    // ====== LOAD ======   if(state.busy) return; state.busy=true;
       const target = $('#results');
-      if(!append) target.innerHTML = '<div class="center skeleton">Caricamento…</div>';
-      try{
-        const json = USE_ANIMETHEMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
+      if(!append) target.innerHTML = '<div class=if(!append) showSkeleton();
+EMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
         const items = normalizeApi(json).filter(a=> !state.q || (a.name||'').toLowerCase().includes(state.q.toLowerCase()));
         render(items);
       }catch(err){
-        console.error(err);
-        target.innerHTML = `<div class="center">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
+        cclearSkeleton();
+        render(items);rr);
+        target.innerHTMconsole.error(err);
+        clearSkeleton();nter">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
       }finally{ state.busy=false; }
     }
 
