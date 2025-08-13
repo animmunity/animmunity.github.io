@@ -247,25 +247,6 @@
       }
     }
 
-    // Parse authors: can be JSON array of objects {first_name,last_name,role} or stringified w/ single quotes
-    function parseAuthors(str) {
-      if (!str) return [];
-      let s = String(str).trim();
-      try {
-        const arr = JSON.parse(s);
-        return Array.isArray(arr) ? arr.map(a => [a.first_name, a.last_name, a.role].filter(Boolean).join(' ').trim()).filter(Boolean) : [];
-      } catch {
-        try {
-          s = s.replace(/\b(id|first_name|last_name|role)\b/g, '"$1"').replace(/'/g, '"');
-          const arr = JSON.parse(s);
-          return Array.isArray(arr) ? arr.map(a => [a.first_name, a.last_name, a.role].filter(Boolean).join(' ').trim()).filter(Boolean) : [];
-        } catch {
-          // fallback: return as single-value list
-          return [s];
-        }
-      }
-    }
-
     // Get MAL slug from details URL
     function getMalSlug(malUrl) {
       try {
