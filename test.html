@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AniMMUnity — OP/ED Gallery</title>
-  <meta name="description" content="Futuristic light gallery of Anime OP/ED with instant search, filters and lazy embeds. Powered by AnimeThemes API or local JSON."/>
+  <title>AniMMUnity — OP/ED Gallery (DataTable)</title>
+  <meta name="description" content="Futuristic light gallery of Anime OP/ED with instant search and expandable rows. Powered by AnimeThemes API or local JSON."/>
   <meta name="theme-color" content="#ffffff" />
 
-  <!-- Stili base del sito per coerenza -->
+  <!-- Base site styles for consistency -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- DataTables (CDN) -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
   <style>
     :root{
@@ -19,32 +24,25 @@
     body{margin:0;background:radial-gradient(1200px 800px at 10% -10%, #fff 0%, #f7f8ff 45%, #f1f6ff 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",Arial;line-height:1.55}
     a,a:visited{color:inherit;text-decoration:none}
     .shell{max-width:1200px;margin:0 auto;padding:18px}
-
     .hero{background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow-1);padding:18px;margin-top:14px}
     .hero h1{margin:0 0 6px;font-weight:900;letter-spacing:-.02em;font-size:clamp(1.2rem,1.4vw + 1rem,1.9rem)}
     .muted{color:var(--muted)}
 
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
-    .input{flex:1;min-width:200px;height:48px;padding:0 14px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;font-size:1rem;outline:none}
+    .input{flex:1;min-width:220px;height:48px;padding:0 14px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;font-size:1rem;outline:none}
     .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 4px var(--ring)}
-    .btn{height:48px;padding:0 14px;border-radius:10px;border:1px solid #bbb;background:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.06)}
-    .btn:hover{background:#f7f7f7}
-    .btn:focus{outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
-    .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(37,99,235,.25)}
+    .btn{height:40px;padding:0 12px;border-radius:10px;border:1px solid #bbb;background:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.06)}
 
-    /* Alfabeto A–Z */
-    .alpha{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-    .alpha button{height:34px;padding:0 10px;border-radius:10px;border:1px solid var(--border);background:#fff;font-weight:700;cursor:pointer}
+    /* DataTable wrapper tweaks */
+    table.dataTable{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-1)}
+    table.dataTable thead th{background:#f7f9ff}
+    table.dataTable tbody td{vertical-align:middle}
 
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
-    .group{grid-column:span 12;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);overflow:hidden}
-    .group-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
-    .group-title{margin:0;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .pill{font-size:.78rem;font-weight:800;padding:6px 10px;border-radius:999px;background:#eef2ff;border:1px solid #e0e7ff}
-
-    .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;padding:12px}
-    .card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
-    @media (max-width:920px){.card{grid-column:span 12}}
+    /* Expandable child content */
+    .child-wrap{padding:12px}
+    .themes-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .theme-card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
+    @media (max-width:920px){.theme-card{grid-column:span 12}}
     .card-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
     .tag{font-weight:900}
     .meta{color:var(--muted);font-size:.9rem}
@@ -55,7 +53,7 @@
     .embed{position:relative;width:100%;padding-top:56%;border-radius:12px;overflow:hidden}
     .embed iframe,.embed video{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px;background:#000}
 
-    .center{padding:18px;text-align:center;color:var(--muted)}
+    .skeleton{opacity:.7}
   </style>
 </head>
 <body>
@@ -66,25 +64,30 @@
     <h1 class="page-title" style="text-align:center;">OP/ED Gallery</h1>
     <section class="seo-intro">
       <h2>All Anime Openings &amp; Endings</h2>
-      <p>Explore every <strong>opening</strong> and <strong>ending</strong>: ricerca istantanea, filtri OP/ED e alfabetico, embed leggeri e veloci. Grafica coerente con AniMMUnity, tema light futuristico.</p>
+      <p>Explore every <strong>opening</strong> and <strong>ending</strong>: ricerca istantanea tramite DataTable e righe espandibili per vedere tutti i video di ciascun anime.</p>
     </section>
 
     <section class="hero">
       <h2 class="group-title" style="margin:0 0 6px">Opening &amp; Ending</h2>
-      <p class="muted">Tutti gli opening e closing in un’unica pagina. Ricerca istantanea, filtri e <em>lazy embed</em>.</p>
+      <p class="muted">Ricerca unica, nessun filtro alfabetico. Clicca sul <strong>titolo</strong> per aprire i video a tendina.</p>
       <div class="toolbar">
         <input id="q" class="input" placeholder="Cerca anime…" aria-label="Cerca anime" />
-        <div role="group" aria-label="Filtra tipo">
-          <button id="f-all" class="btn" aria-pressed="true">All</button>
-          <button id="f-op" class="btn" aria-pressed="false">OP</button>
-          <button id="f-ed" class="btn" aria-pressed="false">ED</button>
-        </div>
+        <button id="reload" class="btn" type="button">Reload</button>
       </div>
-      <div class="alpha" id="alpha"></div>
     </section>
 
-    <section id="results" class="grid" aria-live="polite">
-      <div class="center skeleton">Caricamento…</div>
+    <section class="grid" aria-live="polite">
+      <table id="animeTable" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Themes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="2">Loading…</td></tr>
+        </tbody>
+      </table>
     </section>
   </main>
 
@@ -97,55 +100,13 @@
     fetch('footer.html').then(r=>r.text()).then(t=>{ const el=document.getElementById('footer-placeholder'); if(el) el.innerHTML=t; }).catch(()=>{});
 
     // ====== CONFIG ======
-    const USE_ANIMETHEMES_API = true; // se false, usa /data/themes.json
-    const PAGE_SIZE = 20; // per pagina quando si usa l'API
+    const USE_ANIMETHEMES_API = true; // if false, uses /data/themes.json
+    const PAGE_SIZE = 50; // bigger page for fewer paginations (DataTable will filter client-side)
 
     // ====== HELPERS ======
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-    const esc = s => String(s||'').replace(/[&<>\"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     const getArtists = theme => (theme.song?.artists || theme.song?.artist || []).map(a=>a?.name).filter(Boolean).join(', ');
     const themeCode = t => `${t.type || t.kind || 'OP'}${t.sequence || t.number || ''}`;
-    function setPressed(btn){ btn.parentElement.querySelectorAll('.btn').forEach(b=>b.setAttribute('aria-pressed','false')); btn.setAttribute('aria-pressed','true'); }
-
-    // ====== UI BUILD ======
-    const state = { q:'', type:'all', letter:null, page:1, busy:false };
-
-    const alpha = $('#alpha');
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
-      const b=document.createElement('button'); b.textContent=ch; b.title=`Aperti ${ch}`;
-      b.addEventListener('click',()=>{ state.letter=ch; state.page=1; load(); });
-      alpha.appendChild(b);
-    });
-
-    $('#q').addEventListener('input', e=>{ state.q=e.target.value.trim(); state.page=1; debounceLoad(); });
-    $('#f-all').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='all'; state.page=1; load(); });
-    $('#f-op').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='OP'; state.page=1; load(); });
-    $('#f-ed').addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='ED'; state.page=1; load(); });
-
-    let debounceTO=null; function debounceLoad(){ clearTimeout(debounceTO); debounceTO=setTimeout(load, 250); }
-
-    // ====== DATA FETCH LAYERS ======
-    async function fetchFromAnimeThemes(){
-      const params = new URLSearchParams();
-      params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
-      params.set('sort','name');
-      params.set('page[size]', String(PAGE_SIZE));
-      params.set('page[number]', String(state.page));
-      params.set('filter[has]','animethemes');
-      if(state.q){ params.set('q', state.q); }
-      if(state.letter){ params.set('filter[name_starts_with]', state.letter); }
-      const url = `https://api.animethemes.moe/anime?${params}`;
-      const res = await fetch(url, { mode:'cors' });
-      if(!res.ok) throw new Error('API error '+res.status);
-      return res.json();
-    }
-
-    async function fetchFromLocal(){
-      const res = await fetch('/data/themes.json');
-      if(!res.ok) throw new Error('Missing /data/themes.json');
-      return res.json();
-    }
 
     function pickBestVideo(videos){
       const arr = Array.isArray(videos)? videos: [];
@@ -172,94 +133,159 @@
       return items;
     }
 
-    // ====== RENDER ======
-    function render(items){
-      const target = $('#results');
-      target.innerHTML = '';
-      if(!items.length){ target.innerHTML = '<div class="center">Nessun risultato.</div>'; return; }
+    async function fetchPage(page=1){
+      const params = new URLSearchParams();
+      params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
+      params.set('sort','name');
+      params.set('page[size]', String(PAGE_SIZE));
+      params.set('page[number]', String(page));
+      params.set('filter[has]','animethemes');
+      const url = `https://api.animethemes.moe/anime?${params}`;
+      const res = await fetch(url, { mode:'cors' });
+      if(!res.ok) throw new Error('API error '+res.status);
+      return res.json();
+    }
 
-      items.forEach(anime=>{
-        const tFiltered = anime.themes.filter(t=> state.type==='all' ? true : (t.type||'').toUpperCase()===state.type);
-        if(!tFiltered.length) return;
+    async function fetchAll(pages=4){ // pull a few pages to fill the table; adjust as you like
+      const batches = await Promise.all([...Array(pages)].map((_,i)=>fetchPage(i+1)));
+      const merged = { data: [] };
+      batches.forEach(j=>{ merged.data.push(...(j?.anime||j?.data||[])); });
+      return merged;
+    }
 
-        const g = document.createElement('div'); g.className='group';
-        g.innerHTML = `<div class="group-h"><h3 class="group-title">${esc(anime.name)}</h3><span class="pill">${tFiltered.length} theme(s)</span></div>`;
-        const list = document.createElement('div'); list.className='cards';
+    function renderChild(anime){
+      const wrap = document.createElement('div');
+      wrap.className = 'child-wrap';
+      const tFiltered = anime.themes; // all themes; filtering can be added later
 
-        tFiltered.forEach(t=>{
-          const label = themeCode(t);
-          const entry = (t.entries && t.entries[0]) || {};
-          const vid = pickBestVideo(entry.videos);
-          const song = t.song?.title || t.song?.name || '';
-          const artists = getArtists(t);
+      const grid = document.createElement('div');
+      grid.className = 'themes-grid';
 
-          const card = document.createElement('div'); card.className='card';
-          const metaText = [song, artists].filter(Boolean).join(' — ');
-          card.innerHTML = `
-            <div class="card-h">
-              <span class="tag">${esc(label)}</span>
-              <span class="meta">${esc(metaText)}</span>
+      tFiltered.forEach(t=>{
+        const label = themeCode(t);
+        const entry = (t.entries && t.entries[0]) || {};
+        const vid = pickBestVideo(entry.videos);
+        const song = t.song?.title || t.song?.name || '';
+        const artists = getArtists(t);
+
+        const card = document.createElement('div'); card.className='theme-card';
+        const metaText = [song, artists].filter(Boolean).join(' — ');
+        card.innerHTML = `
+          <div class="card-h">
+            <span class="tag">${esc(label)}</span>
+            <span class="meta">${esc(metaText)}</span>
+          </div>
+          <div class="card-body">
+            <div class="thumb">
+              <div class="play"><button type="button">Play</button></div>
             </div>
-            <div class="card-body">
-              <div class="thumb">
-                <div class="play"><button type="button">Play</button></div>
-              </div>
-            </div>`;
+          </div>`;
 
-          const thumb = card.querySelector('.thumb');
-          const btn = card.querySelector('button');
-          btn.addEventListener('click', ()=>{
-            const wrap = document.createElement('div'); wrap.className='embed';
-            if(vid){
-              const urlStr = String(vid.link||vid.url||'');
-              if(urlStr.includes('youtube.com') || urlStr.includes('youtu.be')){
-                let id='';
-                try{
-                  const u = new URL(urlStr);
-                  if(u.hostname.includes('youtu.be')){ id = u.pathname.replace(/^\//,''); }
-                  else { id = u.searchParams.get('v') || ''; }
-                }catch{}
-                wrap.innerHTML = id ? `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>` : `<div class="center">Video non disponibile</div>`;
-              }else{
-                const src = urlStr.toString();
-                wrap.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
-              }
+        const thumb = card.querySelector('.thumb');
+        const btn = card.querySelector('button');
+        btn.addEventListener('click', ()=>{
+          const emb = document.createElement('div'); emb.className='embed';
+          if(vid){
+            const urlStr = String(vid.link||vid.url||'');
+            if(urlStr.includes('youtube.com') || urlStr.includes('youtu.be')){
+              let id='';
+              try{
+                const u = new URL(urlStr);
+                if(u.hostname.includes('youtu.be')){ id = u.pathname.replace(/^\//,''); }
+                else { id = u.searchParams.get('v') || ''; }
+              }catch{}
+              emb.innerHTML = id ? `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>` : `<div class="center">Video non disponibile</div>`;
             }else{
-              wrap.innerHTML = `<div class="center">Nessun video embeddabile. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Apri su AnimeThemes</a></div>`;
+              const src = urlStr.toString();
+              emb.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
             }
-            thumb.replaceWith(wrap);
-          });
-
-          list.appendChild(card);
+          }else{
+            emb.innerHTML = `<div class="center">Nessun video embeddabile. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Apri su AnimeThemes</a></div>`;
+          }
+          thumb.replaceWith(emb);
         });
 
-        g.appendChild(list);
-        target.appendChild(g);
+        grid.appendChild(card);
       });
 
-      // paginazione semplice
-      const pager = document.createElement('div'); pager.className='center';
-      pager.innerHTML = `<button class="btn" id="more">Carica altri</button>`;
-      pager.querySelector('#more').addEventListener('click', ()=>{ state.page++; load(true); });
-      target.appendChild(pager);
+      wrap.appendChild(grid);
+      return wrap;
     }
 
-    // ====== LOAD ======
-    async function load(append=false){
-      if(state.busy) return; state.busy=true;
-      const target = $('#results');
-      if(!append) target.innerHTML = '<div class="center skeleton">Caricamento…</div>';
+    // ========= INIT =========
+    let table = null;
+    let DATA = [];
+
+    function populateTable(items){
+      DATA = items.map(a=>({ name:a.name, count: a.themes.length, raw:a }));
+
+      if(table){ table.clear().rows.add(DATA).draw(); return; }
+
+      table = new $.fn.dataTable.Api($('#animeTable').DataTable({
+        data: DATA,
+        columns: [
+          { data: 'name', title: 'Title', render: (d,t,row)=>`<button class="btn title-btn" type="button">${esc(d)}</button>` },
+          { data: 'count', title: 'Themes' }
+        ],
+        deferRender: true,
+        pageLength: 25,
+        order: [[0,'asc']],
+        language: {
+          search: "Cerca:",
+          lengthMenu: "Mostra _MENU_ anime",
+          info: "Mostra _START_–_END_ di _TOTAL_",
+          infoEmpty: "Nessun anime",
+          zeroRecords: "Nessun risultato",
+        }
+      }));
+
+      // Global search wired to our custom input
+      document.getElementById('q').addEventListener('input', (e)=>{
+        table.search(e.target.value).draw();
+      });
+
+      // Reload button
+      document.getElementById('reload').addEventListener('click', async ()=>{
+        await loadData();
+      });
+
+      // Expand on title click
+      $('#animeTable tbody').on('click','button.title-btn', function(){
+        const tr = $(this).closest('tr');
+        const row = table.row(tr);
+        if(row.child.isShown()){
+          row.child.hide();
+          tr.removeClass('shown');
+        }else{
+          const data = row.data();
+          const el = renderChild(data.raw);
+          row.child(el).show();
+          tr.addClass('shown');
+        }
+      });
+    }
+
+    async function loadData(){
+      const tbody = document.querySelector('#animeTable tbody');
+      tbody.innerHTML = '<tr><td colspan="2" class="skeleton">Loading…</td></tr>';
       try{
-        const json = USE_ANIMETHEMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
-        const items = normalizeApi(json).filter(a=> !state.q || (a.name||'').toLowerCase().includes(state.q.toLowerCase()));
-        render(items);
+        let json;
+        if(USE_ANIMETHEMES_API){
+          json = await fetchAll(6); // fetch first 6 pages (~300 anime)
+        }else{
+          const res = await fetch('/data/themes.json');
+          if(!res.ok) throw new Error('Missing /data/themes.json');
+          json = await res.json();
+        }
+        const items = normalizeApi(json);
+        populateTable(items);
       }catch(err){
         console.error(err);
-        target.innerHTML = `<div class="center">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
-      }finally{ state.busy=false; }
+        tbody.innerHTML = `<tr><td colspan="2">Impossibile caricare i dati. <code>${esc(err.message)}</code></td></tr>`;
+      }
     }
 
-    load();
+    loadData();
   </script>
 </body>
 </html>
