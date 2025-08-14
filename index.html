@@ -15,27 +15,16 @@
   <style>
     /* =====================================================
        HYPERLIGHT — Futuristic Light UI
-       - Aurora mesh backdrop
-       - Glass panels & holo borders
-       - Neo microinteractions
-       - Still feather-light & accessible
        ===================================================== */
     :root{
       /* Core colors */
-      --bg: #fcfcff;            /* page background */
-      --ink: #0b1220;           /* main text */
-      --muted:#667085;          /* secondary text */
-      --panel:#ffffff;          /* surfaces */
-      --border:#e7e9f1;         /* borders */
-      --ring:#dbeafe;           /* focus ring */
-      --accent:#2563eb;         /* primary */
-      --accent-ink:#ffffff;     /* on primary */
-      --accent-soft:#eef2ff;    /* soft bg */
+      --bg:#fcfcff; --ink:#0b1220; --muted:#667085; --panel:#ffffff; --border:#e7e9f1;
+      --ring:#dbeafe; --accent:#2563eb; --accent-ink:#ffffff; --accent-soft:#eef2ff;
 
       /* Effects */
-      --shadow-1: 0 14px 36px rgba(11,18,32,.08);
-      --shadow-2: 0 18px 48px rgba(11,18,32,.12);
-      --r-3xl: 28px; --r-2xl: 22px; --r-xl:18px; --r-lg:14px; --r-md:12px;
+      --shadow-1:0 14px 36px rgba(11,18,32,.08);
+      --shadow-2:0 18px 48px rgba(11,18,32,.12);
+      --r-3xl:28px; --r-2xl:22px; --r-xl:18px; --r-lg:14px; --r-md:12px;
     }
 
     html,body{height:100%}
@@ -44,7 +33,7 @@
         radial-gradient(1200px 800px at 10% -10%, #ffffff 0%, #f7f8ff 45%, #f1f6ff 100%),
         var(--bg);
       color:var(--ink);
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", Arial;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",Arial;
       line-height:1.55;
       -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
       overflow-x:hidden;
@@ -52,21 +41,20 @@
 
     /* Links: remove default blue/underlines */
     a, a:visited{color:inherit;text-decoration:none}
-    a:hover{ text-decoration:none }
-
+    a:hover{text-decoration:none}
 
     /* Subtle tech grid overlay */
-    .fx-grid{position:fixed;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:multiply;mask-image:radial-gradient(closest-side, rgba(0,0,0,.15), transparent 70%);}
+    .fx-grid{position:fixed;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:multiply;mask-image:radial-gradient(closest-side, rgba(0,0,0,.15), transparent 70%)}
     .fx-grid::before{content:"";position:absolute;inset:-50%;background:
-      linear-gradient(0deg, transparent 49.5%, rgba(0,0,0,.035) 50%, transparent 50.5%),
-      linear-gradient(90deg, transparent 49.5%, rgba(0,0,0,.035) 50%, transparent 50.5%);
-      background-size: 40px 40px;
+      linear-gradient(0deg,transparent 49.5%,rgba(0,0,0,.035) 50%,transparent 50.5%),
+      linear-gradient(90deg,transparent 49.5%,rgba(0,0,0,.035) 50%,transparent 50.5%);
+      background-size:40px 40px;
     }
 
     .shell{max-width:1180px;margin:0 auto;padding:20px}
 
-    /* ================= HERO ================= */
-    .hero{position:relative;border:1px solid var(--border);border-radius:var(--r-3xl);box-shadow:var(--shadow-1);padding:26px;margin-top:18px;background:rgba(255,255,255,.75);backdrop-filter:saturate(120%) blur(8px);}
+    /* HERO */
+    .hero{position:relative;border:1px solid var(--border);border-radius:var(--r-3xl);box-shadow:var(--shadow-1);padding:26px;margin-top:18px;background:rgba(255,255,255,.75);backdrop-filter:saturate(120%) blur(8px)}
     .aurora{position:absolute;inset:-60px -60px auto auto;width:360px;height:360px;background:radial-gradient(circle at 30% 30%, rgba(37,99,235,.25), rgba(16,185,129,.18) 55%, transparent 60%);filter:blur(30px);pointer-events:none}
     .hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
     .title{margin:0;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);font-weight:900;letter-spacing:-.02em}
@@ -81,35 +69,32 @@
     .btn-primary:hover{filter:brightness(.98)}
     .btn-icon{width:54px;display:inline-flex;align-items:center;justify-content:center}
 
-    /* ================= NEO-NAV Matrix ================= */
+    /* NAV Matrix */
     .matrix{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
-    .link3d{grid-column:span 6;position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px;text-decoration:none;color:inherit;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,#ffffff 40%, #f7f8ff 100%);box-shadow:var(--shadow-1);overflow:hidden}
+    .link3d{grid-column:span 6;position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px;color:inherit;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,#ffffff 40%, #f7f8ff 100%);box-shadow:var(--shadow-1);overflow:hidden}
     .link3d:hover{box-shadow:var(--shadow-2)}
     .link3d .txt{display:flex;flex-direction:column}
     .k{font-weight:900;font-size:clamp(1.05rem,1vw + .6rem,1.48rem);letter-spacing:-.02em}
-    .sub{color:var(--muted);font-weight:600}
-    .chip{font-size:.78rem;font-weight:800;padding:7px 12px;border-radius:999px;background:var(--accent-soft);border:1px solid #e0e7ff}
     .ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#f5f7ff);box-shadow:var(--shadow-1)}
     .ico svg{width:22px;height:22px;stroke-width:2}
     .link3d::after{content:"";position:absolute;inset:auto -10px -10px auto;width:180px;height:180px;background:conic-gradient(from 220deg, rgba(37,99,235,.15), rgba(16,185,129,.10), transparent 65%);filter:blur(18px)}
     @media (max-width: 920px){.link3d{grid-column:span 12}}
 
-    /* ================= Sections ================= */
+    /* Sections */
     .section{background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);padding:16px;margin-top:16px}
     .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
     .section-h h2{margin:0;font-size:1.08rem;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .section-h a{font-weight:800;text-decoration:none;color:var(--ink)}
+    .section-h a{font-weight:800;color:var(--ink)}
 
-    /* ================= Rails / Cards ================= */
+    /* Rails / Cards */
     .rail{display:flex;gap:10px;overflow:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px}
     .rail::-webkit-scrollbar{height:6px}
     .rail::-webkit-scrollbar-thumb{background:#00000033;border-radius:50px}
-
     .card-mini{width:150px;flex:0 0 150px;scroll-snap-align:start;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f7f9ff)}
     .card-mini img{width:100%;height:196px;object-fit:cover;background:#eef2ff}
     .card-mini .t{padding:9px 10px;font-size:.95rem;font-weight:900;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* ================= Blog ================= */
+    /* Blog */
     .blog-grid{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
     .blog-card{flex:0 0 270px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f8faff)}
     .blog-card .cover{width:100%;height:150px;object-fit:cover;background:#eef2ff}
@@ -119,7 +104,7 @@
 
     .center{text-align:center;color:var(--muted)}
 
-    /* ================= Skeletons ================= */
+    /* Skeletons */
     .skeleton-rail{display:flex;gap:10px;overflow:hidden}
     .sk-card{width:150px;height:240px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#f7f9ff);position:relative;overflow:hidden}
     .sk-thumb{height:196px;background:#eef2ff}
@@ -127,9 +112,8 @@
     .shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);transform:translateX(-100%);animation:shimmer 1.4s infinite}
     @keyframes shimmer{to{transform:translateX(100%)}}
 
-    /* Motion reduce */
     @media (prefers-reduced-motion: reduce){
-      *{animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+      *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
     }
   </style>
 </head>
@@ -159,34 +143,26 @@
     <!-- NEO NAV -->
     <section class="matrix" aria-label="Main sections">
       <a class="link3d" href="/anime-list.html">
-        <div class="txt">
-          <span class="k">Anime List</span>
-          
-        </div>
+        <div class="txt"><span class="k">Anime List</span></div>
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h20M2 15h20"/></svg></span>
       </a>
+
       <a class="link3d" href="/manga-list.html">
-        <div class="txt">
-          <span class="k">Manga List</span>
-          
-        </div>
+        <div class="txt"><span class="k">Manga List</span></div>
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v14"/><path d="M12 6a7 7 0 0 0-7-3H4v16h1a7 7 0 0 1 7 3"/><path d="M12 6a7 7 0 0 1 7-3h1v16h-1a7 7 0 0 0-7 3"/></svg></span>
       </a>
+
       <a class="link3d" href="/top-anime.html">
-        <div class="txt">
-          <span class="k">Top Anime</span>
-          
-        </div>
+        <div class="txt"><span class="k">Top Anime</span></div>
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 9H5a3 3 0 0 1 0-6h2"/><path d="M17 9h2a3 3 0 0 0 0-6h-2"/></svg></span>
       </a>
+
       <a class="link3d" href="/top-manga.html">
-        <div class="txt">
-          <span class="k">Top Manga</span>
-          
-        </div>
+        <div class="txt"><span class="k">Top Manga</span></div>
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l5 5 5-8 5 8 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg></span>
       </a>
 
+      <!-- Anime Themes -->
       <a class="link3d" href="/anime-themes.html">
         <div class="txt"><span class="k">Anime Themes</span></div>
         <span class="ico" aria-hidden="true">
@@ -197,12 +173,9 @@
           </svg>
         </span>
       </a>
-      
+
       <a class="link3d" href="https://animmunity.github.io/character-list.html" target="_blank" rel="noopener">
-        <div class="txt">
-          <span class="k">Characters</span>
-          
-        </div>
+        <div class="txt"><span class="k">Characters</span></div>
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
       </a>
     </section>
@@ -241,17 +214,21 @@
 
   <script>
     // Header / Footer includes (non-blocking)
-    fetch('header.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('header-placeholder').innerHTML=t||''}).catch(()=>{});
-    fetch('footer.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('footer-placeholder').innerHTML=t||''}).catch(()=>{});
+    fetch('header.html').then(r => r.ok ? r.text() : '').then(t => {
+      const slot = document.getElementById('header-placeholder'); if (slot) slot.innerHTML = t || '';
+    }).catch(()=>{});
+    fetch('footer.html').then(r => r.ok ? r.text() : '').then(t => {
+      const slot = document.getElementById('footer-placeholder'); if (slot) slot.innerHTML = t || '';
+    }).catch(()=>{});
 
-    // Search logic (unchanged)
+    // Search logic
     const q = document.getElementById('q');
     const go = document.getElementById('search-go');
     const clearBtn = document.getElementById('clear-q');
     function runSearch(){
       const val = (q.value || '').trim();
       const base = 'anime-list.html';
-      location.href = val ? ${base}?q=${encodeURIComponent(val)} : base;
+      location.href = val ? `${base}?q=${encodeURIComponent(val)}` : base;
     }
     q.addEventListener('keydown', e => { if(e.key === 'Enter') runSearch(); });
     go.addEventListener('click', runSearch);
@@ -277,11 +254,11 @@
       const url=row.url||row.link||'';
       const slug=url? slugFromMAL(url):'';
       const base= type==='anime' ? 'anime.html' : 'manga.html';
-      if(slug) return ${base}?slug=${encodeURIComponent(slug)};
+      if(slug) return `${base}?slug=${encodeURIComponent(slug)}`;
       const id=String(row[type==='anime'?'anime_id':'manga_id']||'').trim();
-      return id ? ${base}?id=${encodeURIComponent(id)} : '#';
+      return id ? `${base}?id=${encodeURIComponent(id)}` : '#';
     };
-    const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
+    const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
     // Skeleton helpers
     function showRailSkeleton(railId, count=8){
@@ -319,7 +296,7 @@
         a.href=buildHref(r,type);
         a.setAttribute('role','option');
         a.setAttribute('aria-label',title);
-        a.innerHTML=<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>;
+        a.innerHTML = `<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>`;
         rail.appendChild(a);
       });
     }
@@ -379,11 +356,18 @@
         const status=document.getElementById('blog-status');
         const rail=document.getElementById('blog-rail');
         if(!rail) return;
-        // Skeletons for blog
+        // skeletons
         rail.innerHTML='';
         const sk=document.createElement('div'); sk.className='skeleton-rail';
-        for(let i=0;i<4;i++){ const c=document.createElement('div'); c.className='sk-card shimmer'; c.style.width='270px'; c.style.height='210px'; c.innerHTML='<div class="sk-thumb" style="height:150px"></div><div class="sk-line" style="height:16px"></div>'; sk.appendChild(c);} rail.appendChild(sk);
+        for(let i=0;i<4;i++){
+          const c=document.createElement('div'); c.className='sk-card shimmer';
+          c.style.width='270px'; c.style.height='210px';
+          c.innerHTML='<div class="sk-thumb" style="height:150px"></div><div class="sk-line" style="height:16px"></div>';
+          sk.appendChild(c);
+        }
+        rail.appendChild(sk);
         status.textContent='Loading posts…';
+
         window.__bloggerCB=function(json){
           try{
             const entries=(json&&json.feed&&json.feed.entry)? json.feed.entry : [];
@@ -399,7 +383,7 @@
               const a=document.createElement('a');
               a.className='blog-card';
               a.href=link; a.target='_blank'; a.rel='noopener';
-              a.innerHTML=<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>;
+              a.innerHTML = `<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
               rail.appendChild(a);
             });
             status.textContent='';
