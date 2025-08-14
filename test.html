@@ -126,7 +126,7 @@
       params.set('page[number]', String(page));
       params.set('filter[has]','animethemes');
       // AnimeThemes supports search by name via filter[search]
-      if(query) params.set('filter[search]', query);
+      if(query) params.set('filter[name]', query);
       const url = `https://api.animethemes.moe/anime?${params}`;
       const res = await fetch(url, { mode:'cors' });
       if(!res.ok) throw new Error('API error '+res.status);
