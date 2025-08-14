@@ -157,7 +157,7 @@
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l5 5 5-8 5 8 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg></span>
       </a>
 
-      <!-- Anime Themes (già richiesto) -->
+      <!-- Anime Themes -->
       <a class="link3d" href="/anime-themes.html">
         <div class="txt"><span class="k">Anime Themes</span></div>
         <span class="ico" aria-hidden="true">
@@ -251,24 +251,6 @@
     };
     const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // Skeleton helpers
-    function showRailSkeleton(railId, count=8){
-      const rail=document.getElementById(railId); if(!rail) return;
-      rail.innerHTML='';
-      const wrap=document.createElement('div');
-      wrap.className='skeleton-rail';
-      for(let i=0;i<count;i++){
-        const c=document.createElement('div'); c.className='sk-card shimmer';
-        c.innerHTML='<div class="sk-thumb"></div><div class="sk-line"></div>';
-        wrap.appendChild(c);
-      }
-      rail.appendChild(wrap);
-    }
-    function clearRailSkeleton(railId){
-      const rail=document.getElementById(railId); if(!rail) return;
-      rail.innerHTML='';
-    }
-
     // CSV loader
     function loadCSV(url){
       return fetch(url,{mode:'cors',credentials:'omit'})
@@ -278,7 +260,6 @@
 
     function renderRail(railId, rows, type){
       const rail=document.getElementById(railId); if(!rail) return; rail.innerHTML='';
-      // FIX: controlla tutti i possibili campi immagine, non solo main_picture
       const withImg = rows.filter(r=>{
         const any = (r.main_picture || r.image_url || r.image || '').trim();
         return any !== '';
@@ -305,9 +286,9 @@
 
       // Manga (merge)
       Promise.allSettled([
-loadCSV('/data/manga_core.csv')
-loadCSV('/data/manga_text_part1.csv')
-loadCSV('/data/manga_text_part2.csv')
+        loadCSV('/data/manga_core.csv'),
+        loadCSV('/data/manga_text_part1.csv'),
+        loadCSV('/data/manga_text_part2.csv'),
       ]).then(([coreP,d1P,d2P])=>{
         if(coreP.status!=='fulfilled') return;
         const core=(coreP.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
@@ -392,6 +373,24 @@ loadCSV('/data/manga_text_part2.csv')
         document.body.appendChild(s);
       })();
     });
+
+    // Skeleton helpers (possono stare in fondo)
+    function showRailSkeleton(railId, count=8){
+      const rail=document.getElementById(railId); if(!rail) return;
+      rail.innerHTML='';
+      const wrap=document.createElement('div');
+      wrap.className='skeleton-rail';
+      for(let i=0;i<count;i++){
+        const c=document.createElement('div'); c.className='sk-card shimmer';
+        c.innerHTML='<div class="sk-thumb"></div><div class="sk-line"></div>';
+        wrap.appendChild(c);
+      }
+      rail.appendChild(wrap);
+    }
+    function clearRailSkeleton(railId){
+      const rail=document.getElementById(railId); if(!rail) return;
+      rail.innerHTML='';
+    }
   </script>
 </body>
 </html>
