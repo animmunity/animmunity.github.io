@@ -3,22 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AniMMUnity — OP/ED Gallery (DataTable)</title>
-  <meta name="description" content="Futuristic light gallery of Anime OP/ED with instant search and expandable rows. Powered by AnimeThemes API or local JSON."/>
+  <title>AniMMUnity — OP/ED Gallery</title>
+  <meta name="description" content="Lightweight OP/ED gallery. The page starts empty; videos appear only after you search. Powered by AnimeThemes API or local JSON."/>
   <meta name="theme-color" content="#ffffff" />
 
   <!-- Base site styles for consistency -->
   <link rel="stylesheet" href="styles.css">
 
-  <!-- DataTables (CDN) -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-
   <style>
     :root{
       --bg:#fbfbfe; --ink:#0b1220; --muted:#667085; --panel:#ffffff; --border:#e6e8ef; --ring:#dbeafe; --accent:#2563eb;
-      --r-2xl:24px; --r-xl:18px; --r-lg:14px; --shadow-1:0 10px 30px rgba(11,18,32,.07); --shadow-2:0 14px 40px rgba(11,18,32,.10)
+      --shadow-1:0 10px 30px rgba(11,18,32,.07); --shadow-2:0 14px 40px rgba(11,18,32,.10)
     }
     *{box-sizing:border-box}
     body{margin:0;background:radial-gradient(1200px 800px at 10% -10%, #fff 0%, #f7f8ff 45%, #f1f6ff 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",Arial;line-height:1.55}
@@ -33,14 +28,14 @@
     .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 4px var(--ring)}
     .btn{height:40px;padding:0 12px;border-radius:10px;border:1px solid #bbb;background:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.06)}
 
-    /* DataTable wrapper tweaks */
-    table.dataTable{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-1)}
-    table.dataTable thead th{background:#f7f9ff}
-    table.dataTable tbody td{vertical-align:middle}
+    /* Results */
+    .results{margin-top:18px}
+    .empty{border:1px dashed var(--border);border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
 
-    /* Expandable child content */
-    .child-wrap{padding:12px}
-    .themes-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+    .anime-card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;margin-bottom:14px}
+    .anime-h{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .anime-title{font-weight:900;letter-spacing:-.02em}
+    .themes-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;padding:12px}
     .theme-card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
     @media (max-width:920px){.theme-card{grid-column:span 12}}
     .card-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
@@ -53,7 +48,9 @@
     .embed{position:relative;width:100%;padding-top:56%;border-radius:12px;overflow:hidden}
     .embed iframe,.embed video{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px;background:#000}
 
-    .skeleton{opacity:.7}
+    .bar{height:6px;background:linear-gradient(90deg,#e5edff,#d7efff);border-radius:999px;overflow:hidden;margin-top:8px}
+    .bar > i{display:block;height:100%;width:30%;background:#2563eb;animation:ldr 1s linear infinite}
+    @keyframes ldr{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
   </style>
 </head>
 <body>
@@ -64,30 +61,22 @@
     <h1 class="page-title" style="text-align:center;">OP/ED Gallery</h1>
     <section class="seo-intro">
       <h2>All Anime Openings &amp; Endings</h2>
-      <p>Explore every <strong>opening</strong> and <strong>ending</strong>: ricerca istantanea tramite DataTable e righe espandibili per vedere tutti i video di ciascun anime.</p>
+      <p>The page starts empty. Type a title to search; matching anime will appear with their themes and embedded videos.</p>
     </section>
 
     <section class="hero">
-      <h2 class="group-title" style="margin:0 0 6px">Opening &amp; Ending</h2>
-      <p class="muted">Ricerca unica, nessun filtro alfabetico. Clicca sul <strong>titolo</strong> per aprire i video a tendina.</p>
+      <h2 class="group-title" style="margin:0 0 6px">Search</h2>
+      <p class="muted">No alphabetical filters. Start typing and press <strong>Enter</strong> or click <strong>Search</strong>.</p>
       <div class="toolbar">
-        <input id="q" class="input" placeholder="Cerca anime…" aria-label="Cerca anime" />
-        <button id="reload" class="btn" type="button">Reload</button>
+        <input id="q" class="input" placeholder="Search anime…" aria-label="Search anime" />
+        <button id="go" class="btn" type="button">Search</button>
+        <button id="clear" class="btn" type="button" title="Clear results">Clear</button>
       </div>
+      <div id="hint" class="muted" style="margin-top:8px">Tip: try "Naruto", "One Piece", "Attack on Titan"…</div>
     </section>
 
-    <section class="grid" aria-live="polite">
-      <table id="animeTable" class="display" style="width:100%">
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Themes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="2">Loading…</td></tr>
-        </tbody>
-      </table>
+    <section id="results" class="results" aria-live="polite">
+      <div class="empty">Nothing yet. Make a search to see OP/ED videos.</div>
     </section>
   </main>
 
@@ -95,13 +84,13 @@
   <div id="footer-placeholder"></div>
 
   <script>
-    // Header / Footer include
+    // Header / Footer include (optional)
     fetch('header.html').then(r=>r.text()).then(t=>{ const el=document.getElementById('header-placeholder'); if(el) el.innerHTML=t; }).catch(()=>{});
     fetch('footer.html').then(r=>r.text()).then(t=>{ const el=document.getElementById('footer-placeholder'); if(el) el.innerHTML=t; }).catch(()=>{});
 
     // ====== CONFIG ======
     const USE_ANIMETHEMES_API = true; // if false, uses /data/themes.json
-    const PAGE_SIZE = 50; // bigger page for fewer paginations (DataTable will filter client-side)
+    const PAGE_SIZE = 50; // results per request
 
     // ====== HELPERS ======
     const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
@@ -110,13 +99,8 @@
 
     function pickBestVideo(videos){
       const arr = Array.isArray(videos)? videos: [];
-      const yt = arr.find(v=>{
-        const u = String(v?.link||v?.url||''); return u.includes('youtube.com')||u.includes('youtu.be');
-      });
-      const hi = arr.filter(v=>{
-        const u = String(v?.link||v?.url||'').toLowerCase();
-        return u.includes('.webm') || u.includes('.mp4');
-      }).sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
+      const yt = arr.find(v=>{ const u = String(v?.link||v?.url||''); return u.includes('youtube.com')||u.includes('youtu.be'); });
+      const hi = arr.filter(v=>{ const u = String(v?.link||v?.url||'').toLowerCase(); return u.includes('.webm') || u.includes('.mp4'); }).sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
       return yt || hi || arr[0] || null;
     }
 
@@ -133,159 +117,149 @@
       return items;
     }
 
-    async function fetchPage(page=1){
+    // API calls
+    async function fetchPageBySearch(query, page=1){
       const params = new URLSearchParams();
       params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
       params.set('sort','name');
       params.set('page[size]', String(PAGE_SIZE));
       params.set('page[number]', String(page));
       params.set('filter[has]','animethemes');
+      // AnimeThemes supports search by name via filter[search]
+      if(query) params.set('filter[search]', query);
       const url = `https://api.animethemes.moe/anime?${params}`;
       const res = await fetch(url, { mode:'cors' });
       if(!res.ok) throw new Error('API error '+res.status);
       return res.json();
     }
 
-    async function fetchAll(pages=4){ // pull a few pages to fill the table; adjust as you like
-      const batches = await Promise.all([...Array(pages)].map((_,i)=>fetchPage(i+1)));
+    async function fetchAllBySearch(query, pages=4){
+      const batches = await Promise.all([...Array(pages)].map((_,i)=>fetchPageBySearch(query, i+1)));
       const merged = { data: [] };
       batches.forEach(j=>{ merged.data.push(...(j?.anime||j?.data||[])); });
       return merged;
     }
 
-    function renderChild(anime){
-      const wrap = document.createElement('div');
-      wrap.className = 'child-wrap';
-      const tFiltered = anime.themes; // all themes; filtering can be added later
+    // Rendering
+    function renderThemeCard(t){
+      const label = themeCode(t);
+      const entry = (t.entries && t.entries[0]) || {};
+      const vid = pickBestVideo(entry.videos);
+      const song = t.song?.title || t.song?.name || '';
+      const artists = getArtists(t);
 
-      const grid = document.createElement('div');
-      grid.className = 'themes-grid';
+      const card = document.createElement('div'); card.className='theme-card';
+      const metaText = [song, artists].filter(Boolean).join(' — ');
+      card.innerHTML = `
+        <div class="card-h">
+          <span class="tag">${esc(label)}</span>
+          <span class="meta">${esc(metaText)}</span>
+        </div>
+        <div class="card-body">
+          <div class="thumb"><div class="play"><button type="button">Play</button></div></div>
+        </div>`;
 
-      tFiltered.forEach(t=>{
-        const label = themeCode(t);
-        const entry = (t.entries && t.entries[0]) || {};
-        const vid = pickBestVideo(entry.videos);
-        const song = t.song?.title || t.song?.name || '';
-        const artists = getArtists(t);
-
-        const card = document.createElement('div'); card.className='theme-card';
-        const metaText = [song, artists].filter(Boolean).join(' — ');
-        card.innerHTML = `
-          <div class="card-h">
-            <span class="tag">${esc(label)}</span>
-            <span class="meta">${esc(metaText)}</span>
-          </div>
-          <div class="card-body">
-            <div class="thumb">
-              <div class="play"><button type="button">Play</button></div>
-            </div>
-          </div>`;
-
-        const thumb = card.querySelector('.thumb');
-        const btn = card.querySelector('button');
-        btn.addEventListener('click', ()=>{
-          const emb = document.createElement('div'); emb.className='embed';
-          if(vid){
-            const urlStr = String(vid.link||vid.url||'');
-            if(urlStr.includes('youtube.com') || urlStr.includes('youtu.be')){
-              let id='';
-              try{
-                const u = new URL(urlStr);
-                if(u.hostname.includes('youtu.be')){ id = u.pathname.replace(/^\//,''); }
-                else { id = u.searchParams.get('v') || ''; }
-              }catch{}
-              emb.innerHTML = id ? `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>` : `<div class="center">Video non disponibile</div>`;
-            }else{
-              const src = urlStr.toString();
-              emb.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
-            }
+      const thumb = card.querySelector('.thumb');
+      const btn = card.querySelector('button');
+      btn.addEventListener('click', ()=>{
+        const emb = document.createElement('div'); emb.className='embed';
+        if(vid){
+          const urlStr = String(vid.link||vid.url||'');
+          if(urlStr.includes('youtube.com') || urlStr.includes('youtu.be')){
+            let id='';
+            try{
+              const u = new URL(urlStr);
+              if(u.hostname.includes('youtu.be')){ id = u.pathname.replace(/^\//,''); }
+              else { id = u.searchParams.get('v') || ''; }
+            }catch{}
+            emb.innerHTML = id ? `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>` : `<div class="center">Video unavailable</div>`;
           }else{
-            emb.innerHTML = `<div class="center">Nessun video embeddabile. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Apri su AnimeThemes</a></div>`;
+            const src = urlStr.toString();
+            emb.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
           }
-          thumb.replaceWith(emb);
-        });
-
-        grid.appendChild(card);
+        }else{
+          emb.innerHTML = `<div class="center">No embeddable video. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Open on AnimeThemes</a></div>`;
+        }
+        thumb.replaceWith(emb);
       });
 
-      wrap.appendChild(grid);
-      return wrap;
+      return card;
+    }
+
+    function renderAnimeBlock(anime){
+      const block = document.createElement('div'); block.className = 'anime-card';
+      block.innerHTML = `<div class="anime-h"><div class="anime-title">${esc(anime.name)}</div></div>`;
+      const grid = document.createElement('div'); grid.className = 'themes-grid';
+      anime.themes.forEach(t=> grid.appendChild(renderThemeCard(t)));
+      block.appendChild(grid);
+      return block;
+    }
+
+    function showLoading(container){
+      container.innerHTML = `<div class="anime-card"><div class="anime-h"><div>Searching…</div></div><div style="padding:12px"><div class="bar"><i></i></div></div></div>`;
+    }
+
+    function showEmpty(container){
+      container.innerHTML = `<div class="empty">Nothing yet. Make a search to see OP/ED videos.</div>`;
     }
 
     // ========= INIT =========
-    let table = null;
-    let DATA = [];
+    const input = document.getElementById('q');
+    const goBtn = document.getElementById('go');
+    const clearBtn = document.getElementById('clear');
+    const results = document.getElementById('results');
 
-    function populateTable(items){
-      DATA = items.map(a=>({ name:a.name, count: a.themes.length, raw:a }));
+    let lastController = null;
+    function abortPrev(){ if(lastController){ lastController.abort(); lastController = null; } }
 
-      if(table){ table.clear().rows.add(DATA).draw(); return; }
-
-      table = new $.fn.dataTable.Api($('#animeTable').DataTable({
-        data: DATA,
-        columns: [
-          { data: 'name', title: 'Title', render: (d,t,row)=>`<button class="btn title-btn" type="button">${esc(d)}</button>` },
-          { data: 'count', title: 'Themes' }
-        ],
-        deferRender: true,
-        pageLength: 25,
-        order: [[0,'asc']],
-        language: {
-          search: "Cerca:",
-          lengthMenu: "Mostra _MENU_ anime",
-          info: "Mostra _START_–_END_ di _TOTAL_",
-          infoEmpty: "Nessun anime",
-          zeroRecords: "Nessun risultato",
-        }
-      }));
-
-      // Global search wired to our custom input
-      document.getElementById('q').addEventListener('input', (e)=>{
-        table.search(e.target.value).draw();
-      });
-
-      // Reload button
-      document.getElementById('reload').addEventListener('click', async ()=>{
-        await loadData();
-      });
-
-      // Expand on title click
-      $('#animeTable tbody').on('click','button.title-btn', function(){
-        const tr = $(this).closest('tr');
-        const row = table.row(tr);
-        if(row.child.isShown()){
-          row.child.hide();
-          tr.removeClass('shown');
-        }else{
-          const data = row.data();
-          const el = renderChild(data.raw);
-          row.child(el).show();
-          tr.addClass('shown');
-        }
-      });
-    }
-
-    async function loadData(){
-      const tbody = document.querySelector('#animeTable tbody');
-      tbody.innerHTML = '<tr><td colspan="2" class="skeleton">Loading…</td></tr>';
+    async function doSearch(q){
+      q = (q||'').trim();
+      if(!q){ showEmpty(results); return; }
+      showLoading(results);
       try{
         let json;
         if(USE_ANIMETHEMES_API){
-          json = await fetchAll(6); // fetch first 6 pages (~300 anime)
+          json = await fetchAllBySearch(q, 3); // fetch first 3 pages (~150 anime)
         }else{
           const res = await fetch('/data/themes.json');
           if(!res.ok) throw new Error('Missing /data/themes.json');
-          json = await res.json();
+          const all = await res.json();
+          // client-side filter
+          const items = normalizeApi(all).filter(a=>a.name.toLowerCase().includes(q.toLowerCase()));
+          render(items);
+          return;
         }
         const items = normalizeApi(json);
-        populateTable(items);
+        render(items);
       }catch(err){
         console.error(err);
-        tbody.innerHTML = `<tr><td colspan="2">Impossibile caricare i dati. <code>${esc(err.message)}</code></td></tr>`;
+        results.innerHTML = `<div class="anime-card"><div class="anime-h"><div>Error</div></div><div style="padding:12px">Failed to load data. <code>${esc(err.message)}</code></div></div>`;
       }
     }
 
-    loadData();
+    function render(items){
+      if(!Array.isArray(items) || items.length===0){
+        results.innerHTML = `<div class="empty">No matches. Try another search.</div>`;
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      items.forEach(anime=> frag.appendChild(renderAnimeBlock(anime)));
+      results.innerHTML = '';
+      results.appendChild(frag);
+    }
+
+    // UX: debounce typing
+    let t=null; const DEBOUNCE=450;
+    input.addEventListener('input', (e)=>{
+      clearTimeout(t);
+      t = setTimeout(()=> doSearch(e.target.value), DEBOUNCE);
+    });
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(input.value); } });
+    goBtn.addEventListener('click', ()=> doSearch(input.value));
+    clearBtn.addEventListener('click', ()=>{ input.value=''; showEmpty(results); input.focus(); });
+
+    // On load: keep it empty
+    showEmpty(results);
   </script>
 </body>
 </html>
