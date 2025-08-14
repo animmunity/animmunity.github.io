@@ -226,20 +226,55 @@
     q.addEventListener('input', ()=>{ clearBtn.style.display = q.value ? 'inline-flex' : 'none'; });
     clearBtn.addEventListener('click', ()=>{ q.value=''; q.focus(); clearBtn.style.display='none'; });
 
-    // Helpers
+    /* ===============================
+       IMAGE & CSV HELPERS (FIX)
+       =============================== */
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
     const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const clean=(u)=> (u? String(u).trim().replace(/^\"+|\"+$/g,'') : '');
-    const toHQ=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'$1') : '';};
-    const toThumb=(u)=>{const x=clean(u); return x? x.replace(/l(\.(?:jpe?g|png))$/i,'t$1') : '';};
-    function imgOnErrorSmart(imgEl, original){
-      const cur=imgEl.getAttribute('data-state')||'hq';
-      if(cur==='hq'){
-        const t=toThumb(original);
-        if(t && t!==imgEl.src){ imgEl.src=t; imgEl.setAttribute('data-state','thumb'); return; }
+
+    // Percorso dati robusto e relativo alla pagina corrente
+    const dataUrl = (p) => new URL(p, location.href).toString();
+
+    // Estrae URL da stringa o JSON (es. {"large":"...","medium":"..."})
+    function pickImageUrl(raw) {
+      const s = clean(raw);
+      if (!s) return '';
+      if (s.startsWith('{')) {
+        try {
+          const o = JSON.parse(s);
+          const cand = o.large || o.medium || o.small || o.url || '';
+          return clean(cand);
+        } catch { /* ignore */ }
       }
-      imgEl.src=PLACEHOLDER; imgEl.setAttribute('data-state','placeholder');
+      return s;
     }
+
+    // Normalizza dimensioni MAL (...l.jpg → .jpg, ...l.webp → .webp) + supporto thumb
+    function normalizeSize(u, target='hq') {
+      if (!u) return '';
+      const qIndex = u.indexOf('?');
+      const base = qIndex >= 0 ? u.slice(0, qIndex) : u;
+      const qs = qIndex >= 0 ? u.slice(qIndex) : '';
+      const re = /l\.(jpe?g|png|webp)$/i;
+      const hq = base.replace(re, '.$1');
+      const th = base.replace(re, 't.$1');
+      const out = target === 'thumb' ? th : hq;
+      return (out || base) + qs;
+    }
+
+    // Fallback HQ → Thumb → Placeholder
+    function imgOnErrorSmart(imgEl) {
+      const state = imgEl.getAttribute('data-state') || 'hq';
+      const original = imgEl.getAttribute('data-original') || '';
+      if (state === 'hq') {
+        const t = normalizeSize(original, 'thumb');
+        if (t && t !== imgEl.src) { imgEl.src = t; imgEl.setAttribute('data-state','thumb'); return; }
+      }
+      imgEl.src = PLACEHOLDER;
+      imgEl.setAttribute('data-state','placeholder');
+    }
+
     const slugFromMAL=(url)=>{ try{ const u=new URL(url); const p=u.pathname.split('/').filter(Boolean); return decodeURIComponent(p[p.length-1]||''); }catch{return'';} };
     const buildHref=(row,type)=>{
       const url=row.url||row.link||'';
@@ -253,42 +288,51 @@
 
     // CSV loader
     function loadCSV(url){
-      return fetch(url,{mode:'cors',credentials:'omit'})
-        .then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
-        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data);
+      return fetch(url,{credentials:'omit'})
+        .then(r=>{ if(!r.ok) throw new Error(`${r.status} ${r.url}`); return r.text(); })
+        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data)
+        .catch(err=>{ console.warn('CSV load error:', err); return []; });
     }
 
     function renderRail(railId, rows, type){
       const rail=document.getElementById(railId); if(!rail) return; rail.innerHTML='';
       const withImg = rows.filter(r=>{
-        const any = (r.main_picture || r.image_url || r.image || '').trim();
+        const any = pickImageUrl(r.main_picture || r.image_url || r.image || r.thumbnail || '');
         return any !== '';
       });
       pick20(withImg).forEach(r=>{
         const title = r.title || r.title_english || r.title_japanese || 'Untitled';
-        const raw = r.main_picture || r.image_url || r.image || '';
-        const src = toHQ(raw) || toThumb(raw) || PLACEHOLDER;
+        const raw   = pickImageUrl(r.main_picture || r.image_url || r.image || r.thumbnail || '');
+        const hq    = normalizeSize(raw, 'hq') || raw || PLACEHOLDER;
         const a=document.createElement('a');
         a.className='card-mini';
         a.href=buildHref(r,type);
         a.setAttribute('role','option');
         a.setAttribute('aria-label',title);
-        a.innerHTML = `<img loading="lazy" decoding="async" src="${esc(src)}" onerror="imgOnErrorSmart(this,'${esc(raw)}')" alt="${esc(title)}"><div class="t" title="${esc(title)}">${esc(title)}</div>`;
+        a.innerHTML = `
+          <img loading="lazy" decoding="async"
+               src="${esc(hq)}"
+               data-original="${esc(raw)}"
+               onerror="imgOnErrorSmart(this)"
+               alt="${esc(title)}">
+          <div class="t" title="${esc(title)}">${esc(title)}</div>`;
         rail.appendChild(a);
       });
     }
 
-    // Data boot
+    /* ===============================
+       DATA BOOT
+       =============================== */
     document.addEventListener('DOMContentLoaded', ()=>{
       // Show skeletons early
       showRailSkeleton('anime-rail', 10);
       showRailSkeleton('manga-rail', 10);
 
-      // Manga (merge)
+      // Manga (merge) – percorsi RELATIVI
       Promise.allSettled([
-        loadCSV('/data/manga_core.csv'),
-        loadCSV('/data/manga_text_part1.csv'),
-        loadCSV('/data/manga_text_part2.csv'),
+        loadCSV(dataUrl('data/manga_core.csv')),
+        loadCSV(dataUrl('data/manga_text_part1.csv')),
+        loadCSV(dataUrl('data/manga_text_part2.csv')),
       ]).then(([coreP,d1P,d2P])=>{
         if(coreP.status!=='fulfilled') return;
         const core=(coreP.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
@@ -307,24 +351,28 @@
         });
         const rows = core.map(c=>{
           const det=map.get(c.manga_id)||{};
+          const mainPic = pickImageUrl(det.main_picture || c.main_picture || det.image_url || c.image_url || det.image || c.image || '');
           return { ...c, ...det,
             title:(c.title||det.title||'').trim()||'Untitled',
-            main_picture:String(det.main_picture||c.main_picture||'').trim(),
+            main_picture: mainPic,
             url:det.url||c.url||''
           };
         });
         if(rows.length){ clearRailSkeleton('manga-rail'); renderRail('manga-rail', rows, 'manga'); }
       }).catch(()=>{});
 
-      // Anime (single CSV)
-      loadCSV('/data/anime.csv').then(core=>{
-        const rows=(core||[]).map(r=>({
-          ...r,
-          anime_id:String(r.anime_id||'').trim(),
-          title:(r.title||r.title_english||r.title_japanese||'').trim()||'Untitled',
-          main_picture:String(r.main_picture||r.image_url||'').trim(),
-          url:r.url||''
-        }));
+      // Anime (single CSV) – percorso RELATIVO + estrazione/normalizzazione immagine
+      loadCSV(dataUrl('data/anime.csv')).then(core=>{
+        const rows=(core||[]).map(r=>{
+          const pic = pickImageUrl(r.main_picture || r.image_url || r.image || '');
+          return {
+            ...r,
+            anime_id:String(r.anime_id||'').trim(),
+            title:(r.title||r.title_english||r.title_japanese||'').trim()||'Untitled',
+            main_picture: pic,
+            url:r.url||''
+          };
+        });
         if(rows.length){ clearRailSkeleton('anime-rail'); renderRail('anime-rail', rows, 'anime'); }
       }).catch(()=>{});
 
@@ -374,7 +422,7 @@
       })();
     });
 
-    // Skeleton helpers (possono stare in fondo)
+    // Skeleton helpers
     function showRailSkeleton(railId, count=8){
       const rail=document.getElementById(railId); if(!rail) return;
       rail.innerHTML='';
