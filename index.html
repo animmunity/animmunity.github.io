@@ -305,9 +305,9 @@
 
       // Manga (merge)
       Promise.allSettled([
-        loadCSV('data/manga_core.csv'),
-        loadCSV('data/manga_text_part1.csv'),
-        loadCSV('data/manga_text_part2.csv')
+loadCSV('/data/manga_core.csv')
+loadCSV('/data/manga_text_part1.csv')
+loadCSV('/data/manga_text_part2.csv')
       ]).then(([coreP,d1P,d2P])=>{
         if(coreP.status!=='fulfilled') return;
         const core=(coreP.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
@@ -336,7 +336,7 @@
       }).catch(()=>{});
 
       // Anime (single CSV)
-      loadCSV('data/anime.csv').then(core=>{
+      loadCSV('/data/anime.csv').then(core=>{
         const rows=(core||[]).map(r=>({
           ...r,
           anime_id:String(r.anime_id||'').trim(),
