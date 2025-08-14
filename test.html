@@ -100,7 +100,8 @@
     function pickBestVideo(videos){
       const arr = Array.isArray(videos)? videos: [];
       const yt = arr.find(v=>{ const u = String(v?.link||v?.url||''); return u.includes('youtube.com')||u.includes('youtu.be'); });
-      const hi = arr.filter(v=>{ const u = String(v?.link||v?.url||'').toLowerCase(); return u.includes('.webm') || u.includes('.mp4'); }).sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
+      const hi = arr.filter(v=>{ const u = String(v?.link||v?.url||'').toLowerCase(); return u.includes('.webm') || u.includes('.mp4'); })
+                    .sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
       return yt || hi || arr[0] || null;
     }
 
@@ -125,15 +126,14 @@
       params.set('page[size]', String(PAGE_SIZE));
       params.set('page[number]', String(page));
       params.set('filter[has]','animethemes');
-      // AnimeThemes supports search by name via filter[search]
-      if(query) params.set('filter[name]', query);
+      if(query) params.set('filter[name]', query); // exact/contains by name
       const url = `https://api.animethemes.moe/anime?${params}`;
       const res = await fetch(url, { mode:'cors' });
       if(!res.ok) throw new Error('API error '+res.status);
       return res.json();
     }
 
-    async function fetchAllBySearch(query, pages=4){
+    async function fetchAllBySearch(query, pages=3){
       const batches = await Promise.all([...Array(pages)].map((_,i)=>fetchPageBySearch(query, i+1)));
       const merged = { data: [] };
       batches.forEach(j=>{ merged.data.push(...(j?.anime||j?.data||[])); });
@@ -172,7 +172,11 @@
               if(u.hostname.includes('youtu.be')){ id = u.pathname.replace(/^\//,''); }
               else { id = u.searchParams.get('v') || ''; }
             }catch{}
-            emb.innerHTML = id ? `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${id}?autoplay=1"></iframe>` : `<div class="center">Video unavailable</div>`;
+            emb.innerHTML = id
+              ? `<iframe loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+                    allow="autoplay; encrypted-media" allowfullscreen
+                    src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1"></iframe>`
+              : `<div class="center">Video unavailable</div>`;
           }else{
             const src = urlStr.toString();
             emb.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
@@ -200,7 +204,7 @@
     }
 
     function showEmpty(container){
-      container.innerHTML = `<div class="empty">Nothing yet. Make a search to see OP/ED videos.</div>`;
+      container.innerHTML = `<div class="empty">Nothing yet. Type at least 2 characters to search.</div>`;
     }
 
     // ========= INIT =========
@@ -209,12 +213,9 @@
     const clearBtn = document.getElementById('clear');
     const results = document.getElementById('results');
 
-    let lastController = null;
-    function abortPrev(){ if(lastController){ lastController.abort(); lastController = null; } }
-
     async function doSearch(q){
       q = (q||'').trim();
-      if(!q){ showEmpty(results); return; }
+      if(q.length < 2){ showEmpty(results); return; } // throttle too-short queries
       showLoading(results);
       try{
         let json;
@@ -224,7 +225,6 @@
           const res = await fetch('/data/themes.json');
           if(!res.ok) throw new Error('Missing /data/themes.json');
           const all = await res.json();
-          // client-side filter
           const items = normalizeApi(all).filter(a=>a.name.toLowerCase().includes(q.toLowerCase()));
           render(items);
           return;
@@ -239,7 +239,7 @@
 
     function render(items){
       if(!Array.isArray(items) || items.length===0){
-        results.innerHTML = `<div class="empty">No matches. Try another search.</div>`;
+        results.innerHTML = `<div class="empty">No matches for your search. Try another title.</div>`;
         return;
       }
       const frag = document.createDocumentFragment();
