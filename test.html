@@ -4,379 +4,287 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AniMMUnity — OP/ED Gallery</title>
-  <meta name="description" content="Futuristic light gallery of Anime OP/ED with instant search, filters and lazy embeds. Powered by AnimeThemes API or local JSON."/>
+  <meta name="description" content="Lightweight OP/ED gallery. The page starts empty; videos appear only after you search. Powered by AnimeThemes API or local JSON."/>
   <meta name="theme-color" content="#ffffff" />
 
-  <!-- Base site styles for coherence -->
+  <!-- Base site styles for consistency -->
   <link rel="stylesheet" href="styles.css">
 
   <style>
     :root{
       --bg:#fbfbfe; --ink:#0b1220; --muted:#667085; --panel:#ffffff; --border:#e6e8ef; --ring:#dbeafe; --accent:#2563eb;
-      --r-2xl:24px; --r-xl:18px; --r-lg:14px; --shadow-1:0 10px 30px rgba(11,18,32,.07); --shadow-2:0 14px 40px rgba(11,18,32,.10)
+      --shadow-1:0 10px 30px rgba(11,18,32,.07); --shadow-2:0 14px 40px rgba(11,18,32,.10)
     }
     *{box-sizing:border-box}
     body{margin:0;background:radial-gradient(1200px 800px at 10% -10%, #fff 0%, #f7f8ff 45%, #f1f6ff 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,"Noto Sans",Arial;line-height:1.55}
     a,a:visited{color:inherit;text-decoration:none}
-    a,a:visited{color:inherit;text-decoration:none}
     .shell{max-width:1200px;margin:0 auto;padding:18px}
-
     .hero{background:rgba(255,255,255,.86);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow-1);padding:18px;margin-top:14px}
     .hero h1{margin:0 0 6px;font-weight:900;letter-spacing:-.02em;font-size:clamp(1.2rem,1.4vw + 1rem,1.9rem)}
     .muted{color:var(--muted)}
 
     .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
-    .input{flex:1;min-width:200px;height:48px;padding:0 14px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;font-size:1rem;outline:none}
+    .input{flex:1;min-width:220px;height:48px;padding:0 14px 0 46px;border-radius:14px;border:1px solid var(--border);background:#fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 14px center;font-size:1rem;outline:none}
     .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 4px var(--ring)}
-    .btn{height:48px;padding:0 14px;border-radius:10px;border:1px solid #bbb;background:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.06)}
-    .btn:hover{background:#f7f7f7}
-    .btn:focus{outline:none;box-shadow:0 0 0 3px rgba(37,99,235,.2)}
-    .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(37,99,235,.25)}
-    /* segmented control */
-    .seg{display:inline-flex;border:1px solid #bbb;border-radius:12px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,.06)}
-    .seg .btn{border:0;border-right:1px solid #bbb;border-radius:0;height:40px}
-    .seg .btn:last-child{border-right:0}
-    .seg .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent;box-shadow:none}
-    .btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:transparent}
+    .btn{height:40px;padding:0 12px;border-radius:10px;border:1px solid #bbb;background:#fff;font-weight:800;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.06)}
 
-    .alpha{display:none !important}
-    .alpha button{display:none !important}
+    /* Results */
+    .results{margin-top:18px}
+    .empty{border:1px dashed var(--border);border-radius:14px;padding:18px;text-align:center;color:var(--muted)}
 
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
-    .group{grid-column:span 12;background:var(--panel);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);overflow:hidden}
-    .group-h{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
-    .group-title{margin:0;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .pill{font-size:.78rem;font-weight:800;padding:6px 10px;border-radius:999px;background:#eef2ff;border:1px solid #e0e7ff}
-
-    .cards{display:grid;grid-template-columns:repeat(12,1fr);gap:10px;padding:12px}
-    .card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
-    @media (max-width:920px){.card{grid-column:span 12}}
+    .anime-card{background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;margin-bottom:14px}
+    .anime-h{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .anime-title{font-weight:900;letter-spacing:-.02em}
+    .themes-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px;padding:12px}
+    .theme-card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);background:linear-gradient(180deg,#fff,#f7f9ff);overflow:hidden}
+    @media (max-width:920px){.theme-card{grid-column:span 12}}
     .card-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border)}
     .tag{font-weight:900}
     .meta{color:var(--muted);font-size:.9rem}
     .card-body{padding:12px}
     .thumb{width:100%;height:0;padding-top:56%;position:relative;background:#eef2ff;border-radius:12px;overflow:hidden}
-    .thumb .preview,.thumb .preview-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-    .play-ico{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900;display:inline-grid;place-items:center;box-shadow:var(--shadow-1);cursor:pointer}
     .thumb .play{position:absolute;inset:0;display:grid;place-items:center;cursor:pointer}
     .thumb .play button{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:900}
+    /* NEW: make thumbnail fill the area */
+    .thumb .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
     .embed{position:relative;width:100%;padding-top:56%;border-radius:12px;overflow:hidden}
     .embed iframe,.embed video{position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:12px;background:#000}
 
-    .skeleton{animation:fade .9s ease-in-out infinite alternate;background:linear-gradient(90deg,#f1f5ff,#fff,#f1f5ff);min-height:80px;border-radius:12px;border:1px solid var(--border)}
-    @keyframes fade{to{opacity:.6}}
-
-    .center{padding:18px;text-align:center;color:var(--muted)}
-  /* --- Skeleton shimmer for coherence --- */
-    .skeleton{display:none}
-    .sk-wrap{display:grid;gap:14px}
-    .sk-group{border:1px solid var(--border);border-radius:var(--r-2xl);background:linear-gradient(180deg,#fff,#f7f9ff);box-shadow:var(--shadow-1);padding:12px}
-    .sk-head{height:18px;width:40%;border-radius:8px;background:#eef2ff;position:relative;overflow:hidden}
-    .sk-cards{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
-    .sk-card{grid-column:span 6;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:#fff}
-    .sk-thumb{height:196px;background:#eef2ff;position:relative;overflow:hidden}
-    .sk-line{height:14px;margin:8px;border-radius:6px;background:#eef2ff;position:relative;overflow:hidden}
-    .shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);transform:translateX(-100%);animation:shimmer 1.2s infinite}
-    @keyframes shimmer{to{transform:translateX(100%)}}
-    @media (max-width:920px){.sk-card{grid-column:span 12}}
+    .bar{height:6px;background:linear-gradient(90deg,#e5edff,#d7efff);border-radius:999px;overflow:hidden;margin-top:8px}
+    .bar > i{display:block;height:100%;width:30%;background:#2563eb;animation:ldr 1s linear infinite}
+    @keyframes ldr{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
   </style>
 </head>
 <body>
+  <!-- Header -->
   <div id="header-placeholder"></div>
 
   <main class="shell">
     <h1 class="page-title" style="text-align:center;">OP/ED Gallery</h1>
     <section class="seo-intro">
       <h2>All Anime Openings &amp; Endings</h2>
-      <p>Explore every <strong>opening</strong> and <strong>ending</strong>: ricerca istantanea, filtri OP/ED e alfabetico, embed leggeri e veloci. Grafica coerente con AniMMUnity, tema light futuristico.</p>
-    </section>
-    <section class="hero">
-      <h2 class="group-title" style="margin:0 0 6px">Opening &amp; Ending</h2>
-      <p class="muted">Tutti gli opening e closing in un’unica pagina. Ricerca istantanea, filtri e <em>lazy embed</em>.</p>
-      <div class="toolbar">
-        <input id="q" class="input" placeholder="Cerca anime…" aria-label="Cerca anime" />
-        <div class="seg" role="group" aria-label="Filter type">
-          <button id="f-all" class="btn" aria-pressed="true">All</button>
-          <button id="f-op" class="btn" aria-pressed="false">OP</button>
-          <button id="f-ed" class="btn" aria-pressed="false">ED</button>
-        </div>
-      </div>
-      
+      <p>The page starts empty. Type a title to search; matching anime will appear with their themes and embedded videos.</p>
     </section>
 
-    <section id="results" class="grid" aria-live="polite"><div class="center" style="padding:20px;font-weight:800;">Loading...</div></section>
+    <section class="hero">
+      <h2 class="group-title" style="margin:0 0 6px">Search</h2>
+      <p class="muted">No alphabetical filters. Start typing and press <strong>Enter</strong> or click <strong>Search</strong>.</p>
+      <div class="toolbar">
+        <input id="q" class="input" placeholder="Search anime…" aria-label="Search anime" />
+        <button id="go" class="btn" type="button">Search</button>
+        <button id="clear" class="btn" type="button" title="Clear results">Clear</button>
+      </div>
+      <div id="hint" class="muted" style="margin-top:8px">Tip: try "Naruto", "One Piece", "Attack on Titan"…</div>
+    </section>
+
+    <section id="results" class="results" aria-live="polite">
+      <div class="empty">Nothing yet. Make a search to see OP/ED videos.</div>
+    </section>
   </main>
 
   <!-- Footer -->
   <div id="footer-placeholder"></div>
 
   <script>
-    // Header / Footer includes (coherence with site)
+    // Header / Footer include (optional)
     fetch('header.html').then(r=>r.text()).then(t=>{ const el=document.getElementById('header-placeholder'); if(el) el.innerHTML=t; }).catch(()=>{});
     fetch('footer.html').then(r=>r.text()).then(t=>{ const el=document.getElementById('footer-placeholder'); if(el) el.innerHTML=t; }).catch(()=>{});
 
     // ====== CONFIG ======
-    const USE_ANIMETHEMES_API = true; // se false, usa /data/themes.json
-    const PAGE_SIZE = 20; // per pagina quando si usa l'API
+    const USE_ANIMETHEMES_API = true; // if false, uses /data/themes.json
+    const PAGE_SIZE = 50; // results per request
 
     // ====== HELPERS ======
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
     const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
     const getArtists = theme => (theme.song?.artists || theme.song?.artist || []).map(a=>a?.name).filter(Boolean).join(', ');
     const themeCode = t => `${t.type || t.kind || 'OP'}${t.sequence || t.number || ''}`;
 
-    // Extract robust YouTube ID (supports youtu.be, watch?v=, /embed/)
+    // NEW: robust YouTube ID extractor (youtu.be, watch?v=, /embed/)
     function ytIdFromUrl(u){
       try{
         const url = new URL(u);
         if(url.hostname.includes('youtu.be')) return url.pathname.replace(/^\//,'');
         if(url.searchParams.get('v')) return url.searchParams.get('v');
-        const m = url.pathname.match(/\/embed\/([A-Za-z0-9_-]{6,})/); if(m) return m[1];
+        const m = url.pathname.match(/\/embed\/([A-Za-z0-9_-]{6,})/);
+        if(m) return m[1];
       }catch{}
-      const m2 = String(u).match(/(?:v=|\/)([A-Za-z0-9_-]{6,})/); return m2 ? m2[1] : '';
-    }
-
-    function setPressed(btn){
-      btn.parentElement.querySelectorAll('.btn').forEach(b=>b.setAttribute('aria-pressed','false'));
-      btn.setAttribute('aria-pressed','true');
-    }
-
-    // ====== UI BUILD ======
-    const state = { q:'', type:'all', page:1, busy:false };
-
-    const qInput = $('#q');
-    const btnAll = $('#f-all');
-    const btnOP  = $('#f-op');
-    const btnED  = $('#f-ed');
-
-    qInput.addEventListener('input', e=>{ state.q=e.target.value.trim(); state.page=1; debounceLoad(); });
-    btnAll.addEventListener('click', e=>{ setPressed(e.currentTarget); state.type='all'; state.page=1; load(); });
-    btnOP.addEventListener('click',  e=>{ setPressed(e.currentTarget); state.type='OP';  state.page=1; load(); });
-    btnED.addEventListener('click',  e=>{ setPressed(e.currentTarget); state.type='ED';  state.page=1; load(); });
-
-    let debounceTO=null; function debounceLoad(){ clearTimeout(debounceTO); debounceTO=setTimeout(load, 250); }
-
-    // ====== DATA FETCH LAYERS ======
-    async function fetchFromAnimeThemes(){
-      // JSON:API style — includes themes, entries, videos, song & artists
-      const params = new URLSearchParams();
-      params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
-      params.set('sort','name');
-      params.set('page[size]', String(PAGE_SIZE));
-      params.set('page[number]', String(state.page));
-      params.set('filter[has]','animethemes');
-      if(state.q){ params.set('q', state.q); } // full-text search (fallback)
-      
-      const url = `https://api.animethemes.moe/anime?${params}`;
-      const res = await fetch(url, { mode:'cors' });
-      if(!res.ok) throw new Error('API error '+res.status);
-      return res.json();
-    }
-
-    async function fetchFromLocal(){
-      const res = await fetch('/data/themes.json');
-      if(!res.ok) throw new Error('Missing /data/themes.json');
-      return res.json();
+      const m2 = String(u).match(/(?:v=|\/)([A-Za-z0-9_-]{6,})/);
+      return m2 ? m2[1] : '';
     }
 
     function pickBestVideo(videos){
       const arr = Array.isArray(videos)? videos: [];
-      const yt = arr.find(v=>/youtube\.com|youtu\.be/i.test(v?.link||v?.url||''));
-      const hi = arr.filter(v=>/\.webm|\.mp4/i.test(v?.link||v?.url||''))
+      const yt = arr.find(v=>{ const u = String(v?.link||v?.url||''); return u.includes('youtube.com')||u.includes('youtu.be'); });
+      const hi = arr.filter(v=>{ const u = String(v?.link||v?.url||'').toLowerCase(); return u.includes('.webm') || u.includes('.mp4'); })
                     .sort((a,b)=> (b?.resolution||0)-(a?.resolution||0))[0];
       return yt || hi || arr[0] || null;
     }
 
     function normalizeApi(json){
-      // Expect JSON:API { data:[anime], included:[...]} but AnimeThemes returns expanded relations
       const items = (json?.anime || json?.data || []).map(a=>{
         const themes = (a.animethemes || a.themes || []).map(t=>({
           type: t.type || t.kind || 'OP',
           sequence: t.sequence || t.number || '',
           song: t.song || {},
-          entries: (t.animethemeentries || t.entries || []).map(e=>({
-            videos: e.videos || []
-          }))
+          entries: (t.animethemeentries || t.entries || []).map(e=>({ videos: e.videos || [] }))
         }));
         return { name: a.name || a.slug || a.title, themes };
       });
       return items;
     }
 
-    // ====== RENDER ======
-    function render(items){
-      const target = $('#results');
-      target.innerHTML = '';
-      if(!items.length){ target.innerHTML = '<div class="center">Nessun risultato.</div>'; return; }
-
-      items.forEach(anime=>{
-        const tFiltered = (anime.themes||[]).filter(t=> state.type==='all' ? true : String(t.type||'').toUpperCase()===state.type);
-        if(!tFiltered.length) return;
-
-        const g = document.createElement('div'); g.className='group';
-        g.innerHTML = `<div class="group-h"><h3 class="group-title">${esc(anime.name)}</h3><span class="pill">${tFiltered.length} theme(s)</span></div>`;
-        const list = document.createElement('div'); list.className='cards';
-
-        tFiltered.forEach(t=>{
-          const label   = themeCode(t);
-          const entry   = (t.entries && t.entries[0]) || {};
-          const vid     = pickBestVideo(entry.videos);
-          const song    = t.song?.title || t.song?.name || '';
-          const artists = getArtists(t);
-
-          const card = document.createElement('div'); card.className='card';
-          const metaText = [song, artists].filter(Boolean).join(' — ');
-
-          let previewHTML=''; let ytId='';
-          if(vid && /(youtube\.com|youtu\.be)/i.test(vid.link||vid.url||'')){
-            ytId = ytIdFromUrl(vid.link||vid.url||'');
-            const thumbUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '';
-            previewHTML = thumbUrl ? `<img class="preview" src="${esc(thumbUrl)}" alt="${esc(label)} preview" onerror="this.parentNode.querySelector('.no-prev')?.classList.remove('hide'); this.remove();">` : '';
-          }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
-            const src = vid.link||vid.url;
-            previewHTML = `<video class="preview-video" src="${esc(src)}#t=0.1" muted playsinline preload="metadata" loop autoplay></video>`;
-          }
-          if(!previewHTML) previewHTML = `<div class="no-prev center">No preview</div>`;
-
-          card.innerHTML = `
-            <div class="card-h">
-              <span class="tag">${esc(label)}</span>
-              <span class="meta">${esc(metaText)}</span>
-            </div>
-            <div class="card-body">
-              <div class="thumb">
-                ${previewHTML}
-                <button class="play-ico" type="button" aria-label="Play">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                </button>
-              </div>
-            </div>`;
-
-          const thumb  = card.querySelector('.thumb');
-          const playBtn = card.querySelector('.play-ico');
-          playBtn.addEventListener('click', ()=>{
-            const wrap = document.createElement('div'); wrap.className='embed';
-            if(ytId){
-              wrap.innerHTML = `<iframe allow="autoplay; encrypted-media" allowfullscreen src="https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1"></iframe>`;
-            }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
-              const src = vid.link||vid.url; const type = /\.webm$/i.test(src)? 'video/webm':'video/mp4';
-              wrap.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}" type="${type}"></video>`;
-            }else{
-              wrap.innerHTML = `<div class="center">Nessun video embeddabile. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Apri su AnimeThemes</a></div>`;
-            }
-            thumb.replaceWith(wrap);
-          });
-
-          list.appendChild(card);
-        });
-
-        g.appendChild(list);
-        target.appendChild(g);
-      });
-
-      const pager = document.createElement('div'); pager.className='center';
-      pager.innerHTML = `<button class="btn" id="more">Carica altri</button>`;
-      pager.querySelector('#more').addEventListener('click', ()=>{ state.page++; load(true); });
-      target.appendChild(pager);
+    // API calls
+    async function fetchPageBySearch(query, page=1){
+      const params = new URLSearchParams();
+      params.set('include','animethemes.animethemeentries.videos,animethemes.song.artists');
+      params.set('sort','name');
+      params.set('page[size]', String(PAGE_SIZE));
+      params.set('page[number]', String(page));
+      params.set('filter[has]','animethemes');
+      if(query) params.set('filter[name]', query); // exact/contains by name
+      const url = `https://api.animethemes.moe/anime?${params}`;
+      const res = await fetch(url, { mode:'cors' });
+      if(!res.ok) throw new Error('API error '+res.status);
+      return res.json();
     }
 
-      items.forEach(anime=>{
-        // filtro tipo
-        const tFiltered = anime.themes.filter(t=> state.type==='all' ? true : (t.type||'').toUpperCase()===state.type);
-        if(!tFiltered.length) return;
-
-        const g = document.createElement('div'); g.className='group';
-        g.innerHTML = `<div class="group-h"><h3 class="group-title">${esc(anime.name)}</h3><span class="pill">${tFiltered.length} theme(s)</span></div>`;
-        const list = document.createElement('div'); list.className='cards';
-
-        tFiltered.forEach(t=>{
-          const label = themeCode(t);
-          const entry = (t.entries && t.entries[0]) || {};
-          const vid = pickBestVideo(entry.videos);
-          const song = t.song?.title || t.song?.name || '';
-          const artists = getArtists(t);
-
-          const card = document.createElement('div'); card.className='card';
-          const metaText = [song, artists].filter(Boolean).join(' — ');
-          let previewHTML=''; let ytId='';
-          if(vid && /youtube\.com|youtu\.be/i.test(vid.link||vid.url||'')){
-            const m = String(vid.link||vid.url).match(/(?:v=|\.be\/)([A-Za-z0-9_-]{6,})/);
-            ytId = m ? m[1] : '';
-            const thumbUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : '';
-            previewHTML = thumbUrl ? `<img class=\"preview\" src=\"${esc(thumbUrl)}\" alt=\"${esc(label)} preview\">` : '';
-          }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
-            const src = vid.link||vid.url;
-            previewHTML = `<video class=\"preview-video\" src=\"${esc(src)}#t=0.1\" muted playsinline preload=\"metadata\" loop autoplay></video>`;
-          }
-          if(!previewHTML) previewHTML = `<div class=\"no-preview center\" style=\"padding:20px;\">No preview</div>`;
-
-          card.innerHTML = `
-            <div class=\"card-h\">
-              <span class=\"tag\">${esc(label)}</span>
-              <span class=\"meta\">${esc(metaText)}</span>
-            </div>
-            <div class=\"card-body\">
-              <div class=\"thumb\">
-                ${previewHTML}
-                <button class=\"play-ico\" type=\"button\" aria-label=\"Play\">
-                  <svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"currentColor\"><path d=\"M8 5v14l11-7z\"></path></svg>
-                </button>
-              </div>
-            </div>`;
-
-          const thumb = card.querySelector('.thumb');
-          const playBtn = card.querySelector('.play-ico');
-          playBtn.addEventListener('click', ()=>{
-            const wrap = document.createElement('div'); wrap.className='embed';
-            if(ytId){
-              wrap.innerHTML = `<iframe allow=\"autoplay; encrypted-media\" allowfullscreen src=\"https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1\"></iframe>`;
-            }else if(vid && /(\.webm|\.mp4)/i.test(vid.link||vid.url||'')){
-              const src = vid.link||vid.url; const type = /\.webm$/i.test(src)? 'video/webm':'video/mp4';
-              wrap.innerHTML = `<video controls playsinline autoplay><source src=\"${esc(src)}\" type=\"${type}\"></video>`;
-            }else{
-              wrap.innerHTML = `<div class=\"center\">Nessun video embeddabile. <a href=\"https://animethemes.moe/\" target=\"_blank\" rel=\"noopener\">Apri su AnimeThemes</a></div>`;
-            }
-            thumb.replaceWith(wrap);
-          });
-          
-
-          list.appendChild(card);
-        });
-
-        g.appendChild(list);
-        target.appendChild(g);
-      });
-
-      // paginazione semplice
-      const pager = document.createElement('div'); pager.className='center';
-      pager.innerHTML = `<button class="btn" id="more">Carica altri</button>`;
-      pager.querySelector('#more').addEventListener('click', ()=>{ state.page++; load(true); });
-      target.appendChild(pager);
+    async function fetchAllBySearch(query, pages=3){
+      const batches = await Promise.all([...Array(pages)].map((_,i)=>fetchPageBySearch(query, i+1)));
+      const merged = { data: [] };
+      batches.forEach(j=>{ merged.data.push(...(j?.anime||j?.data||[])); });
+      return merged;
     }
 
-    // ====== SKELETON UI ======
-    function showSkeleton(){ const target=document.getElementById('results'); if(!target) return; target.innerHTML='<div class="center" style="padding:20px;font-weight:800;">Loading...</div>'; }
-    function clearSkeleton(){ const target=document.getElementById('results'); if(target) target.innerHTML=''; }
+    // Rendering
+    function renderThemeCard(t){
+      const label = themeCode(t);
+      const entry = (t.entries && t.entries[0]) || {};
+      const vid = pickBestVideo(entry.videos);
+      const song = t.song?.title || t.song?.name || '';
+      const artists = getArtists(t);
 
-    // ====== LOAD ======
-    async function load(append=false){
-      if(state.busy) return; state.busy=true;
-      const target = $('#results');
-      if(!append) showSkeleton();
+      const card = document.createElement('div'); card.className='theme-card';
+      const metaText = [song, artists].filter(Boolean).join(' — ');
+
+      // NEW: YouTube thumbnail before Play (with mqdefault fallback)
+      let thumbHtml = '';
+      if (vid && (String(vid.link||vid.url||'').includes('youtube.com') || String(vid.link||vid.url||'').includes('youtu.be'))){
+        const id = ytIdFromUrl(vid.link||vid.url||'');
+        if (id){
+          const t1 = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+          const t2 = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+          thumbHtml = `<img class="preview" src="${t1}" onerror="this.src='${t2}'" alt="${esc(label)} thumbnail">`;
+        }
+      }
+
+      card.innerHTML = `
+        <div class="card-h">
+          <span class="tag">${esc(label)}</span>
+          <span class="meta">${esc(metaText)}</span>
+        </div>
+        <div class="card-body">
+          <div class="thumb">
+            ${thumbHtml}
+            <div class="play"><button type="button">Play</button></div>
+          </div>
+        </div>`;
+
+      const thumb = card.querySelector('.thumb');
+      const btn = card.querySelector('button');
+      btn.addEventListener('click', ()=>{
+        const emb = document.createElement('div'); emb.className='embed';
+        if(vid){
+          const urlStr = String(vid.link||vid.url||'');
+          if(urlStr.includes('youtube.com') || urlStr.includes('youtu.be')){
+            const id = ytIdFromUrl(urlStr);
+            emb.innerHTML = id
+              ? `<iframe loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+                    allow="autoplay; encrypted-media" allowfullscreen
+                    src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1"></iframe>`
+              : `<div class="center">Video unavailable</div>`;
+          }else{
+            const src = urlStr.toString();
+            emb.innerHTML = `<video controls playsinline autoplay><source src="${esc(src)}"></video>`;
+          }
+        }else{
+          emb.innerHTML = `<div class="center">No embeddable video. <a href="https://animethemes.moe/" target="_blank" rel="noopener">Open on AnimeThemes</a></div>`;
+        }
+        thumb.replaceWith(emb);
+      });
+
+      return card;
+    }
+
+    function renderAnimeBlock(anime){
+      const block = document.createElement('div'); block.className = 'anime-card';
+      block.innerHTML = `<div class="anime-h"><div class="anime-title">${esc(anime.name)}</div></div>`;
+      const grid = document.createElement('div'); grid.className = 'themes-grid';
+      anime.themes.forEach(t=> grid.appendChild(renderThemeCard(t)));
+      block.appendChild(grid);
+      return block;
+    }
+
+    function showLoading(container){
+      container.innerHTML = `<div class="anime-card"><div class="anime-h"><div>Searching…</div></div><div style="padding:12px"><div class="bar"><i></i></div></div></div>`;
+    }
+
+    function showEmpty(container){
+      container.innerHTML = `<div class="empty">Nothing yet. Type at least 2 characters to search.</div>`;
+    }
+
+    // ========= INIT =========
+    const input = document.getElementById('q');
+    const goBtn = document.getElementById('go');
+    const clearBtn = document.getElementById('clear');
+    const results = document.getElementById('results');
+
+    async function doSearch(q){
+      q = (q||'').trim();
+      if(q.length < 2){ showEmpty(results); return; } // throttle too-short queries
+      showLoading(results);
       try{
-        const json = USE_ANIMETHEMES_API ? await fetchFromAnimeThemes() : await fetchFromLocal();
-        const items = normalizeApi(json).filter(a=> !state.q || (a.name||'').toLowerCase().includes(state.q.toLowerCase()));
-        clearSkeleton();
+        let json;
+        if(USE_ANIMETHEMES_API){
+          json = await fetchAllBySearch(q, 3); // fetch first 3 pages (~150 anime)
+        }else{
+          const res = await fetch('/data/themes.json');
+          if(!res.ok) throw new Error('Missing /data/themes.json');
+          const all = await res.json();
+          const items = normalizeApi(all).filter(a=>a.name.toLowerCase().includes(q.toLowerCase()));
+          render(items);
+          return;
+        }
+        const items = normalizeApi(json);
         render(items);
       }catch(err){
         console.error(err);
-        clearSkeleton();
-        target.innerHTML = `<div class="center">Impossibile caricare i dati. <code>${esc(err.message)}</code></div>`;
-      }finally{ state.busy=false; }
+        results.innerHTML = `<div class="anime-card"><div class="anime-h"><div>Error</div></div><div style="padding:12px">Failed to load data. <code>${esc(err.message)}</code></div></div>`;
+      }
     }
 
-    load();
+    function render(items){
+      if(!Array.isArray(items) || items.length===0){
+        results.innerHTML = `<div class="empty">No matches for your search. Try another title.</div>`;
+        return;
+      }
+      const frag = document.createDocumentFragment();
+      items.forEach(anime=> frag.appendChild(renderAnimeBlock(anime)));
+      results.innerHTML = '';
+      results.appendChild(frag);
+    }
+
+    // UX: debounce typing
+    let t=null; const DEBOUNCE=450;
+    input.addEventListener('input', (e)=>{
+      clearTimeout(t);
+      t = setTimeout(()=> doSearch(e.target.value), DEBOUNCE);
+    });
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); doSearch(input.value); } });
+    goBtn.addEventListener('click', ()=> doSearch(input.value));
+    clearBtn.addEventListener('click', ()=>{ input.value=''; showEmpty(results); input.focus(); });
+
+    // On load: keep it empty
+    showEmpty(results);
   </script>
 </body>
 </html>
