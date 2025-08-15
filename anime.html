@@ -206,6 +206,21 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* 1) Taglia qualsiasi extrabordo nei caroselli */
+.rail-wrap { overflow: hidden; }
+
+/* 2) Non far sporgere i bottoni: niente valori negativi */
+.nav-prev { left: 6px; transform: translateY(-50%); }
+.nav-next { right: 6px; transform: translateY(-50%); }
+
+/* 3) Cintura di sicurezza globale contro lo scroll orizzontale */
+html, body { overflow-x: hidden; }
+
+/* 4) Effetto griglia: evita che il ::before allarghi il layout */
+.fx-grid { overflow: hidden; }
+.fx-grid::before { inset: 0; } /* se vuoi mantenere l’effetto ampio, usa max(…):
+/* .fx-grid::before { inset: max(-10vw, -80px); } */
+
 </style>
 </head>
 <body>
