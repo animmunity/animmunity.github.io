@@ -1,6 +1,6 @@
 <header class="amm-topbar" role="banner">
   <style>
-    /* ===== AniMMUnity Topbar (flex, bianco) ===== */
+    /* ===== AniMMUnity Topbar (flex, white) ===== */
     .amm-topbar, .amm-topbar * { box-sizing: border-box; }
     .amm-topbar{
       position: sticky; top: 0; z-index: 1000; width: 100%;
@@ -8,27 +8,37 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* barra: hamburger + logo affiancati (niente grid) */
+    /* Barra: solo flex, niente grid */
     .amm-bar{
-      width:100%; margin:0; padding:10px clamp(14px,3vw,24px);
-      display:flex; align-items:center; gap:10px; min-height:56px;
+      position: relative;
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; padding:10px clamp(14px,3vw,24px); min-height:56px;
     }
 
-    /* --- hamburger --- */
+    /* Hamburger (sempre visibile) */
     .mobile-menu-toggle{
-      width:44px; height:44px; border-radius:12px; display:inline-flex;
-      align-items:center; justify-content:center; cursor:pointer;
-      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
-      text-decoration:none;
+      -webkit-appearance:none; appearance:none;
+      width:44px; height:44px; border-radius:12px; border:0;
+      display:inline-flex; align-items:center; justify-content:center;
+      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
     }
+    .mobile-menu-toggle:active{ transform: translateY(1px); }
     .mobile-menu-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
 
-    /* --- logo --- */
+    /* Logo SEMPRE centrato */
+    .logo-wrap{
+      position:absolute; left:50%; transform: translateX(-50%);
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:auto;  /* cliccabile */
+    }
     .logo-img{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
     .logo-img img{ height:42px; width:auto; display:block; }
     #h1-off{ position:absolute; left:-9999px; }
 
-    /* ===== Drawer laterale ===== */
+    /* Spacer a destra per bilanciare la larghezza del burger (centro perfetto) */
+    .amm-spacer{ width:44px; height:44px; }
+
+    /* Drawer laterale */
     .amm-drawer{
       position:fixed; inset:0 auto 0 0; width:min(86vw,360px);
       background:#fff; border-right:1px solid #e7e9f1;
@@ -56,40 +66,38 @@
     }
     .amm-drawer .social svg{ width:18px; height:18px; }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 960px){
-      .logo-img img{ height:38px; }
-    }
-    @media (max-width: 400px){
-      .logo-img img{ height:34px; }
-    }
+    /* Responsive piccoli aggiustamenti */
+    @media (max-width: 960px){ .logo-img img{ height:38px; } }
+    @media (max-width: 400px){ .logo-img img{ height:34px; } }
   </style>
 
-  <!-- Barra: hamburger + logo (markup simile al tuo widget Image) -->
+  <!-- Barra superiore: [hamburger] [logo centrato assoluto] [spacer] -->
   <div class="amm-bar">
-    <a class="mobile-menu-toggle" href="#" role="button" aria-controls="amm-drawer" aria-expanded="false" aria-label="Menu">
+    <button class="mobile-menu-toggle" type="button" aria-controls="amm-drawer" aria-expanded="false" aria-label="Menu">
       <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-    </a>
+    </button>
 
-    <a class="logo-img custom-image" href="/">
-      <img
-        alt="AniMMUnity"
-        id="Image121_img"
-        src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
-      <h1 id="h1-off">AniMMunity</h1>
-    </a>
+    <div class="logo-wrap">
+      <a class="logo-img custom-image" href="/">
+        <img alt="AniMMunity" id="Image121_img"
+             src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
+        <h1 id="h1-off">AniMMunity</h1>
+      </a>
+    </div>
+
+    <span class="amm-spacer" aria-hidden="true"></span>
   </div>
 
-  <!-- Drawer con menu -->
+  <!-- Drawer con le stesse voci del tuo “next-pro-main-nav-menu” -->
   <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu" tabindex="-1">
-    <h3>Topbar Menu</h3>
-    <nav class="amm-list">
-      <a href="https://animmunity.blogspot.com/">Home</a>
-      <a href="https://animmunity.github.io/anime-list.html">Anime List</a>
-      <a href="https://animmunity.github.io/top-anime.html">Top Anime</a>
-      <a href="https://animmunity.github.io/manga-list.html">Manga List</a>
-      <a href="https://animmunity.github.io/top-manga.html">Top Manga</a>
-      <a href="https://animmunity.github.io/character-list.html">Characters</a>
+    <h3>Menu</h3>
+    <nav class="amm-list" role="menubar">
+      <a href="https://animmunity.blogspot.com/" role="menuitem">Home</a>
+      <a href="https://animmunity.github.io/anime-list.html" role="menuitem">Anime List</a>
+      <a href="https://animmunity.github.io/top-anime.html" role="menuitem">Top Anime</a>
+      <a href="https://animmunity.github.io/manga-list.html" role="menuitem">Manga List</a>
+      <a href="https://animmunity.github.io/top-manga.html" role="menuitem">Top Manga</a>
+      <a href="https://animmunity.github.io/character-list.html" role="menuitem">Characters</a>
     </nav>
 
     <h3>Follow</h3>
@@ -112,7 +120,7 @@
 
   <script>
     (function(){
-      const header   = document.currentScript.closest('.amm-topbar') || document.querySelector('.amm-topbar');
+      const header   = document.querySelector('.amm-topbar');
       const toggle   = header.querySelector('.mobile-menu-toggle');
       const drawer   = header.querySelector('#amm-drawer');
       const backdrop = header.querySelector('.amm-backdrop');
