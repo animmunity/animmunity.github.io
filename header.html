@@ -1,61 +1,48 @@
 <header class="amm-topbar" role="banner">
   <style>
-    /* ===== AniMMUnity Topbar (scoped, white, no-JS) ===== */
+    /* ===== AniMMUnity Topbar (scoped) ===== */
     .amm-topbar, .amm-topbar * { box-sizing: border-box; }
     .amm-topbar{
       position: sticky; top: 0; z-index: 1000; width: 100%;
-      background:#fff; border-bottom:1px solid #e7e9f1;
-      overflow-x: clip;
+      background:#fff; border-bottom:1px solid #e7e9f1; overflow-x: clip;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    .amm-wrap{
-      max-width:1200px; margin:0 auto;
-      padding:10px max(20px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
-      display:grid; align-items:center; gap:12px;
-      /* desktop: menu | logo | social  */
-      grid-template-columns: 1fr auto 1fr;
+
+    /* contenitore full-width (come row-x1) */
+    .amm-topbar .container.row-x1{
+      width:100%; margin:0; padding:10px clamp(14px,3vw,24px);
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      min-height:56px;
     }
 
-    /* — Brand (centrato) — */
-    .amm-brand{ justify-self:center; display:inline-flex; align-items:center; min-width:0 }
-    .amm-brand img{ height:42px; width:auto; max-width:100%; display:block }
-
-    /* — Menu left — */
-    .amm-menu{ display:flex; align-items:center; gap:14px; flex-wrap:wrap }
-    .amm-menu a{
-      color:#0b1220; text-decoration:none; font-weight:600; font-size:14px;
-      padding:8px 10px; border-radius:10px; background:#fff;
-      box-shadow: inset 0 0 0 1px #e7e9f1;
+    /* ------ blocco "widget Image" richiesto ------ */
+    .amm-topbar .widget.Image{
+      display:flex; align-items:center; gap:10px; min-width:0;
     }
-    .amm-menu a:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
-
-    /* — Social right — */
-    .amm-social{ display:flex; justify-content:flex-end; gap:10px; }
-    .amm-social a{
-      width:36px; height:36px; display:grid; place-items:center;
-      border-radius:10px; background:#fff; color:#0b1220;
-      box-shadow: inset 0 0 0 1px #e7e9f1;
+    .amm-topbar .mobile-menu-toggle{
+      width:44px; height:44px; border-radius:12px; display:none; /* visibile solo in mobile */
+      place-items:center; background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
     }
-    .amm-social svg{ width:18px; height:18px; }
+    .amm-topbar .mobile-menu-toggle::before{
+      content:""; width:22px; height:22px; display:block;
+      background:
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>')
+        no-repeat center/contain;
+    }
+    .amm-topbar .logo-img{ display:inline-flex; align-items:center; gap:10px; }
+    .amm-topbar .logo-img img{ height:42px; width:auto; display:block; }
+    .amm-topbar #h1-off{ position:absolute; left:-9999px; }
 
-    /* ===== Mobile / Tablet ===== */
+    /* ===== Drawer mobile (menu laterale) ===== */
     #amm-open{ position:absolute; left:-9999px; }
-    .amm-hamb{
-      display:none; width:44px; height:44px; border-radius:12px;
-      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
-      align-items:center; justify-content:center; cursor:pointer;
-    }
-    .amm-hamb svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
-
-    /* Drawer + backdrop */
     .amm-drawer{
       position:fixed; inset:0 auto 0 0; width:min(86vw,360px);
       background:#fff; border-right:1px solid #e7e9f1;
-      transform:translateX(-100%); transition:transform .25s ease; padding:14px;
+      transform:translateX(-100%); transition:transform .25s ease; padding:14px; z-index:1001;
     }
     .amm-backdrop{
       position:fixed; inset:0; background:rgba(0,0,0,.35);
-      opacity:0; pointer-events:none; transition:opacity .2s ease;
+      opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
     }
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
@@ -64,39 +51,44 @@
     .amm-list{ display:flex; flex-direction:column; gap:8px; }
     .amm-list a{
       padding:10px 12px; border-radius:10px; text-decoration:none; color:#0b1220;
-      font-weight:600; box-shadow: inset 0 0 0 1px #e7e9f1;
+      font-weight:700; box-shadow: inset 0 0 0 1px #e7e9f1;
     }
     .amm-drawer .social{ margin-top:10px; display:flex; gap:10px }
+    .amm-drawer .social a{
+      width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
+      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; color:#0b1220;
+    }
+    .amm-drawer .social svg{ width:18px; height:18px; }
 
+    /* ===== Responsive ===== */
     @media (max-width: 960px){
-      /* header a 3 colonne: [hamb] [logo] [spazio]  */
-      .amm-wrap{
-        grid-template-columns: 44px 1fr 44px;
-      }
-      .amm-hamb{ display:flex; }
-      .amm-menu, .amm-social{ display:none; }
-      .amm-brand{ justify-self:center }
-      .amm-brand img{ height:38px }
+      /* hamburger + logo affiancati (uguale al tuo snippet) */
+      .amm-topbar .container.row-x1{ justify-content:flex-start; }
+      .amm-topbar .mobile-menu-toggle{ display:inline-grid; }
+      .amm-topbar .logo-img img{ height:38px; }
     }
     @media (max-width: 400px){
-      .amm-brand img{ height:34px }
+      .amm-topbar .logo-img img{ height:34px; }
     }
   </style>
 
-  <div class="amm-wrap">
-    <!-- Hamburger (a sinistra, mobile) -->
+  <div class="container row-x1">
+    <!-- Checkbox nascosto per aprire/chiudere il drawer -->
     <input type="checkbox" id="amm-open" aria-hidden="true">
-    <label class="amm-hamb" for="amm-open" aria-label="Open menu">
-      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-    </label>
 
-    <!-- Logo centrale -->
-    <a class="amm-brand" href="https://animmunity.blogspot.com/">
-      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMUnity">
-    </a>
+    <!-- 🔻 QUI il markup mobile identico a quello che volevi -->
+    <div class="widget Image" data-version="2" id="Image121">
+      <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu" aria-controls="amm-drawer" aria-expanded="false"></a>
+      <a class="logo-img custom-image" href="/">
+        <img alt="AniMMunity" id="Image121_img"
+             src="https://blogger.googleusercontent.com/img/a/AVvXsEhxDE9GIj2qFHrjNIPUkbVn-S8Ii8KepIyQ_LiRWikFLgWIRRvNqjMiSJk3Wx8GTUy8ih6VLcFxF8d65jYpQBrSQnizbaIS_SlatSD2HOvUfy4ZH279Wb0gBkKbD3sXOvqeTL2J-II4UQdCVyXlSMBPIUmQlrP-xAxtfgYmQ-FOZuoyBgpksGTx3_0YPRE=s500">
+        <h1 id="h1-off">AniMMunity</h1>
+      </a>
+    </div>
+  </div>
 
-  <!-- Drawer (mobile) con stessi link + social -->
-  <aside class="amm-drawer" aria-label="Mobile menu">
+  <!-- Drawer: link “topbar” + social (solo mobile) -->
+  <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu">
     <h3>Topbar Menu</h3>
     <nav class="amm-list">
       <a href="https://animmunity.blogspot.com/p/about-us.html">About Us</a>
@@ -120,4 +112,20 @@
     </div>
   </aside>
   <div class="amm-backdrop" aria-hidden="true"></div>
+
+  <script>
+    // Click sull'icona hamburger (markup <a>) per togglare il checkbox #amm-open
+    (function(){
+      const root = document.currentScript.closest('.amm-topbar');
+      const toggle = root.querySelector('.mobile-menu-toggle');
+      const checkbox = root.querySelector('#amm-open');
+      const backdrop = root.querySelector('.amm-backdrop');
+
+      function open(){ checkbox.checked = true; toggle.setAttribute('aria-expanded','true'); }
+      function close(){ checkbox.checked = false; toggle.setAttribute('aria-expanded','false'); }
+
+      toggle.addEventListener('click', (e)=>{ e.preventDefault(); checkbox.checked ? close() : open(); });
+      backdrop.addEventListener('click', close);
+    })();
+  </script>
 </header>
