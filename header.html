@@ -77,9 +77,18 @@
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
 
-    /* Responsive: logo un filo più basso su schermi piccoli */
-    @media (max-width: 960px){ .logo-img img{ max-height: 38px; } }
-    @media (max-width: 400px){ .logo-img img{ max-height: 32px; } }
+/* mobile/tablet: logo più grande */
+@media (max-width: 960px){
+  .logo-img img{ max-height: 44px; }
+  /* opzionale: concede un filo più spazio orizzontale al logo */
+  .logo-wrap{ max-width: calc(100% - 108px); }
+}
+
+@media (max-width: 400px){
+  .logo-img img{ max-height: 40px; }
+  /* opzionale: ancora un po' più spazio su telefoni molto piccoli */
+  .logo-wrap{ max-width: calc(100% - 104px); }
+}
   </style>
 
   <!-- Checkbox di stato (CSS-only) -->
