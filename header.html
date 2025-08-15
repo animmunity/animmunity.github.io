@@ -18,7 +18,9 @@
     .amm-bar{
       position: relative;
       display:flex; align-items:center; justify-content:space-between;
-      width:100%; padding:10px clamp(14px,3vw,24px); min-height:56px;
+      width:100%; padding:10px clamp(14px,3vw,24px);
+      /* altezza legata alla dimensione del logo (aggiornata sotto) */
+      min-height: calc(clamp(48px, 18vw, 96px) + 20px);
     }
 
     /* Hamburger (sempre visibile) — usa <label for="#amm-open"> */
@@ -39,8 +41,13 @@
       text-align:center;
     }
     .logo-img{ display:inline-flex; align-items:center; gap:10px; max-width:100%; min-width:0; text-decoration:none; }
+    /* >>> MOD: logo fluido e nitido */
     .logo-img img{
-      display:block; max-width:100%; height:auto; max-height:42px; /* desktop */
+      display:block;
+      width:auto;                  /* conserva proporzioni */
+      max-width:100%;              /* non supera lo spazio disponibile */
+      height: clamp(48px, 18vw, 96px); /* cresce su mobile come nello screen */
+      image-rendering:auto;
     }
     #h1-off{ position:absolute; left:-9999px; }
     .amm-spacer{ flex:0 0 44px; width:44px; height:44px; }
@@ -77,9 +84,7 @@
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
 
-    /* Responsive: SOLO dimensione logo aggiornata */
-    @media (max-width: 960px){ .logo-img img{ max-height: 36px; } }
-    @media (max-width: 400px){ .logo-img img{ max-height: 30px; } }
+    /* Non servono media-query aggiuntive: clamp gestisce tutto */
   </style>
 
   <!-- Checkbox di stato (CSS-only) -->
@@ -92,11 +97,19 @@
       <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </label>
 
-    <!-- Logo nero centrato -->
+    <!-- Logo nero centrato - con srcset per evitare sgranature -->
     <div class="logo-wrap">
       <a class="logo-img custom-image" href="/">
-        <img alt="AniMMunity" id="Image121_img"
-             src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
+        <img
+          alt="AniMMunity"
+          id="Image121_img"
+          src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500"
+          srcset="
+            https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500 500w,
+            https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s1000 1000w"
+          sizes="(max-width: 960px) 60vw, 320px"
+          decoding="async"
+          fetchpriority="high">
         <h1 id="h1-off">AniMMunity</h1>
       </a>
     </div>
