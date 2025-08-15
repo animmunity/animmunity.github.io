@@ -13,9 +13,6 @@
   <link rel="stylesheet" href="styles.css" />
 
   <style>
-    /* =====================================================
-       HYPERLIGHT — Futuristic Light UI
-       ===================================================== */
     :root{
       --bg:#fcfcff; --ink:#0b1220; --muted:#667085; --panel:#ffffff; --border:#e7e9f1;
       --ring:#dbeafe; --accent:#2563eb; --accent-ink:#ffffff; --accent-soft:#eef2ff;
@@ -23,7 +20,6 @@
       --shadow-2:0 18px 48px rgba(11,18,32,.12);
       --r-3xl:28px; --r-2xl:22px; --r-xl:18px; --r-lg:14px; --r-md:12px;
     }
-
     html,body{height:100%}
     body{
       background:
@@ -35,78 +31,56 @@
       -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
       overflow-x:hidden;
     }
-
     a,a:visited{color:inherit;text-decoration:none}
-    a:hover{text-decoration:none}
-
     .fx-grid{position:fixed;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:multiply;mask-image:radial-gradient(closest-side, rgba(0,0,0,.15), transparent 70%)}
     .fx-grid::before{content:"";position:absolute;inset:-50%;background:
       linear-gradient(0deg,transparent 49.5%,rgba(0,0,0,.035) 50%,transparent 50.5%),
       linear-gradient(90deg,transparent 49.5%,rgba(0,0,0,.035) 50%,transparent 50.5%);
       background-size:40px 40px;
     }
-
     .shell{max-width:1180px;margin:0 auto;padding:20px}
-
-    /* HERO */
     .hero{position:relative;border:1px solid var(--border);border-radius:var(--r-3xl);box-shadow:var(--shadow-1);padding:26px;margin-top:18px;background:rgba(255,255,255,.75);backdrop-filter:saturate(120%) blur(8px)}
     .aurora{position:absolute;inset:-60px -60px auto auto;width:360px;height:360px;background:radial-gradient(circle at 30% 30%, rgba(37,99,235,.25), rgba(16,185,129,.18) 55%, transparent 60%);filter:blur(30px);pointer-events:none}
     .hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-bottom:12px}
     .title{margin:0;font-size:clamp(1.35rem,1.6vw + 1rem,2.1rem);font-weight:900;letter-spacing:-.02em}
     .tagline{margin:0;color:var(--muted)}
-
     .searchbar{display:flex;gap:10px;align-items:center;width:100%}
     .input{flex:1;min-width:220px;height:54px;padding:0 16px 0 50px;border-radius:16px;border:1px solid var(--border);background:#fff;outline:none;font-size:1.03rem;transition:box-shadow .15s ease, border-color .15s ease;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23667085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>');background-repeat:no-repeat;background-position:16px center}
     .input:focus{border-color:#bfd7ff;box-shadow:0 0 0 5px var(--ring)}
     .btn{height:54px;padding:0 18px;border-radius:14px;border:1px solid var(--border);background:#fff;font-weight:900;cursor:pointer;transition:transform .06s ease, box-shadow .15s ease, background .15s ease}
     .btn:active{transform:translateY(1px)}
     .btn-primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 12px 24px rgba(37,99,235,.28)}
-    .btn-primary:hover{filter:brightness(.98)}
     .btn-icon{width:54px;display:inline-flex;align-items:center;justify-content:center}
-
-    /* NAV Matrix */
     .matrix{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-top:16px}
     .link3d{grid-column:span 6;position:relative;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:22px;color:inherit;border:1px solid var(--border);border-radius:22px;background:linear-gradient(180deg,#ffffff 40%, #f7f8ff 100%);box-shadow:var(--shadow-1);overflow:hidden}
     .link3d:hover{box-shadow:var(--shadow-2)}
-    .link3d .txt{display:flex;flex-direction:column}
     .k{font-weight:900;font-size:clamp(1.05rem,1vw + .6rem,1.48rem);letter-spacing:-.02em}
     .ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#f5f7ff);box-shadow:var(--shadow-1)}
     .ico svg{width:22px;height:22px;stroke-width:2}
     .link3d::after{content:"";position:absolute;inset:auto -10px -10px auto;width:180px;height:180px;background:conic-gradient(from 220deg, rgba(37,99,235,.15), rgba(16,185,129,.10), transparent 65%);filter:blur(18px)}
     @media (max-width: 920px){.link3d{grid-column:span 12}}
-
-    /* Sections */
     .section{background:rgba(255,255,255,.82);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:var(--r-2xl);box-shadow:var(--shadow-1);padding:16px;margin-top:16px}
     .section-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
     .section-h h2{margin:0;font-size:1.08rem;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
-    .section-h a{font-weight:800;color:var(--ink)}
-
-    /* Rails / Cards */
     .rail{display:flex;gap:10px;overflow:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:6px}
     .rail::-webkit-scrollbar{height:6px}
     .rail::-webkit-scrollbar-thumb{background:#00000033;border-radius:50px}
     .card-mini{width:150px;flex:0 0 150px;scroll-snap-align:start;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f7f9ff)}
     .card-mini img{width:100%;height:196px;object-fit:cover;background:#eef2ff}
     .card-mini .t{padding:9px 10px;font-size:.95rem;font-weight:900;letter-spacing:-.01em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-    /* Blog */
     .blog-grid{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
     .blog-card{flex:0 0 270px;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow-1);overflow:hidden;background:linear-gradient(180deg,#fff,#f8faff)}
     .blog-card .cover{width:100%;height:150px;object-fit:cover;background:#eef2ff}
     .blog-card .body{padding:10px}
     .blog-card .title{font-weight:900;font-size:1.02rem;letter-spacing:-.01em;color:var(--ink);margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .blog-card .meta{color:var(--muted);font-size:.85rem}
-
     .center{text-align:center;color:var(--muted)}
-
-    /* Skeletons */
     .skeleton-rail{display:flex;gap:10px;overflow:hidden}
     .sk-card{width:150px;height:240px;border-radius:16px;border:1px solid var(--border);background:linear-gradient(180deg,#fff,#f7f9ff);position:relative;overflow:hidden}
     .sk-thumb{height:196px;background:#eef2ff}
     .sk-line{height:14px;margin:8px;border-radius:6px;background:#eef2ff}
     .shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);transform:translateX(-100%);animation:shimmer 1.4s infinite}
     @keyframes shimmer{to{transform:translateX(100%)}}
-
     @media (prefers-reduced-motion: reduce){
       *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
     }
@@ -114,12 +88,9 @@
 </head>
 <body>
   <div class="fx-grid" aria-hidden="true"></div>
-
-  <!-- Header slot -->
   <div id="header-placeholder"></div>
 
   <main class="shell">
-    <!-- HERO / SEARCH -->
     <section class="hero" aria-label="Search">
       <div class="aurora" aria-hidden="true"></div>
       <div class="hero-top">
@@ -135,132 +106,81 @@
       </div>
     </section>
 
-    <!-- NEO NAV -->
     <section class="matrix" aria-label="Main sections">
-      <a class="link3d" href="anime-list.html">
-        <div class="txt"><span class="k">Anime List</span></div>
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h20M2 15h20"/></svg></span>
-      </a>
-
-      <a class="link3d" href="manga-list.html">
-        <div class="txt"><span class="k">Manga List</span></div>
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v14"/><path d="M12 6a7 7 0 0 0-7-3H4v16h1a7 7 0 0 1 7 3"/><path d="M12 6a7 7 0 0 1 7-3h1v16h-1a7 7 0 0 0-7 3"/></svg></span>
-      </a>
-
-      <a class="link3d" href="top-anime.html">
-        <div class="txt"><span class="k">Top Anime</span></div>
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 9H5a3 3 0 0 1 0-6h2"/><path d="M17 9h2a3 3 0 0 0 0-6h-2"/></svg></span>
-      </a>
-
-      <a class="link3d" href="top-manga.html">
-        <div class="txt"><span class="k">Top Manga</span></div>
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l5 5 5-8 5 8 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg></span>
-      </a>
-
-      <!-- Anime Themes -->
-      <a class="link3d" href="anime-themes.html">
-        <div class="txt"><span class="k">Anime Themes</span></div>
-        <span class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M10 8l6 4-6 4z"/>
-          </svg>
-        </span>
-      </a>
-
-      <a class="link3d" href="https://animmunity.github.io/character-list.html" target="_blank" rel="noopener">
-        <div class="txt"><span class="k">Characters</span></div>
-        <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-      </a>
+      <a class="link3d" href="anime-list.html"><div class="txt"><span class="k">Anime List</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h20M2 15h20"/></svg></span></a>
+      <a class="link3d" href="manga-list.html"><div class="txt"><span class="k">Manga List</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v14"/><path d="M12 6a7 7 0 0 0-7-3H4v16h1a7 7 0 0 1 7 3"/><path d="M12 6a7 7 0 0 1 7-3h1v16h-1a7 7 0 0 0-7 3"/></svg></span></a>
+      <a class="link3d" href="top-anime.html"><div class="txt"><span class="k">Top Anime</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 9H5a3 3 0 0 1 0-6h2"/><path d="M17 9h2a3 3 0 0 0 0-6h-2"/></svg></span></a>
+      <a class="link3d" href="top-manga.html"><div class="txt"><span class="k">Top Manga</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l5 5 5-8 5 8 5-5"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg></span></a>
+      <a class="link3d" href="anime-themes.html"><div class="txt"><span class="k">Anime Themes</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4z"/></svg></span></a>
+      <a class="link3d" href="https://animmunity.github.io/character-list.html" target="_blank" rel="noopener"><div class="txt"><span class="k">Characters</span></div><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><path d="M21 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span></a>
     </section>
 
-    <!-- BLOG -->
     <section class="section" aria-label="Latest blog posts">
-      <div class="section-h">
-        <h2>Latest articles</h2>
-        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a>
-      </div>
+      <div class="section-h"><h2>Latest articles</h2><a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a></div>
       <div id="blog-rail" class="blog-grid" aria-live="polite"></div>
       <div id="blog-status" class="center" style="padding:10px"></div>
     </section>
 
-    <!-- ANIME SHOWCASE -->
     <section class="section" aria-label="Anime showcase">
-      <div class="section-h">
-        <h2>Anime Showcase</h2>
-        <a href="anime-list.html">see all →</a>
-      </div>
+      <div class="section-h"><h2>Anime Showcase</h2><a href="anime-list.html">see all →</a></div>
       <div class="rail" id="anime-rail" role="listbox" aria-label="Anime covers"></div>
     </section>
 
-    <!-- MANGA SHOWCASE -->
     <section class="section" aria-label="Manga showcase">
-      <div class="section-h">
-        <h2>Manga Showcase</h2>
-        <a href="manga-list.html">see all →</a>
-      </div>
+      <div class="section-h"><h2>Manga Showcase</h2><a href="manga-list.html">see all →</a></div>
       <div class="rail" id="manga-rail" role="listbox" aria-label="Manga covers"></div>
     </section>
   </main>
 
-  <!-- Footer slot -->
   <div id="footer-placeholder"></div>
 
   <script>
-    // Header / Footer includes (non-blocking)
+    // Header / Footer
     fetch('header.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('header-placeholder').innerHTML=t||''}).catch(()=>{});
     fetch('footer.html').then(r=>r.ok?r.text():'').then(t=>{document.getElementById('footer-placeholder').innerHTML=t||''}).catch(()=>{});
 
-    // Search logic
+    // Search
     const q = document.getElementById('q');
     const go = document.getElementById('search-go');
     const clearBtn = document.getElementById('clear-q');
-    function runSearch(){
-      const val = (q.value || '').trim();
-      const base = 'anime-list.html';
-      location.href = val ? `${base}?q=${encodeURIComponent(val)}` : base;
-    }
+    function runSearch(){ const val=(q.value||'').trim(); const base='anime-list.html'; location.href= val ? `${base}?q=${encodeURIComponent(val)}` : base; }
     q.addEventListener('keydown', e => { if(e.key === 'Enter') runSearch(); });
     go.addEventListener('click', runSearch);
     q.addEventListener('input', ()=>{ clearBtn.style.display = q.value ? 'inline-flex' : 'none'; });
     clearBtn.addEventListener('click', ()=>{ q.value=''; q.focus(); clearBtn.style.display='none'; });
 
-    /* ===============================
-       IMAGE & CSV HELPERS
-       =============================== */
+    /* ==== Helpers immagini ==== */
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+    const BAD_VALUES = new Set(['', 'null', 'undefined', 'none', '[]', '{}', '-', '""', "''"]);
     const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const clean=(u)=> (u? String(u).trim().replace(/^\"+|\"+$/g,'') : '');
 
-    // Estrae URL da stringa o JSON (es. {"large":"...","medium":"..."})
     function pickImageUrl(raw) {
-      const s = clean(raw);
-      if (!s) return '';
+      let s = clean(raw);
+      if (!s || BAD_VALUES.has(s.toLowerCase())) return '';
       if (s.startsWith('{')) {
         try {
-          const o = JSON.parse(s);
-          const cand = o.large || o.medium || o.small || o.url || '';
-          return clean(cand);
-        } catch { /* ignore */ }
+          const o = JSON.parse(s.replace(/\\'/g,'"'));
+          s = o.large || o.medium || o.small || o.url || '';
+          s = clean(s);
+        } catch {}
       }
+      if (!/^https?:\/\//i.test(s)) return '';
       return s;
     }
 
-    // Normalizza dimensioni MAL (...l.jpg → .jpg, ...l.webp → .webp) + supporto thumb
     function normalizeSize(u, target='hq') {
       if (!u) return '';
       const qIndex = u.indexOf('?');
       const base = qIndex >= 0 ? u.slice(0, qIndex) : u;
       const qs = qIndex >= 0 ? u.slice(qIndex) : '';
       const re = /l\.(jpe?g|png|webp)$/i;
-      const hq = base.replace(re, '.$1');
-      const th = base.replace(re, 't.$1');
+      const hq = base.replace(re, '.$1');     // MAL: ...l.jpg -> .jpg
+      const th = base.replace(re, 't.$1');    // MAL: ...l.jpg -> t.jpg
       const out = target === 'thumb' ? th : hq;
       return (out || base) + qs;
     }
 
-    // Fallback HQ → Thumb → Placeholder
     function imgOnErrorSmart(imgEl) {
       const state = imgEl.getAttribute('data-state') || 'hq';
       const original = imgEl.getAttribute('data-original') || '';
@@ -281,9 +201,15 @@
       const id=String(row[type==='anime'?'anime_id':'manga_id']||'').trim();
       return id ? `${base}?id=${encodeURIComponent(id)}` : '#';
     };
-    const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // ======= DATA ENDPOINTS (come le pagine list) =======
+    // Shuffle & take N (robusto)
+    function takeRandom(arr, n=20){
+      const a = arr.slice();
+      for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+      return a.slice(0,n);
+    }
+
+    // DATA endpoints (come nelle pagine list)
     const DATA_BASE = 'https://animmunity.github.io/data/';
     const URLS = {
       anime: DATA_BASE + 'anime.csv',
@@ -292,7 +218,6 @@
       mangaP2: DATA_BASE + 'manga_text_part2.csv',
     };
 
-    // CSV loader (singolo endpoint, niente 404 rumore)
     function loadCSV(url){
       return fetch(url, { credentials:'omit', cache:'no-store' })
         .then(r=>{ if(!r.ok) throw new Error(`${r.status} ${r.url}`); return r.text(); })
@@ -302,14 +227,15 @@
 
     function renderRail(railId, rows, type){
       const rail=document.getElementById(railId); if(!rail) return; rail.innerHTML='';
-      const withImg = rows.filter(r=>{
-        const any = pickImageUrl(r.main_picture || r.image_url || r.image || r.thumbnail || '');
-        return any !== '';
-      });
-      pick20(withImg).forEach(r=>{
-        const title = r.title || r.title_english || r.title_japanese || 'Untitled';
+
+      // NON filtriamo più per immagine: mostriamo sempre, con placeholder se serve
+      const sample = takeRandom(rows, 20);
+
+      sample.forEach(r=>{
+        const title = (r.title || r.title_english || r.title_japanese || 'Untitled').trim() || 'Untitled';
         const raw   = pickImageUrl(r.main_picture || r.image_url || r.image || r.thumbnail || '');
-        const hq    = normalizeSize(raw, 'hq') || raw || PLACEHOLDER;
+        const src   = normalizeSize(raw, 'hq') || PLACEHOLDER;
+
         const a=document.createElement('a');
         a.className='card-mini';
         a.href=buildHref(r,type);
@@ -317,7 +243,7 @@
         a.setAttribute('aria-label',title);
         a.innerHTML = `
           <img loading="lazy" decoding="async"
-               src="${esc(hq)}"
+               src="${esc(src)}"
                data-original="${esc(raw)}"
                onerror="imgOnErrorSmart(this)"
                alt="${esc(title)}">
@@ -326,15 +252,30 @@
       });
     }
 
-    /* ===============================
-       DATA BOOT
-       =============================== */
+    // Skeletons
+    function showRailSkeleton(railId, count=8){
+      const rail=document.getElementById(railId); if(!rail) return;
+      rail.innerHTML='';
+      const wrap=document.createElement('div');
+      wrap.className='skeleton-rail';
+      for(let i=0;i<count;i++){
+        const c=document.createElement('div'); c.className='sk-card shimmer';
+        c.innerHTML='<div class="sk-thumb"></div><div class="sk-line"></div>';
+        wrap.appendChild(c);
+      }
+      rail.appendChild(wrap);
+    }
+    function clearRailSkeleton(railId){
+      const rail=document.getElementById(railId); if(!rail) return;
+      rail.innerHTML='';
+    }
+
+    /* ==== BOOT ==== */
     document.addEventListener('DOMContentLoaded', ()=>{
-      // Skeletons
       showRailSkeleton('anime-rail', 10);
       showRailSkeleton('manga-rail', 10);
 
-      // Manga (merge) — usa data/
+      // Manga merge
       Promise.all([
         loadCSV(URLS.mangaCore),
         loadCSV(URLS.mangaP1),
@@ -371,7 +312,7 @@
         renderRail('manga-rail', rows, 'manga');
       }).catch(()=>{ clearRailSkeleton('manga-rail'); });
 
-      // Anime (single CSV) — usa data/
+      // Anime
       loadCSV(URLS.anime).then(core=>{
         if(!core.length){ clearRailSkeleton('anime-rail'); return; }
         const rows=(core||[]).map(r=>{
@@ -388,12 +329,11 @@
         renderRail('anime-rail', rows, 'anime');
       }).catch(()=>{ clearRailSkeleton('anime-rail'); });
 
-      // Blogger feed via JSONP (CORS-safe)
+      // Blog (JSONP)
       (function loadBlogger(){
         const status=document.getElementById('blog-status');
         const rail=document.getElementById('blog-rail');
         if(!rail) return;
-        // skeletons
         rail.innerHTML='';
         const sk=document.createElement('div'); sk.className='skeleton-rail';
         for(let i=0;i<4;i++){
@@ -433,24 +373,6 @@
         document.body.appendChild(s);
       })();
     });
-
-    // Skeleton helpers
-    function showRailSkeleton(railId, count=8){
-      const rail=document.getElementById(railId); if(!rail) return;
-      rail.innerHTML='';
-      const wrap=document.createElement('div');
-      wrap.className='skeleton-rail';
-      for(let i=0;i<count;i++){
-        const c=document.createElement('div'); c.className='sk-card shimmer';
-        c.innerHTML='<div class="sk-thumb"></div><div class="sk-line"></div>';
-        wrap.appendChild(c);
-      }
-      rail.appendChild(wrap);
-    }
-    function clearRailSkeleton(railId){
-      const rail=document.getElementById(railId); if(!rail) return;
-      rail.innerHTML='';
-    }
   </script>
 </body>
 </html>
