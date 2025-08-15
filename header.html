@@ -15,12 +15,12 @@
       min-height:56px;
     }
 
-    /* ------ blocco "widget Image" richiesto ------ */
+    /* ------ blocco "widget Image" (hamburger + logo) ------ */
     .amm-topbar .widget.Image{
       display:flex; align-items:center; gap:10px; min-width:0;
     }
     .amm-topbar .mobile-menu-toggle{
-      width:44px; height:44px; border-radius:12px; display:none; /* visibile solo in mobile */
+      width:44px; height:44px; border-radius:12px; display:inline-grid; /* visibile anche in desktop */
       place-items:center; background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
     }
     .amm-topbar .mobile-menu-toggle::before{
@@ -33,8 +33,14 @@
     .amm-topbar .logo-img img{ height:42px; width:auto; display:block; }
     .amm-topbar #h1-off{ position:absolute; left:-9999px; }
 
-    /* ===== Drawer mobile (menu laterale) ===== */
-    #amm-open{ position:absolute; left:-9999px; }
+    /* Visually hidden utility (per il checkbox non focalizzabile) */
+    .amm-visually-hidden{
+      position:absolute !important;
+      width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+      clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; left:-9999px;
+    }
+
+    /* ===== Drawer (menu laterale) ===== */
     .amm-drawer{
       position:fixed; inset:0 auto 0 0; width:min(86vw,360px);
       background:#fff; border-right:1px solid #e7e9f1;
@@ -44,8 +50,7 @@
       position:fixed; inset:0; background:rgba(0,0,0,.35);
       opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
     }
-    #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
-    #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
+    /* lo stato open è gestito via JS, non col :checked, per migliore accessibilità */
 
     .amm-drawer h3{ margin:6px 6px 10px; font:800 14px/1 Inter,system-ui; color:#0b1220; letter-spacing:.04em }
     .amm-list{ display:flex; flex-direction:column; gap:8px; }
@@ -64,31 +69,35 @@
     @media (max-width: 960px){
       /* hamburger + logo affiancati (uguale al tuo snippet) */
       .amm-topbar .container.row-x1{ justify-content:flex-start; }
-      .amm-topbar .mobile-menu-toggle{ display:inline-grid; }
       .amm-topbar .logo-img img{ height:38px; }
     }
     @media (max-width: 400px){
       .amm-topbar .logo-img img{ height:34px; }
     }
+
+    /* Stato aperto (aggiunto via JS) */
+    .amm-drawer.is-open{ transform:translateX(0) }
+    .amm-backdrop.is-open{ opacity:1; pointer-events:auto }
   </style>
 
   <div class="container row-x1">
-    <!-- Checkbox nascosto per aprire/chiudere il drawer -->
-    <input type="checkbox" id="amm-open" aria-hidden="true">
+    <!-- Checkbox "tecnico" (non focalizzabile) per compatibilità minima -->
+    <input type="checkbox" id="amm-open" class="amm-visually-hidden" tabindex="-1">
 
-    <!-- 🔻 QUI il markup mobile identico a quello che volevi -->
+    <!-- 🔻 Markup hamburger + logo (come richiesto) -->
     <div class="widget Image" data-version="2" id="Image121">
-      <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu" aria-controls="amm-drawer" aria-expanded="false"></a>
+      <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu"
+         aria-controls="amm-drawer" aria-expanded="false"></a>
       <a class="logo-img custom-image" href="/">
         <img alt="AniMMunity" id="Image121_img"
-             src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
+             src="https://blogger.googleusercontent.com/img/a/AVvXsEhxDE9GIj2qFHrjNIPUkbVn-S8Ii8KepIyQ_LiRWikFLgWIRRvNqjMiSJk3Wx8GTUy8ih6VLcFxF8d65jYpQBrSQnizbaIS_SlatSD2HOvUfy4ZH279Wb0gBkKbD3sXOvqeTL2J-II4UQdCVyXlSMBPIUmQlrP-xAxtfgYmQ-FOZuoyBgpksGTx3_0YPRE=s500">
         <h1 id="h1-off">AniMMunity</h1>
       </a>
     </div>
   </div>
 
-  <!-- Drawer: link “topbar” + social (solo mobile) -->
-  <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu">
+  <!-- Drawer: link “topbar” + social -->
+  <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu" tabindex="-1">
     <h3>Topbar Menu</h3>
     <nav class="amm-list">
       <a href="https://animmunity.blogspot.com/p/about-us.html">About Us</a>
@@ -114,18 +123,40 @@
   <div class="amm-backdrop" aria-hidden="true"></div>
 
   <script>
-    // Click sull'icona hamburger (markup <a>) per togglare il checkbox #amm-open
     (function(){
       const root = document.currentScript.closest('.amm-topbar');
       const toggle = root.querySelector('.mobile-menu-toggle');
-      const checkbox = root.querySelector('#amm-open');
+      const drawer = root.querySelector('#amm-drawer');
       const backdrop = root.querySelector('.amm-backdrop');
+      const main = document.querySelector('main');
 
-      function open(){ checkbox.checked = true; toggle.setAttribute('aria-expanded','true'); }
-      function close(){ checkbox.checked = false; toggle.setAttribute('aria-expanded','false'); }
+      function open(){
+        drawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        toggle.setAttribute('aria-expanded','true');
+        drawer.setAttribute('aria-modal','true');
+        if(main) main.setAttribute('inert','');
 
-      toggle.addEventListener('click', (e)=>{ e.preventDefault(); checkbox.checked ? close() : open(); });
+        // focus al primo elemento interattivo del drawer
+        const first = drawer.querySelector('a, button, input, [tabindex]:not([tabindex="-1"])');
+        (first || drawer).focus({preventScroll:true});
+      }
+      function close(){
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded','false');
+        drawer.removeAttribute('aria-modal');
+        if(main) main.removeAttribute('inert');
+
+        toggle.focus({preventScroll:true});
+      }
+
+      toggle.addEventListener('click', (e)=>{ e.preventDefault(); 
+        drawer.classList.contains('is-open') ? close() : open();
+      });
       backdrop.addEventListener('click', close);
+      drawer.addEventListener('click', (e)=>{ if(e.target.closest('a')) close(); });
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && drawer.classList.contains('is-open')) close(); });
     })();
   </script>
 </header>
