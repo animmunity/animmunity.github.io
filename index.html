@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <!-- percorso RELATIVO per compatibilità GitHub Pages (project site) -->
+  <!-- percorso RELATIVO per compatibilità su GitHub Pages project/user site -->
   <link rel="stylesheet" href="styles.css" />
 
   <style>
@@ -233,8 +233,6 @@
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
     const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const clean=(u)=> (u? String(u).trim().replace(/^\"+|\"+$/g,'') : '');
-    // Costruisce URL relativi rispetto alla pagina corrente
-    const dataUrl = (p) => new URL(p, location.href).toString();
 
     // Estrae URL da stringa o JSON (es. {"large":"...","medium":"..."})
     function pickImageUrl(raw) {
@@ -286,12 +284,21 @@
     };
     const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // CSV loader (percorsi RELATIVI al root del repo, come da tua struttura)
-    function loadCSV(url){
-      return fetch(url,{credentials:'omit'})
-        .then(r=>{ if(!r.ok) throw new Error(`${r.status} ${r.url}`); return r.text(); })
-        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data)
-        .catch(err=>{ console.warn('CSV load error:', err); return []; });
+    // -------- CSV loader con FALLBACK root → data/ --------
+    async function loadCSVAny(paths){
+      for(const p of paths){
+        try{
+          const res = await fetch(p, {credentials:'omit', cache:'no-store'});
+          if(!res.ok){ console.warn('MISS', res.status, res.url); continue; }
+          const txt = await res.text();
+          const data = Papa.parse(txt,{header:true,skipEmptyLines:true}).data || [];
+          if(data.length){ console.log('CSV OK', res.url, 'rows:', data.length); return data; }
+        }catch(err){
+          console.warn('ERR', p, err);
+        }
+      }
+      console.error('All CSV paths failed:', paths);
+      return [];
     }
 
     function renderRail(railId, rows, type){
@@ -323,23 +330,24 @@
     /* ===============================
        DATA BOOT
        =============================== */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // Show skeletons early
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      // Skeletons
       showRailSkeleton('anime-rail', 10);
       showRailSkeleton('manga-rail', 10);
 
-      // Manga (merge) — file nel root del progetto
-      Promise.allSettled([
-        loadCSV(dataUrl('manga_core.csv')),
-        loadCSV(dataUrl('manga_text_part1.csv')),
-        loadCSV(dataUrl('manga_text_part2.csv')),
-      ]).then(([coreP,d1P,d2P])=>{
-        if(coreP.status!=='fulfilled') return;
-        const core=(coreP.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
-        const d1=(d1P.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
-        const d2=(d2P.value||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+      // --- Manga (merge) — prova root poi data/ ---
+      const [core, d1, d2] = await Promise.all([
+        loadCSVAny(['manga_core.csv','data/manga_core.csv']),
+        loadCSVAny(['manga_text_part1.csv','data/manga_text_part1.csv']),
+        loadCSVAny(['manga_text_part2.csv','data/manga_text_part2.csv']),
+      ]);
+
+      if(core.length){
+        const coreN = core.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d1N = (d1||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d2N = (d2||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
         const map=new Map();
-        [...d1,...d2].forEach(row=>{
+        [...d1N,...d2N].forEach(row=>{
           if(!row.manga_id) return;
           const prev=map.get(row.manga_id)||{};
           const merged={...prev};
@@ -349,7 +357,7 @@
           }
           map.set(row.manga_id, merged);
         });
-        const rows = core.map(c=>{
+        const rows = coreN.map(c=>{
           const det=map.get(c.manga_id)||{};
           const mainPic = pickImageUrl(det.main_picture || c.main_picture || det.image_url || c.image_url || det.image || c.image || '');
           return { ...c, ...det,
@@ -358,12 +366,16 @@
             url:det.url||c.url||''
           };
         });
-        if(rows.length){ clearRailSkeleton('manga-rail'); renderRail('manga-rail', rows, 'manga'); }
-      }).catch(()=>{});
+        clearRailSkeleton('manga-rail');
+        renderRail('manga-rail', rows, 'manga');
+      } else {
+        clearRailSkeleton('manga-rail');
+      }
 
-      // Anime (single CSV) — file nel root del progetto
-      loadCSV(dataUrl('anime.csv')).then(core=>{
-        const rows=(core||[]).map(r=>{
+      // --- Anime (single CSV) — prova root poi data/ ---
+      const animeCore = await loadCSVAny(['anime.csv','data/anime.csv']);
+      if(animeCore.length){
+        const rows = animeCore.map(r=>{
           const pic = pickImageUrl(r.main_picture || r.image_url || r.image || '');
           return {
             ...r,
@@ -373,8 +385,11 @@
             url:r.url||''
           };
         });
-        if(rows.length){ clearRailSkeleton('anime-rail'); renderRail('anime-rail', rows, 'anime'); }
-      }).catch(()=>{});
+        clearRailSkeleton('anime-rail');
+        renderRail('anime-rail', rows, 'anime');
+      } else {
+        clearRailSkeleton('anime-rail');
+      }
 
       // Blogger feed via JSONP (CORS-safe)
       (function loadBlogger(){
@@ -422,7 +437,7 @@
       })();
     });
 
-    // Skeleton helpers (possono stare in fondo)
+    // Skeleton helpers
     function showRailSkeleton(railId, count=8){
       const rail=document.getElementById(railId); if(!rail) return;
       rail.innerHTML='';
