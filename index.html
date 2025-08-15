@@ -132,6 +132,13 @@
     @media (max-width:680px){
       .nav-btn{display:none}
     }
+    /* Fix overflow responsive */
+.rail-wrap { overflow: hidden; }
+.nav-prev { left: 6px; transform: translateY(-50%); }
+.nav-next { right: 6px; transform: translateY(-50%); }
+html, body { overflow-x: hidden; }
+.fx-grid { overflow: hidden; }
+.fx-grid::before { inset: 0; }
   </style>
 </head>
 <body>
