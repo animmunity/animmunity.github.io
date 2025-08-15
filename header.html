@@ -1,52 +1,78 @@
 <header class="am-header" role="banner">
   <style>
-    /* ===== AniMMUnity Header (scoped) ===== */
-    .am-header * { box-sizing: border-box; }
+    /* ===== AniMMUnity Header (scoped, no-JS) ===== */
+    .am-header, .am-header * { box-sizing: border-box; }
     .am-header {
       position: sticky; top: 0; z-index: 1000; width: 100%;
       background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.07);
+      overflow-x: clip; /* evita “dentino” a destra */
     }
     .am-header .am-container{
-      max-width: 1200px; margin: 0 auto; padding: 12px 20px;
+      max-width: 1200px; margin: 0 auto;
+      padding: 12px max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .am-header a{ color:#0b1220; text-decoration:none; }
     .am-header a:hover{ text-decoration:none; }
 
     /* Brand */
-    .am-header .am-brand{ display:inline-flex; align-items:center; gap:10px; }
-    .am-header .am-brand img{ height: 48px; width:auto; transition: transform .2s ease; }
+    .am-header .am-brand{ display:inline-flex; align-items:center; gap:10px; min-width:0; }
+    .am-header .am-brand img{ height: 48px; width:auto; max-width:100%; display:block; transition: transform .2s ease; }
     .am-header .am-brand:hover img{ transform: translateY(-1px); }
 
-    /* Toggle */
-    .am-header .am-toggle{
+    /* Menu wrapper (details) */
+    .am-menu { position: relative; }
+    .am-toggle {
       display:none; border:0; background:#fff; width:44px; height:44px;
       border-radius:10px; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
+      display:inline-grid; place-items:center;
+      list-style: none; /* per Firefox */
     }
+    .am-toggle::-webkit-details-marker { display:none; } /* nasconde il marker di <summary> */
 
     /* Nav */
-    .am-header .am-nav{
+    .am-nav{
       display:flex; align-items:center; gap:16px; flex-wrap:wrap;
     }
-    .am-header .am-link{
+    .am-link{
       padding: 8px 14px; border-radius: 10px;
       font: 500 14px/1.1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       box-shadow: inset 0 0 0 1px #e7e9f1; background:#fff; transition: box-shadow .15s ease, transform .06s ease;
+      white-space: nowrap;
     }
-    .am-header .am-link:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
-    .am-header .am-link:active{ transform: translateY(1px); }
+    .am-link:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
+    .am-link:active{ transform: translateY(1px); }
 
     /* ===== Mobile ===== */
     @media (max-width: 768px){
       .am-header .am-brand img{ height: 34px; }
-      .am-header .am-toggle{ display:inline-grid; place-items:center; }
-      .am-header .am-container{ padding: 10px 14px; }
-      .am-header .am-nav{
-        display:none; flex-direction:column; width:100%;
-        gap:10px; padding: 10px 0 14px; /* spazio sotto al brand */
+      .am-header .am-container{
+        padding: 10px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+        flex-wrap: wrap;            /* il nav va a capo senza overflow */
+        align-items: center;
       }
-      .am-header.is-open .am-nav{ display:flex; }
-      .am-header .am-link{ width:100%; text-align:center; }
+
+      /* Toggle visibile, nav nascosto finché il menu non è aperto */
+      .am-toggle{ display:inline-grid; order:2; }
+      .am-menu{ order:2; }
+      .am-nav{
+        order:3;
+        display:none;
+        width: 100%;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 0 14px;
+      }
+      .am-menu[open] .am-nav{ display:flex; } /* stato aperto di <details> */
+
+      .am-link{ width:100%; text-align:center; }
+    }
+
+    /* ===== Desktop ===== */
+    @media (min-width: 769px){
+      .am-toggle{ display:none; }
+      /* su desktop il nav è sempre visibile */
+      .am-nav{ display:flex !important; flex-direction: row; }
     }
   </style>
 
@@ -55,36 +81,18 @@
       <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMUnity">
     </a>
 
-    <button class="am-toggle" aria-label="Toggle menu" aria-controls="site-nav" aria-expanded="false">
-      <!-- simple icon -->
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-
-    <nav id="site-nav" class="am-nav" role="navigation" aria-label="Primary">
-      <a class="am-link" href="/index.html">Home</a>
-      <a class="am-link" href="https://animmunity.blogspot.com/">Magazine</a>
-      <a class="am-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
-    </nav>
+    <!-- Menu senza JS: <details>/<summary> gestiscono l’apertura -->
+    <details class="am-menu">
+      <summary class="am-toggle" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </summary>
+      <nav id="site-nav" class="am-nav" role="navigation" aria-label="Primary">
+        <a class="am-link" href="/index.html">Home</a>
+        <a class="am-link" href="https://animmunity.blogspot.com/">Magazine</a>
+        <a class="am-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
+      </nav>
+    </details>
   </div>
-
-  <script>
-    (() => {
-      const header = document.currentScript.closest('.am-header');
-      const btn = header.querySelector('.am-toggle');
-      const nav = header.querySelector('.am-nav');
-      btn.addEventListener('click', () => {
-        const open = header.classList.toggle('is-open');
-        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-      // chiudi menu quando si clicca un link
-      nav.addEventListener('click', (e) => {
-        if(e.target.closest('a')) {
-          header.classList.remove('is-open');
-          btn.setAttribute('aria-expanded','false');
-        }
-      });
-    })();
-  </script>
 </header>
