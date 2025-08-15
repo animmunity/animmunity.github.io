@@ -227,7 +227,7 @@
     clearBtn.addEventListener('click', ()=>{ q.value=''; q.focus(); clearBtn.style.display='none'; });
 
     /* ===============================
-       IMAGE & CSV HELPERS (FIX)
+       IMAGE & CSV HELPERS
        =============================== */
     const PLACEHOLDER='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
     const esc=s=>String(s||'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
@@ -283,40 +283,21 @@
     };
     const pick20=(arr)=>{const a=arr.slice(); for(let i=a.length-1;i>0;i++){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a.slice(0,20)};
 
-    // ---------- CSV loader con FALLBACK root → data/ → raw.githubusercontent ----------
-    const GH_OWNER = (location.host.split('.')[0] || '').toLowerCase(); // es. "animmunity"
-    const GH_REPO  = GH_OWNER ? `${GH_OWNER}.github.io` : '';           // es. "animmunity.github.io"
+    // ======= DATA ENDPOINTS (come le pagine list) =======
+    const DATA_BASE = 'https://animmunity.github.io/data/';
+    const URLS = {
+      anime: DATA_BASE + 'anime.csv',
+      mangaCore: DATA_BASE + 'manga_core.csv',
+      mangaP1: DATA_BASE + 'manga_text_part1.csv',
+      mangaP2: DATA_BASE + 'manga_text_part2.csv',
+    };
 
-    function csvCandidatePaths(name){
-      const arr = [
-        name,
-        `data/${name}`
-      ];
-      if (GH_OWNER && GH_REPO) {
-        // Branch main
-        arr.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/${name}`);
-        arr.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/data/${name}`);
-        // Branch master
-        arr.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/master/${name}`);
-        arr.push(`https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/master/data/${name}`);
-      }
-      return arr;
-    }
-
-    async function loadCSVAny(paths){
-      for(const p of paths){
-        try{
-          const res = await fetch(p, {credentials:'omit', cache:'no-store'});
-          if(!res.ok){ console.warn('MISS', res.status, res.url); continue; }
-          const txt = await res.text();
-          const data = Papa.parse(txt,{header:true,skipEmptyLines:true}).data || [];
-          if(data.length){ console.log('CSV OK', res.url, 'rows:', data.length); return data; }
-        }catch(err){
-          console.warn('ERR', p, err);
-        }
-      }
-      console.error('All CSV paths failed:', paths);
-      return [];
+    // CSV loader (singolo endpoint, niente 404 rumore)
+    function loadCSV(url){
+      return fetch(url, { credentials:'omit', cache:'no-store' })
+        .then(r=>{ if(!r.ok) throw new Error(`${r.status} ${r.url}`); return r.text(); })
+        .then(t=> Papa.parse(t,{header:true,skipEmptyLines:true}).data)
+        .catch(err=>{ console.error('CSV load error:', err); return []; });
     }
 
     function renderRail(railId, rows, type){
@@ -348,22 +329,22 @@
     /* ===============================
        DATA BOOT
        =============================== */
-    document.addEventListener('DOMContentLoaded', async ()=>{
+    document.addEventListener('DOMContentLoaded', ()=>{
       // Skeletons
       showRailSkeleton('anime-rail', 10);
       showRailSkeleton('manga-rail', 10);
 
-      // --- Manga (merge) — root → data/ → raw ---
-      const [core, d1, d2] = await Promise.all([
-        loadCSVAny(csvCandidatePaths('manga_core.csv')),
-        loadCSVAny(csvCandidatePaths('manga_text_part1.csv')),
-        loadCSVAny(csvCandidatePaths('manga_text_part2.csv')),
-      ]);
+      // Manga (merge) — usa data/
+      Promise.all([
+        loadCSV(URLS.mangaCore),
+        loadCSV(URLS.mangaP1),
+        loadCSV(URLS.mangaP2),
+      ]).then(([core,d1,d2])=>{
+        if(!core.length){ clearRailSkeleton('manga-rail'); return; }
+        const coreN=core.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d1N=(d1||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
+        const d2N=(d2||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
 
-      if(core.length){
-        const coreN = core.map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
-        const d1N = (d1||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
-        const d2N = (d2||[]).map(r=>({...r, manga_id:String(r.manga_id||'').trim()}));
         const map=new Map();
         [...d1N,...d2N].forEach(row=>{
           if(!row.manga_id) return;
@@ -375,6 +356,7 @@
           }
           map.set(row.manga_id, merged);
         });
+
         const rows = coreN.map(c=>{
           const det=map.get(c.manga_id)||{};
           const mainPic = pickImageUrl(det.main_picture || c.main_picture || det.image_url || c.image_url || det.image || c.image || '');
@@ -384,16 +366,15 @@
             url:det.url||c.url||''
           };
         });
+
         clearRailSkeleton('manga-rail');
         renderRail('manga-rail', rows, 'manga');
-      } else {
-        clearRailSkeleton('manga-rail');
-      }
+      }).catch(()=>{ clearRailSkeleton('manga-rail'); });
 
-      // --- Anime (single CSV) — root → data/ → raw ---
-      const animeCore = await loadCSVAny(csvCandidatePaths('anime.csv'));
-      if(animeCore.length){
-        const rows = animeCore.map(r=>{
+      // Anime (single CSV) — usa data/
+      loadCSV(URLS.anime).then(core=>{
+        if(!core.length){ clearRailSkeleton('anime-rail'); return; }
+        const rows=(core||[]).map(r=>{
           const pic = pickImageUrl(r.main_picture || r.image_url || r.image || '');
           return {
             ...r,
@@ -405,9 +386,7 @@
         });
         clearRailSkeleton('anime-rail');
         renderRail('anime-rail', rows, 'anime');
-      } else {
-        clearRailSkeleton('anime-rail');
-      }
+      }).catch(()=>{ clearRailSkeleton('anime-rail'); });
 
       // Blogger feed via JSONP (CORS-safe)
       (function loadBlogger(){
