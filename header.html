@@ -1,209 +1,147 @@
-<header class="amx-subheader" role="banner">
+<header class="amm-topbar" role="banner">
   <style>
-    /* ===== Submenu bianco (scoped) ===== */
-    .amx-subheader, .amx-subheader * { box-sizing: border-box; }
-    .amx-subheader{
+    /* ===== AniMMUnity Topbar (scoped, white, no-JS) ===== */
+    .amm-topbar, .amm-topbar * { box-sizing: border-box; }
+    .amm-topbar{
       position: sticky; top: 0; z-index: 1000; width: 100%;
-      background:#ffffff; border-bottom:1px solid #e7e9f1; overflow-x: clip;
+      background:#fff; border-bottom:1px solid #e7e9f1;
+      overflow-x: clip;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-
-    /* Full-width container */
-    .amx-subheader .container.row-x1{
-      width:100%; margin:0; padding:10px clamp(14px, 3vw, 24px);
+    .amm-wrap{
+      max-width:1200px; margin:0 auto;
+      padding:10px max(20px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
+      display:grid; align-items:center; gap:12px;
+      /* desktop: menu | logo | social  */
+      grid-template-columns: 1fr auto 1fr;
     }
 
-    /* Riga principale: left (hamburger+logo+menu) | right (search button) */
-    .amx-subheader .header-items{
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      min-height:56px;
-    }
-    .flex-left{ display:flex; align-items:center; gap:16px; min-width:0; }
-    .flex-right{ display:flex; align-items:center; gap:10px; }
+    /* — Brand (centrato) — */
+    .amm-brand{ justify-self:center; display:inline-flex; align-items:center; min-width:0 }
+    .amm-brand img{ height:42px; width:auto; max-width:100%; display:block }
 
-    /* ===== Hamburger + Logo (come tuo markup) ===== */
-    .next-mobile-logo-section .mobile-menu-toggle{
-      width:44px; height:44px; border-radius:12px; display:inline-grid; place-items:center;
-      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer; margin-right:8px;
-    }
-    .next-mobile-logo-section .mobile-menu-toggle::before{
-      content:""; width:22px; height:22px; display:block;
-      background:
-        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>')
-        no-repeat center/contain;
-    }
-    .main-logo .logo-img{ display:inline-flex; align-items:center; gap:10px; }
-    .main-logo .logo-img img{ height:40px; width:auto; display:block; }
-    .main-logo #h1-off{ position:absolute; left:-9999px; }
-
-    /* ===== Menu desktop (uguale alle tue classi) ===== */
-    .next-pro-main-nav .show-menu > a.mobile-menu-toggle{ display:none; } /* nasconde toggle extra in desktop */
-    #next-pro-main-nav-menu{
-      list-style:none; margin:0; padding:0; display:flex; gap:12px; flex-wrap:wrap;
-    }
-    #next-pro-main-nav-menu > li{ margin:0; padding:0; }
-    #next-pro-main-nav-menu > li > a{
-      display:inline-block; padding:8px 12px; border-radius:10px; text-decoration:none;
-      color:#0b1220; font-weight:700; font-size:14px; letter-spacing:.02em; background:#fff;
+    /* — Menu left — */
+    .amm-menu{ display:flex; align-items:center; gap:14px; flex-wrap:wrap }
+    .amm-menu a{
+      color:#0b1220; text-decoration:none; font-weight:600; font-size:14px;
+      padding:8px 10px; border-radius:10px; background:#fff;
       box-shadow: inset 0 0 0 1px #e7e9f1;
     }
-    #next-pro-main-nav-menu > li > a:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
+    .amm-menu a:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
 
-    /* ===== Bottone search a destra + area search a comparsa ===== */
-    .main-toggle-wrap .main-toggle-style{
-      width:44px; height:44px; border-radius:12px; display:inline-grid; place-items:center;
-      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
-    }
-    .main-toggle-wrap .show-search::before{
-      content:""; width:20px; height:20px; display:block;
-      background:
-        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>')
-        no-repeat center/contain;
-    }
-    .main-toggle-style.hide-search::before{
-      content:""; width:20px; height:20px; display:block;
-      background:
-        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round"><path d="M6 18L18 6M6 6l12 12"/></svg>')
-        no-repeat center/contain;
-    }
-
-    #main-search-wrap{ overflow:hidden; max-height:0; transition:max-height .25s ease; }
-    #main-search-wrap.open{ max-height:86px; }
-    #main-search-wrap .main-search{
-      display:flex; align-items:center; gap:10px; padding:10px 0;
-    }
-    .search-form{ flex:1; }
-    .search-input{
-      width:100%; height:44px; padding:0 12px; border-radius:12px; border:1px solid #e7e9f1;
-      font-size:16px; outline:none;
-    }
-    .search-input:focus{ border-color:#bfd7ff; box-shadow: 0 0 0 3px #e6f0ff; }
-
-    /* ===== Drawer mobile full-screen (solo submenu) ===== */
-    .amx-drawer{
-      position:fixed; left:0; right:0; top:var(--amx-top, 60px);
-      background:#fff; border-bottom:1px solid #e7e9f1;
-      transform:translateY(-100%); transition:transform .25s ease; z-index: 999;
-      padding:12px clamp(14px, 3vw, 24px) 16px;
-    }
-    .amx-drawer.open{ transform:translateY(0); }
-    .amx-drawer .drawer-nav{
-      list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;
-    }
-    .amx-drawer .drawer-nav a{
-      display:block; padding:12px; border-radius:12px; text-decoration:none; color:#0b1220; font-weight:700;
+    /* — Social right — */
+    .amm-social{ display:flex; justify-content:flex-end; gap:10px; }
+    .amm-social a{
+      width:36px; height:36px; display:grid; place-items:center;
+      border-radius:10px; background:#fff; color:#0b1220;
       box-shadow: inset 0 0 0 1px #e7e9f1;
     }
-    .amx-backdrop{
+    .amm-social svg{ width:18px; height:18px; }
+
+    /* ===== Mobile / Tablet ===== */
+    #amm-open{ position:absolute; left:-9999px; }
+    .amm-hamb{
+      display:none; width:44px; height:44px; border-radius:12px;
+      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
+      align-items:center; justify-content:center; cursor:pointer;
+    }
+    .amm-hamb svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
+
+    /* Drawer + backdrop */
+    .amm-drawer{
+      position:fixed; inset:0 auto 0 0; width:min(86vw,360px);
+      background:#fff; border-right:1px solid #e7e9f1;
+      transform:translateX(-100%); transition:transform .25s ease; padding:14px;
+    }
+    .amm-backdrop{
       position:fixed; inset:0; background:rgba(0,0,0,.35);
-      opacity:0; pointer-events:none; transition: opacity .2s ease; z-index: 998;
+      opacity:0; pointer-events:none; transition:opacity .2s ease;
     }
-    .amx-backdrop.open{ opacity:1; pointer-events:auto; }
+    #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
+    #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
 
-    /* ===== Responsive ===== */
+    .amm-drawer h3{ margin:6px 6px 10px; font:800 14px/1 Inter,system-ui; color:#0b1220; letter-spacing:.04em }
+    .amm-list{ display:flex; flex-direction:column; gap:8px; }
+    .amm-list a{
+      padding:10px 12px; border-radius:10px; text-decoration:none; color:#0b1220;
+      font-weight:600; box-shadow: inset 0 0 0 1px #e7e9f1;
+    }
+    .amm-drawer .social{ margin-top:10px; display:flex; gap:10px }
+
     @media (max-width: 960px){
-      .next-pro-main-nav{ display:none; }     /* menu orizzontale nascosto in mobile */
-      .main-logo .logo-img img{ height:36px; }
-      .next-mobile-logo-section .mobile-menu-toggle{ display:inline-grid; }
+      /* header a 3 colonne: [hamb] [logo] [spazio]  */
+      .amm-wrap{
+        grid-template-columns: 44px 1fr 44px;
+      }
+      .amm-hamb{ display:flex; }
+      .amm-menu, .amm-social{ display:none; }
+      .amm-brand{ justify-self:center }
+      .amm-brand img{ height:38px }
+    }
+    @media (max-width: 400px){
+      .amm-brand img{ height:34px }
     }
   </style>
 
-  <!-- ===== SUBMENU (uguale al tuo) ===== -->
-  <div class="container row-x1">
-    <div class="header-items">
-      <div class="flex-left">
-        <div class="next-mobile-logo-section main-logo section" id="next-mobile-logo-section" name="Mobile Logo Section">
-          <div class="widget Image" data-version="2" id="Image121">
-            <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu" aria-controls="amx-drawer" aria-expanded="false"></a>
-            <a class="logo-img custom-image" href="/">
-              <img alt="AniMMunity" id="Image121_img" src="https://blogger.googleusercontent.com/img/a/AVvXsEhxDE9GIj2qFHrjNIPUkbVn-S8Ii8KepIyQ_LiRWikFLgWIRRvNqjMiSJk3Wx8GTUy8ih6VLcFxF8d65jYpQBrSQnizbaIS_SlatSD2HOvUfy4ZH279Wb0gBkKbD3sXOvqeTL2J-II4UQdCVyXlSMBPIUmQlrP-xAxtfgYmQ-FOZuoyBgpksGTx3_0YPRE=s500">
-              <h1 id="h1-off">AniMMunity</h1>
-            </a>
-          </div>
-        </div>
+  <div class="amm-wrap">
+    <!-- Hamburger (a sinistra, mobile) -->
+    <input type="checkbox" id="amm-open" aria-hidden="true">
+    <label class="amm-hamb" for="amm-open" aria-label="Open menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </label>
 
-        <div class="next-pro-main-nav section" id="next-pro-main-nav" name="Header Menu">
-          <div class="widget LinkList show-menu" data-version="2" id="LinkList101">
-            <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu"></a>
-            <ul id="next-pro-main-nav-menu" role="menubar">
-              <li><a href="https://animmunity.blogspot.com/" role="menuitem">Home</a></li>
-              <li><a href="https://animmunity.github.io/anime-list.html" role="menuitem">Anime List</a></li>
-              <li><a href="https://animmunity.github.io/top-anime.html" role="menuitem">Top Anime</a></li>
-              <li><a href="https://animmunity.github.io/manga-list.html" role="menuitem">Manga List</a></li>
-              <li><a href="https://animmunity.github.io/top-manga.html" role="menuitem">Top Manga</a></li>
-              <li><a href="https://animmunity.github.io/character-list.html" role="menuitem">Characters</a></li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <!-- Menu sinistra (desktop) -->
+    <nav class="amm-menu" aria-label="Topbar Menu">
+      <a href="https://animmunity.blogspot.com/p/about-us.html">About Us</a>
+      <a href="https://animmunity.blogspot.com/p/privacy-policy.html">Privacy Policy</a>
+      <a href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
+    </nav>
 
-      <div class="flex-right">
-        <div class="main-toggle-wrap">
-          <a class="main-toggle-style show-search" href="javascript:;" role="button" aria-controls="main-search-wrap" aria-expanded="false" title="Search"></a>
-        </div>
-      </div>
-    </div>
+    <!-- Logo centrale -->
+    <a class="amm-brand" href="https://animmunity.blogspot.com/">
+      <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMUnity">
+    </a>
 
-    <!-- SEARCH slide-down -->
-    <div id="main-search-wrap" aria-hidden="true">
-      <div class="main-search">
-        <form action="https://animmunity.blogspot.com/search" class="search-form" role="search">
-          <input autocomplete="off" class="search-input" name="q" placeholder="Search" type="search" value="">
-        </form>
-        <a class="main-toggle-style hide-search" href="javascript:;" role="button" aria-controls="main-search-wrap" aria-expanded="true" title="Close search"></a>
-      </div>
-    </div>
+    <!-- Social destra (desktop) -->
+    <nav class="amm-social" aria-label="Topbar Icons">
+      <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="facebook">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="https://twitter.com/" target="_blank" rel="noopener" aria-label="x-twitter">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2H21l-6.56 7.49L22 22h-5.9l-4.6-6.01L5.2 22H2l7.03-8.02L2 2h6l4.04 5.35L18.244 2Zm-1.03 18h1.58L8.86 4h-1.6l9.95 16Z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="youtube">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 0 0 .5 6.2 31.1 31.1 0 0 0 0 12a31.1 31.1 0 0 0 .6 5.8 3 3 0 0 0 2.1 2.1C4.8 20.5 12 20.5 12 20.5s7.3 0 9.4-.6a3 3 0 0 0 2.1-2.1c.4-1.9.6-3.9.6-5.8s-.2-3.9-.6-5.8ZM9.7 15.5v-7l6 3.5-6 3.5Z"/></svg>
+      </a>
+      <a href="https://animmunity.blogspot.com/feeds/posts/default" target="_blank" rel="noopener" aria-label="rss">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0ZM0 10.91v3.27a9.82 9.82 0 0 1 9.82 9.82h3.27C13.09 17.34 6.66 10.91 0 10.91Zm0-6.55v3.27A16.36 16.36 0 0 1 16.36 24h3.27C19.64 13.37 10.63 4.36 0 4.36Z"/></svg>
+      </a>
+    </nav>
   </div>
 
-  <!-- Drawer mobile con lo stesso menu -->
-  <aside id="amx-drawer" class="amx-drawer" aria-label="Mobile menu">
-    <nav>
-      <ul class="drawer-nav" role="menubar">
-        <li><a href="https://animmunity.blogspot.com/" role="menuitem">Home</a></li>
-        <li><a href="https://animmunity.github.io/anime-list.html" role="menuitem">Anime List</a></li>
-        <li><a href="https://animmunity.github.io/top-anime.html" role="menuitem">Top Anime</a></li>
-        <li><a href="https://animmunity.github.io/manga-list.html" role="menuitem">Manga List</a></li>
-        <li><a href="https://animmunity.github.io/top-manga.html" role="menuitem">Top Manga</a></li>
-        <li><a href="https://animmunity.github.io/character-list.html" role="menuitem">Characters</a></li>
-      </ul>
+  <!-- Drawer (mobile) con stessi link + social -->
+  <aside class="amm-drawer" aria-label="Mobile menu">
+    <h3>Topbar Menu</h3>
+    <nav class="amm-list">
+      <a href="https://animmunity.blogspot.com/p/about-us.html">About Us</a>
+      <a href="https://animmunity.blogspot.com/p/privacy-policy.html">Privacy Policy</a>
+      <a href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
     </nav>
+    <h3>Follow</h3>
+    <div class="social">
+      <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="facebook">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="https://twitter.com/" target="_blank" rel="noopener" aria-label="x-twitter">
+        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M18.244 2H21l-6.56 7.49L22 22h-5.9l-4.6-6.01L5.2 22H2l7.03-8.02L2 2h6l4.04 5.35L18.244 2Zm-1.03 18h1.58L8.86 4h-1.6l9.95 16Z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="youtube">
+        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 0 0 .5 6.2 31.1 31.1 0 0 0 0 12a31.1 31.1 0 0 0 .6 5.8 3 3 0 0 0 2.1 2.1C4.8 20.5 12 20.5 12 20.5s7.3 0 9.4-.6a3 3 0 0 0 2.1-2.1c.4-1.9.6-3.9.6-5.8s-.2-3.9-.6-5.8ZM9.7 15.5v-7l6 3.5-6 3.5Z"/></svg>
+      </a>
+      <a href="https://animmunity.blogspot.com/feeds/posts/default" target="_blank" rel="noopener" aria-label="rss">
+        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0ZM0 10.91v3.27a9.82 9.82 0 0 1 9.82 9.82h3.27C13.09 17.34 6.66 10.91 0 10.91Zm0-6.55v3.27A16.36 16.36 0 0 1 16.36 24h3.27C19.64 13.37 10.63 4.36 0 4.36Z"/></svg>
+      </a>
+    </div>
   </aside>
-  <div class="amx-backdrop" id="amx-backdrop" aria-hidden="true"></div>
-
-  <script>
-    // Micro JS per drawer e search (scoped)
-    (function(){
-      const root = document.currentScript.closest('.amx-subheader');
-      const burger = root.querySelector('.next-mobile-logo-section .mobile-menu-toggle');
-      const drawer = root.querySelector('#amx-drawer');
-      const backdrop = root.querySelector('#amx-backdrop');
-
-      const searchWrap = root.querySelector('#main-search-wrap');
-      const showSearch = root.querySelector('.main-toggle-style.show-search');
-      const hideSearch = root.querySelector('.main-toggle-style.hide-search');
-
-      // Posiziona il drawer subito sotto l’header
-      const setDrawerTop = () => drawer.style.setProperty('--amx-top', root.offsetHeight + 'px');
-      setDrawerTop();
-      window.addEventListener('resize', setDrawerTop);
-
-      function openDrawer(){
-        drawer.classList.add('open'); backdrop.classList.add('open');
-        burger.setAttribute('aria-expanded','true');
-      }
-      function closeDrawer(){
-        drawer.classList.remove('open'); backdrop.classList.remove('open');
-        burger.setAttribute('aria-expanded','false');
-      }
-      burger.addEventListener('click', (e)=>{ e.preventDefault(); drawer.classList.contains('open')? closeDrawer(): openDrawer(); });
-      backdrop.addEventListener('click', closeDrawer);
-      drawer.addEventListener('click', (e)=>{ if(e.target.closest('a')) closeDrawer(); });
-
-      // Search
-      function openSearch(){ searchWrap.classList.add('open'); searchWrap.setAttribute('aria-hidden','false'); showSearch.setAttribute('aria-expanded','true'); searchWrap.querySelector('.search-input')?.focus(); }
-      function closeSearch(){ searchWrap.classList.remove('open'); searchWrap.setAttribute('aria-hidden','true'); showSearch.setAttribute('aria-expanded','false'); }
-      showSearch.addEventListener('click', (e)=>{ e.preventDefault(); openSearch(); });
-      hideSearch.addEventListener('click', (e)=>{ e.preventDefault(); closeSearch(); });
-    })();
-  </script>
+  <div class="amm-backdrop" aria-hidden="true"></div>
 </header>
