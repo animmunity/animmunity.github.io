@@ -1,99 +1,131 @@
-<header class="am-header" role="banner">
+<header class="amw-header" role="banner">
   <style>
-    /* ===== AniMMUnity Header (scoped, no-JS) ===== */
-    .am-header, .am-header * { box-sizing: border-box; }
-    .am-header{
+    /* ===== AniMMUnity — White Header (scoped, no-JS) ===== */
+    .amw-header, .amw-header * { box-sizing: border-box; }
+    .amw-header{
       position: sticky; top: 0; z-index: 1000; width: 100%;
-      background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.07);
-      overflow-x: clip; /* niente "dentino" in mobile */
-    }
-    .am-header .am-container{
-      max-width:1200px; margin:0 auto;
-      padding:12px max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
-      display:flex; align-items:center; gap:12px;
-    }
-    .am-header a{ color:#0b1220; text-decoration:none }
-    .am-header a:hover{ text-decoration:none }
-
-    /* Brand */
-    .am-brand{ display:inline-flex; align-items:center; gap:10px; min-width:0 }
-    .am-brand img{ height:48px; width:auto; max-width:100%; display:block }
-
-    /* Toggle checkbox (visivamente nascosto) */
-    #am-menu{ position:absolute; left:-9999px; }
-    .am-toggle{
-      border:0; background:#fff; width:44px; height:44px;
-      border-radius:10px; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
-      display:none; /* desktop di default */
-      align-items:center; justify-content:center;
-    }
-    .am-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
-    .am-toggle .icon-close{ display:none; }
-    #am-menu:checked + .am-toggle .icon-bars{ display:none; }
-    #am-menu:checked + .am-toggle .icon-close{ display:block; }
-
-    /* Nav */
-    .am-nav{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
-    .am-link{
-      padding:8px 14px; border-radius:10px;
-      font:500 14px/1.1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      box-shadow: inset 0 0 0 1px #e7e9f1; background:#fff;
-      transition: box-shadow .15s ease, transform .06s ease; white-space:nowrap;
-    }
-    .am-link:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
-    .am-link:active{ transform: translateY(1px); }
-
-    /* ===== Mobile ===== */
-    @media (max-width:768px){
-      .am-brand img{ height:34px; }
-      .am-header .am-container{
-        padding:10px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
-        flex-wrap:wrap;
-      }
-      /* Ordine: Hamburger (sx) -> Brand -> Nav a capo */
-      .am-toggle{ display:inline-flex; order:1; }
-      .am-brand{ order:2; }
-      .am-nav{
-        order:3; width:100%;
-        display:none; flex-direction:column; gap:10px; padding:10px 0 14px;
-      }
-      /* Mostra nav quando il checkbox è spuntato */
-      #am-menu:checked ~ .am-nav{ display:flex; }
-      .am-link{ width:100%; text-align:center; }
+      background: #ffffff; border-bottom: 1px solid #e7e9f1;
+      overflow-x: clip; /* evita dentino in mobile */
     }
 
-    /* ===== Desktop ===== */
-    @media (min-width:769px){
-      .am-brand{ order:1; }
-      .am-nav{ order:2; display:flex !important; }
-      .am-toggle{ display:none; }
+    .amw-container{
+      max-width: 1200px; margin: 0 auto;
+      padding: 10px max(20px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left));
+      display: grid; align-items: center;
+      grid-template-columns: 44px 1fr 44px; gap: 12px;
+    }
+
+    /* Hamburger (checkbox + label → no JS) */
+    #amw-menu{ position: absolute; left: -9999px; }
+    .amw-hamb{
+      width:44px; height:44px; border-radius:12px; cursor:pointer;
+      display:grid; place-items:center; background:#fff;
+      box-shadow: inset 0 0 0 1px #e7e9f1;
+    }
+    .amw-hamb svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
+
+    /* Brand centrato */
+    .amw-brand{
+      justify-self: center; min-width:0; display:inline-flex; align-items:center;
+    }
+    .amw-brand img{ height:40px; width:auto; max-width:100%; display:block; }
+
+    /* Icona search (link) */
+    .amw-search{
+      width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
+      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
+    }
+    .amw-search svg{ width:20px; height:20px; stroke:#0b1220; stroke-width:2; fill:none; }
+
+    /* Drawer laterale (mobile) + backdrop */
+    .amw-drawer{
+      position:fixed; inset:0 auto 0 0; width:min(86vw, 360px); max-width:100%;
+      background:#fff; border-right:1px solid #e7e9f1;
+      transform: translateX(-100%); transition: transform .25s ease; will-change: transform;
+      padding: 14px;
+    }
+    .amw-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.35);
+      opacity:0; pointer-events:none; transition: opacity .2s ease;
+    }
+    /* Toggle stato aperto */
+    #amw-menu:checked ~ .amw-drawer{ transform: translateX(0); }
+    #amw-menu:checked ~ .amw-backdrop{ opacity:1; pointer-events:auto; }
+
+    /* Nav (desktop) */
+    .amw-nav{
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      justify-content:center; /* centrato sotto al logo (desktop) */
+    }
+    .amw-link{
+      padding:8px 14px; border-radius:10px; background:#fff;
+      box-shadow: inset 0 0 0 1px #e7e9f1;
+      font: 600 14px/1.1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:#0b1220; text-decoration:none; white-space:nowrap;
+    }
+    .amw-link:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
+
+    /* Contenuto drawer */
+    .amw-drawer h3{ margin:4px 6px 10px; font:800 14px/1 Inter,system-ui; color:#0b1220; letter-spacing:.04em; }
+    .amw-drawer .amw-list{ display:flex; flex-direction:column; gap:8px; }
+    .amw-drawer .amw-list a{ padding:10px 12px; border-radius:10px; box-shadow: inset 0 0 0 1px #e7e9f1; color:#0b1220; text-decoration:none; font-weight:600; }
+
+    /* Layout desktop: nav visibile in header */
+    @media (min-width: 960px){
+      .amw-container{ grid-template-columns: 1fr auto 1fr; }
+      .amw-hamb{ display:none; }
+      .amw-search{ justify-self:end; }
+      .amw-drawer, .amw-backdrop{ display:none; }
+      .amw-nav{ position:relative; }
+    }
+
+    /* Logo più compatto su mobile */
+    @media (max-width: 400px){
+      .amw-brand img{ height:34px; }
     }
   </style>
 
-  <div class="am-container">
-    <!-- Hamburger (a sinistra in mobile) -->
-    <input type="checkbox" id="am-menu" aria-hidden="true">
-    <label for="am-menu" class="am-toggle" aria-label="Toggle menu" aria-controls="site-nav">
-      <!-- bars -->
-      <svg class="icon-bars" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-      <!-- close -->
-      <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 6L6 18M6 6l12 12"/>
-      </svg>
+  <div class="amw-container">
+    <!-- Toggle -->
+    <input type="checkbox" id="amw-menu" aria-hidden="true">
+    <label class="amw-hamb" for="amw-menu" aria-label="Open menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </label>
 
     <!-- Brand -->
-    <a class="am-brand" href="https://animmunity.github.io/">
+    <a class="amw-brand" href="https://animmunity.github.io/">
       <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMUnity">
     </a>
 
-    <!-- Nav (sempre visibile su desktop, a scomparsa in mobile) -->
-    <nav id="site-nav" class="am-nav" role="navigation" aria-label="Primary">
-      <a class="am-link" href="/index.html">Home</a>
-      <a class="am-link" href="https://animmunity.blogspot.com/">Magazine</a>
-      <a class="am-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact&nbsp;Us</a>
-    </nav>
+    <!-- Icona Search (nessun campo di ricerca) -->
+    <a class="amw-search" href="/index.html#search" aria-label="Search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </a>
   </div>
+
+  <!-- Drawer + Backdrop (mobile) -->
+  <aside class="amw-drawer" aria-label="Mobile menu">
+    <h3>Menu</h3>
+    <nav class="amw-list">
+      <a href="/index.html">Home</a>
+      <a href="/anime-list.html">Anime List</a>
+      <a href="/manga-list.html">Manga List</a>
+      <a href="/top-anime.html">Top Anime</a>
+      <a href="/top-manga.html">Top Manga</a>
+      <a href="https://animmunity.blogspot.com/">Magazine</a>
+      <a href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
+    </nav>
+  </aside>
+  <div class="amw-backdrop" aria-hidden="true"></div>
+
+  <!-- Nav desktop (centrato sotto al logo) -->
+  <nav class="amw-nav" aria-label="Primary">
+    <a class="amw-link" href="/index.html">Home</a>
+    <a class="amw-link" href="/anime-list.html">Anime List</a>
+    <a class="amw-link" href="/manga-list.html">Manga List</a>
+    <a class="amw-link" href="/top-anime.html">Top Anime</a>
+    <a class="amw-link" href="/top-manga.html">Top Manga</a>
+    <a class="amw-link" href="https://animmunity.blogspot.com/">Magazine</a>
+    <a class="amw-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
+  </nav>
 </header>
