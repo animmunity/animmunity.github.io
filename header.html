@@ -1,56 +1,47 @@
 <header class="amm-topbar" role="banner">
   <style>
-    /* ===== AniMMUnity Topbar (scoped) ===== */
+    /* ===== AniMMUnity Topbar (flex, bianco) ===== */
     .amm-topbar, .amm-topbar * { box-sizing: border-box; }
     .amm-topbar{
       position: sticky; top: 0; z-index: 1000; width: 100%;
-      background:#fff; border-bottom:1px solid #e7e9f1; overflow-x: clip;
+      background:#fff; border-bottom:1px solid #e7e9f1;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* contenitore full-width (come row-x1) */
-    .amm-topbar .container.row-x1{
+    /* barra: hamburger + logo affiancati (niente grid) */
+    .amm-bar{
       width:100%; margin:0; padding:10px clamp(14px,3vw,24px);
-      display:flex; align-items:center; justify-content:center; gap:12px;
-      min-height:56px;
+      display:flex; align-items:center; gap:10px; min-height:56px;
     }
 
-    /* ------ blocco "widget Image" (hamburger + logo) ------ */
-    .amm-topbar .widget.Image{
-      display:flex; align-items:center; gap:10px; min-width:0;
+    /* --- hamburger --- */
+    .mobile-menu-toggle{
+      width:44px; height:44px; border-radius:12px; display:inline-flex;
+      align-items:center; justify-content:center; cursor:pointer;
+      background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
+      text-decoration:none;
     }
-    .amm-topbar .mobile-menu-toggle{
-      width:44px; height:44px; border-radius:12px; display:inline-grid; /* visibile anche in desktop */
-      place-items:center; background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
-    }
-    .amm-topbar .mobile-menu-toggle::before{
-      content:""; width:22px; height:22px; display:block;
-      background:
-        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>')
-        no-repeat center/contain;
-    }
-    .amm-topbar .logo-img{ display:inline-flex; align-items:center; gap:10px; }
-    .amm-topbar .logo-img img{ height:42px; width:auto; display:block; }
-    .amm-topbar #h1-off{ position:absolute; left:-9999px; }
+    .mobile-menu-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
 
-    /* Visually hidden utility (per il checkbox non focalizzabile) */
-    .amm-visually-hidden{
-      position:absolute !important;
-      width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
-      clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0; left:-9999px;
-    }
+    /* --- logo --- */
+    .logo-img{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
+    .logo-img img{ height:42px; width:auto; display:block; }
+    #h1-off{ position:absolute; left:-9999px; }
 
-    /* ===== Drawer (menu laterale) ===== */
+    /* ===== Drawer laterale ===== */
     .amm-drawer{
       position:fixed; inset:0 auto 0 0; width:min(86vw,360px);
       background:#fff; border-right:1px solid #e7e9f1;
       transform:translateX(-100%); transition:transform .25s ease; padding:14px; z-index:1001;
+      outline: none;
     }
+    .amm-drawer.is-open{ transform:translateX(0); }
+
     .amm-backdrop{
       position:fixed; inset:0; background:rgba(0,0,0,.35);
       opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
     }
-    /* lo stato open è gestito via JS, non col :checked, per migliore accessibilità */
+    .amm-backdrop.is-open{ opacity:1; pointer-events:auto; }
 
     .amm-drawer h3{ margin:6px 6px 10px; font:800 14px/1 Inter,system-ui; color:#0b1220; letter-spacing:.04em }
     .amm-list{ display:flex; flex-direction:column; gap:8px; }
@@ -67,43 +58,40 @@
 
     /* ===== Responsive ===== */
     @media (max-width: 960px){
-      /* hamburger + logo affiancati (uguale al tuo snippet) */
-      .amm-topbar .container.row-x1{ justify-content:flex-start; }
-      .amm-topbar .logo-img img{ height:38px; }
+      .logo-img img{ height:38px; }
     }
     @media (max-width: 400px){
-      .amm-topbar .logo-img img{ height:34px; }
+      .logo-img img{ height:34px; }
     }
-
-    /* Stato aperto (aggiunto via JS) */
-    .amm-drawer.is-open{ transform:translateX(0) }
-    .amm-backdrop.is-open{ opacity:1; pointer-events:auto }
   </style>
 
-  <div class="container row-x1">
-    <!-- Checkbox "tecnico" (non focalizzabile) per compatibilità minima -->
-    <input type="checkbox" id="amm-open" class="amm-visually-hidden" tabindex="-1">
+  <!-- Barra: hamburger + logo (markup simile al tuo widget Image) -->
+  <div class="amm-bar">
+    <a class="mobile-menu-toggle" href="#" role="button" aria-controls="amm-drawer" aria-expanded="false" aria-label="Menu">
+      <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </a>
 
-    <!-- 🔻 Markup hamburger + logo (come richiesto) -->
-    <div class="widget Image" data-version="2" id="Image121">
-      <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu"
-         aria-controls="amm-drawer" aria-expanded="false"></a>
-      <a class="logo-img custom-image" href="/">
-        <img alt="AniMMunity" id="Image121_img"
-             src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
-        <h1 id="h1-off">AniMMunity</h1>
-      </a>
-    </div>
+    <a class="logo-img custom-image" href="/">
+      <img
+        alt="AniMMUnity"
+        id="Image121_img"
+        src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500">
+      <h1 id="h1-off">AniMMunity</h1>
+    </a>
   </div>
 
-  <!-- Drawer: link “topbar” + social -->
+  <!-- Drawer con menu -->
   <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu" tabindex="-1">
     <h3>Topbar Menu</h3>
     <nav class="amm-list">
-      <a href="https://animmunity.blogspot.com/p/about-us.html">About Us</a>
-      <a href="https://animmunity.blogspot.com/p/privacy-policy.html">Privacy Policy</a>
-      <a href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
+      <a href="https://animmunity.blogspot.com/">Home</a>
+      <a href="https://animmunity.github.io/anime-list.html">Anime List</a>
+      <a href="https://animmunity.github.io/top-anime.html">Top Anime</a>
+      <a href="https://animmunity.github.io/manga-list.html">Manga List</a>
+      <a href="https://animmunity.github.io/top-manga.html">Top Manga</a>
+      <a href="https://animmunity.github.io/character-list.html">Characters</a>
     </nav>
+
     <h3>Follow</h3>
     <div class="social">
       <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="facebook">
@@ -124,39 +112,36 @@
 
   <script>
     (function(){
-      const root = document.currentScript.closest('.amm-topbar');
-      const toggle = root.querySelector('.mobile-menu-toggle');
-      const drawer = root.querySelector('#amm-drawer');
-      const backdrop = root.querySelector('.amm-backdrop');
-      const main = document.querySelector('main');
+      const header   = document.currentScript.closest('.amm-topbar') || document.querySelector('.amm-topbar');
+      const toggle   = header.querySelector('.mobile-menu-toggle');
+      const drawer   = header.querySelector('#amm-drawer');
+      const backdrop = header.querySelector('.amm-backdrop');
+      const main     = document.querySelector('main');
 
-      function open(){
+      function openDrawer(){
         drawer.classList.add('is-open');
         backdrop.classList.add('is-open');
         toggle.setAttribute('aria-expanded','true');
         drawer.setAttribute('aria-modal','true');
-        if(main) main.setAttribute('inert','');
-
-        // focus al primo elemento interattivo del drawer
+        if (main) main.setAttribute('inert','');
         const first = drawer.querySelector('a, button, input, [tabindex]:not([tabindex="-1"])');
         (first || drawer).focus({preventScroll:true});
       }
-      function close(){
+      function closeDrawer(){
         drawer.classList.remove('is-open');
         backdrop.classList.remove('is-open');
         toggle.setAttribute('aria-expanded','false');
         drawer.removeAttribute('aria-modal');
-        if(main) main.removeAttribute('inert');
-
+        if (main) main.removeAttribute('inert');
         toggle.focus({preventScroll:true});
       }
 
-      toggle.addEventListener('click', (e)=>{ e.preventDefault(); 
-        drawer.classList.contains('is-open') ? close() : open();
+      toggle.addEventListener('click', (e)=>{ e.preventDefault();
+        (drawer.classList.contains('is-open') ? closeDrawer : openDrawer)();
       });
-      backdrop.addEventListener('click', close);
-      drawer.addEventListener('click', (e)=>{ if(e.target.closest('a')) close(); });
-      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && drawer.classList.contains('is-open')) close(); });
+      backdrop.addEventListener('click', closeDrawer);
+      drawer.addEventListener('click', (e)=>{ if (e.target.closest('a')) closeDrawer(); });
+      document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer(); });
     })();
   </script>
 </header>
