@@ -14,43 +14,36 @@
       overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0;
     }
 
-    /* Barra: hamburger assoluto a sinistra + logo centrato */
+    /* Barra: [hamburger] [logo centrato] [spacer] */
     .amm-bar{
       position: relative;
-      display:flex; align-items:center; justify-content:center;
-      width:100%;
-      padding: 10px clamp(14px,3vw,24px);
-      /* altezza si adatta alla dimensione del logo */
-      min-height: calc(clamp(42px, 14vw, 84px) + 20px);
+      display:flex; align-items:center; justify-content:space-between;
+      width:100%; padding:10px clamp(14px,3vw,24px); min-height:56px;
     }
 
     /* Hamburger (sempre visibile) — usa <label for="#amm-open"> */
     .mobile-menu-toggle{
-      position:absolute;
-      left: clamp(12px, 3vw, 24px);
-      top: 50%;
-      transform: translateY(-50%);
-      width:44px; height:44px; border-radius:12px; display:inline-flex;
+      flex: 0 0 44px; width:44px; height:44px; border-radius:12px; display:inline-flex;
       align-items:center; justify-content:center; cursor:pointer;
       background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
       user-select:none;
     }
-    .mobile-menu-toggle:active{ transform: translateY(-50%) translateY(1px); }
+    .mobile-menu-toggle:active{ transform: translateY(1px); }
     .mobile-menu-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
 
-    /* Logo SEMPRE centrato; riserva spazio orizzontale per l’hamburger */
+    /* Logo SEMPRE centrato con anti-overlap */
     .logo-wrap{
-      display:flex; align-items:center; justify-content:center; text-align:center;
-      max-width: calc(100% - 80px); /* 44px hamburger + aria di respiro */
-      margin: 0 auto;
+      position:absolute; left:50%; transform: translateX(-50%);
+      display:flex; align-items:center; justify-content:center;
+      max-width: calc(100% - 120px); /* 44 (hamb) + 44 (spacer) + padding */
+      text-align:center;
     }
     .logo-img{ display:inline-flex; align-items:center; gap:10px; max-width:100%; min-width:0; text-decoration:none; }
     .logo-img img{
-      display:block;
-      width:auto; max-width:100%;
-      height: clamp(42px, 14vw, 84px);  /* min 42px, target 14vw, max 84px */
+      display:block; max-width:100%; height:auto; max-height:42px; /* desktop */
     }
     #h1-off{ position:absolute; left:-9999px; }
+    .amm-spacer{ flex:0 0 44px; width:44px; height:44px; }
 
     /* Drawer laterale (apre/chiude via :checked) */
     .amm-drawer{
@@ -80,9 +73,13 @@
       opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
     }
 
-    /* Stato aperto con :checked (CSS-only) */
+    /* Stato aperto con :checked */
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
+
+    /* Responsive: logo un filo più basso su schermi piccoli */
+    @media (max-width: 960px){ .logo-img img{ max-height: 38px; } }
+    @media (max-width: 400px){ .logo-img img{ max-height: 32px; } }
   </style>
 
   <!-- Checkbox di stato (CSS-only) -->
@@ -103,10 +100,13 @@
         <h1 id="h1-off">AniMMunity</h1>
       </a>
     </div>
+
+    <!-- Spacer a destra per bilanciare l'hamburger -->
+    <span class="amm-spacer" aria-hidden="true"></span>
   </div>
 
-  <!-- Drawer: submenu -->
-  <aside class="amm-drawer" id="amm-drawer" aria-label="Site menu">
+  <!-- Drawer: submenu richiesto -->
+  <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu">
     <!-- Close (senza JS) -->
     <label for="amm-open" class="amm-close" aria-label="Close menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -114,8 +114,7 @@
 
     <h3>Menu</h3>
     <nav class="amm-list" role="menubar">
-      <a href="https://animmunity.github.io/" role="menuitem">Home</a>
-      <a href="https://animmunity.blogspot.com/" role="menuitem">Magazine</a>
+      <a href="https://animmunity.blogspot.com/" role="menuitem">Home</a>
       <a href="https://animmunity.github.io/anime-list.html" role="menuitem">Anime List</a>
       <a href="https://animmunity.github.io/top-anime.html" role="menuitem">Top Anime</a>
       <a href="https://animmunity.github.io/manga-list.html" role="menuitem">Manga List</a>
