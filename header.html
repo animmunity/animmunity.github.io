@@ -8,7 +8,7 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* Visually hidden (focusabile se raggiunto da tab, ma invisibile) */
+    /* Visually hidden (per il checkbox stato) */
     .sr-only{
       position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
       overflow:hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space:nowrap; border:0;
@@ -21,9 +21,9 @@
       width:100%; padding:10px clamp(14px,3vw,24px); min-height:56px;
     }
 
-    /* Hamburger (sempre visibile) — è un <label> che toggla #amm-open */
+    /* Hamburger (sempre visibile) — usa <label for="#amm-open"> */
     .mobile-menu-toggle{
-      width:44px; height:44px; border-radius:12px; display:inline-flex;
+      flex: 0 0 44px; width:44px; height:44px; border-radius:12px; display:inline-flex;
       align-items:center; justify-content:center; cursor:pointer;
       background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1;
       user-select:none;
@@ -31,17 +31,19 @@
     .mobile-menu-toggle:active{ transform: translateY(1px); }
     .mobile-menu-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
 
-    /* Logo SEMPRE centrato */
+    /* Logo SEMPRE centrato con anti-overlap */
     .logo-wrap{
       position:absolute; left:50%; transform: translateX(-50%);
       display:flex; align-items:center; justify-content:center;
+      max-width: calc(100% - 120px); /* 44 (hamb) + 44 (spacer) + padding */
+      text-align:center;
     }
-    .logo-img{ display:inline-flex; align-items:center; gap:10px; text-decoration:none; }
-    .logo-img img{ height:42px; width:auto; display:block; }
+    .logo-img{ display:inline-flex; align-items:center; gap:10px; max-width:100%; min-width:0; text-decoration:none; }
+    .logo-img img{
+      display:block; max-width:100%; height:auto; max-height:42px; /* desktop */
+    }
     #h1-off{ position:absolute; left:-9999px; }
-
-    /* Spacer a destra per bilanciare l’icona a sinistra */
-    .amm-spacer{ width:44px; height:44px; }
+    .amm-spacer{ flex:0 0 44px; width:44px; height:44px; }
 
     /* Drawer laterale (apre/chiude via :checked) */
     .amm-drawer{
@@ -57,13 +59,7 @@
       font-weight:700; box-shadow: inset 0 0 0 1px #e7e9f1;
     }
 
-    /* Backdrop: è un <label> che chiude il menu al click */
-    .amm-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.35);
-      opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
-    }
-
-    /* Pulsante chiudi dentro al drawer (senza JS) */
+    /* Pulsante chiudi nel drawer */
     .amm-close{
       width:40px; height:40px; border-radius:10px; display:inline-flex;
       align-items:center; justify-content:center; cursor:pointer;
@@ -71,25 +67,32 @@
     }
     .amm-close svg{ width:18px; height:18px; }
 
+    /* Backdrop come <label> per chiudere al click */
+    .amm-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.35);
+      opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:1000;
+    }
+
     /* Stato aperto con :checked */
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
 
-    /* Responsive piccoli aggiustamenti */
-    @media (max-width: 960px){ .logo-img img{ height:38px; } }
-    @media (max-width: 400px){ .logo-img img{ height:34px; } }
+    /* Responsive: logo un filo più basso su schermi piccoli */
+    @media (max-width: 960px){ .logo-img img{ max-height: 38px; } }
+    @media (max-width: 400px){ .logo-img img{ max-height: 32px; } }
   </style>
 
-  <!-- Checkbox di stato (nessun aria-hidden, così niente warning) -->
+  <!-- Checkbox di stato (CSS-only) -->
   <input type="checkbox" id="amm-open" class="sr-only">
 
   <!-- Barra superiore -->
   <div class="amm-bar">
-    <!-- Label che apre/chiude il drawer via #amm-open -->
+    <!-- Toggle apre/chiude il drawer -->
     <label class="mobile-menu-toggle" for="amm-open" role="button" aria-controls="amm-drawer" aria-label="Menu">
       <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </label>
 
+    <!-- Logo nero centrato -->
     <div class="logo-wrap">
       <a class="logo-img custom-image" href="/">
         <img alt="AniMMunity" id="Image121_img"
@@ -98,12 +101,13 @@
       </a>
     </div>
 
+    <!-- Spacer a destra per bilanciare l'hamburger -->
     <span class="amm-spacer" aria-hidden="true"></span>
   </div>
 
-  <!-- Drawer: menu + follow -->
+  <!-- Drawer: submenu richiesto -->
   <aside class="amm-drawer" id="amm-drawer" aria-label="Mobile menu">
-    <!-- Close senza JS -->
+    <!-- Close (senza JS) -->
     <label for="amm-open" class="amm-close" aria-label="Close menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </label>
@@ -117,28 +121,8 @@
       <a href="https://animmunity.github.io/top-manga.html" role="menuitem">Top Manga</a>
       <a href="https://animmunity.github.io/character-list.html" role="menuitem">Characters</a>
     </nav>
-
-    <h3>Follow</h3>
-    <div class="social" style="display:flex; gap:10px;">
-      <a href="https://www.facebook.com/" target="_blank" rel="noopener" aria-label="facebook"
-         style="width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px #e7e9f1;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-      </a>
-      <a href="https://twitter.com/" target="_blank" rel="noopener" aria-label="x-twitter"
-         style="width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px #e7e9f1;">
-        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M18.244 2H21l-6.56 7.49L22 22h-5.9l-4.6-6.01L5.2 22H2l7.03-8.02L2 2h6l4.04 5.35L18.244 2Zm-1.03 18h1.58L8.86 4h-1.6l9.95 16Z"/></svg>
-      </a>
-      <a href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="youtube"
-         style="width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px #e7e9f1;">
-        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.3 3.5 12 3.5 12 3.5s-7.3 0-9.4.6A3 3 0 0 0 .5 6.2 31.1 31.1 0 0 0 0 12a31.1 31.1 0 0 0 .6 5.8 3 3 0 0 0 2.1 2.1C4.8 20.5 12 20.5 12 20.5s7.3 0  9.4-.6a3 3 0 0 0 2.1-2.1c.4-1.9.6-3.9.6-5.8s-.2-3.9-.6-5.8ZM9.7 15.5v-7l6 3.5-6 3.5Z"/></svg>
-      </a>
-      <a href="https://animmunity.blogspot.com/feeds/posts/default" target="_blank" rel="noopener" aria-label="rss"
-         style="width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px #e7e9f1;">
-        <svg viewBox="0 0 24 24" fill="#0b1220"><path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0ZM0 10.91v3.27a9.82 9.82 0 0 1 9.82 9.82h3.27C13.09 17.34 6.66 10.91 0 10.91Zm0-6.55v3.27A16.36 16.36 0 0 1 16.36 24h3.27C19.64 13.37 10.63 4.36 0 4.36Z"/></svg>
-      </a>
-    </div>
   </aside>
 
-  <!-- Backdrop come <label> per chiudere il menu al click -->
+  <!-- Backdrop: cliccandolo chiudi il menu -->
   <label class="amm-backdrop" for="amm-open" aria-hidden="true"></label>
 </header>
