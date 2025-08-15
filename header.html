@@ -1,28 +1,27 @@
-<header class="amx-header" role="banner">
+<header class="amx-subheader" role="banner">
   <style>
-    /* ===== AniMMUnity White Header (scoped) ===== */
-    .amx-header, .amx-header * { box-sizing: border-box; }
-    .amx-header{
+    /* ===== Submenu bianco (scoped) ===== */
+    .amx-subheader, .amx-subheader * { box-sizing: border-box; }
+    .amx-subheader{
       position: sticky; top: 0; z-index: 1000; width: 100%;
       background:#ffffff; border-bottom:1px solid #e7e9f1; overflow-x: clip;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* Full width container */
-    .amx-header .container.row-x1{
+    /* Full-width container */
+    .amx-subheader .container.row-x1{
       width:100%; margin:0; padding:10px clamp(14px, 3vw, 24px);
     }
 
-    /* Header line: left (logo + menu) | right (search btn) */
-    .amx-header .header-items{
+    /* Riga principale: left (hamburger+logo+menu) | right (search button) */
+    .amx-subheader .header-items{
       display:flex; align-items:center; justify-content:space-between; gap:12px;
       min-height:56px;
     }
-
     .flex-left{ display:flex; align-items:center; gap:16px; min-width:0; }
     .flex-right{ display:flex; align-items:center; gap:10px; }
 
-    /* Logo + hamburger */
+    /* ===== Hamburger + Logo (come tuo markup) ===== */
     .next-mobile-logo-section .mobile-menu-toggle{
       width:44px; height:44px; border-radius:12px; display:inline-grid; place-items:center;
       background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer; margin-right:8px;
@@ -33,14 +32,16 @@
         url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="%230b1220" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>')
         no-repeat center/contain;
     }
+    .main-logo .logo-img{ display:inline-flex; align-items:center; gap:10px; }
     .main-logo .logo-img img{ height:40px; width:auto; display:block; }
     .main-logo #h1-off{ position:absolute; left:-9999px; }
 
-    /* Main nav (desktop) */
-    .next-pro-main-nav .show-menu > a.mobile-menu-toggle{ display:none; } /* solo desktop: hide secondary toggle */
+    /* ===== Menu desktop (uguale alle tue classi) ===== */
+    .next-pro-main-nav .show-menu > a.mobile-menu-toggle{ display:none; } /* nasconde toggle extra in desktop */
     #next-pro-main-nav-menu{
       list-style:none; margin:0; padding:0; display:flex; gap:12px; flex-wrap:wrap;
     }
+    #next-pro-main-nav-menu > li{ margin:0; padding:0; }
     #next-pro-main-nav-menu > li > a{
       display:inline-block; padding:8px 12px; border-radius:10px; text-decoration:none;
       color:#0b1220; font-weight:700; font-size:14px; letter-spacing:.02em; background:#fff;
@@ -48,7 +49,7 @@
     }
     #next-pro-main-nav-menu > li > a:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
 
-    /* Search toggle (right) */
+    /* ===== Bottone search a destra + area search a comparsa ===== */
     .main-toggle-wrap .main-toggle-style{
       width:44px; height:44px; border-radius:12px; display:inline-grid; place-items:center;
       background:#fff; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
@@ -66,7 +67,6 @@
         no-repeat center/contain;
     }
 
-    /* Slide-down search area */
     #main-search-wrap{ overflow:hidden; max-height:0; transition:max-height .25s ease; }
     #main-search-wrap.open{ max-height:86px; }
     #main-search-wrap .main-search{
@@ -79,62 +79,51 @@
     }
     .search-input:focus{ border-color:#bfd7ff; box-shadow: 0 0 0 3px #e6f0ff; }
 
-    /* ===== Mobile / Tablet ===== */
-    @media (max-width: 960px){
-      /* nav orizzontale → nascosto, attivato dal drawer */
-      .next-pro-main-nav{ display:none; }
-
-      .main-logo .logo-img img{ height:36px; }
-      .next-mobile-logo-section .mobile-menu-toggle{ display:inline-grid; }
-    }
-
-    /* Drawer mobile full-screen (sotto header) */
+    /* ===== Drawer mobile full-screen (solo submenu) ===== */
     .amx-drawer{
-      position:fixed; left:0; right:0; top:var(--amx-top, 60px); /* JS aggiorna la var */
+      position:fixed; left:0; right:0; top:var(--amx-top, 60px);
       background:#fff; border-bottom:1px solid #e7e9f1;
-      transform: translateY(-100%); transition: transform .25s ease; z-index: 999;
+      transform:translateY(-100%); transition:transform .25s ease; z-index: 999;
       padding:12px clamp(14px, 3vw, 24px) 16px;
     }
-    .amx-drawer.open{ transform: translateY(0); }
-    .amx-drawer .drawer-nav{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+    .amx-drawer.open{ transform:translateY(0); }
+    .amx-drawer .drawer-nav{
+      list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;
+    }
     .amx-drawer .drawer-nav a{
       display:block; padding:12px; border-radius:12px; text-decoration:none; color:#0b1220; font-weight:700;
       box-shadow: inset 0 0 0 1px #e7e9f1;
     }
-
     .amx-backdrop{
       position:fixed; inset:0; background:rgba(0,0,0,.35);
       opacity:0; pointer-events:none; transition: opacity .2s ease; z-index: 998;
     }
     .amx-backdrop.open{ opacity:1; pointer-events:auto; }
 
-    /* Safe areas on iOS */
-    @supports (padding: max(0px)){
-      .amx-header .container.row-x1{
-        padding-left:max(14px, env(safe-area-inset-left));
-        padding-right:max(14px, env(safe-area-inset-right));
-      }
+    /* ===== Responsive ===== */
+    @media (max-width: 960px){
+      .next-pro-main-nav{ display:none; }     /* menu orizzontale nascosto in mobile */
+      .main-logo .logo-img img{ height:36px; }
+      .next-mobile-logo-section .mobile-menu-toggle{ display:inline-grid; }
     }
   </style>
 
-  <!-- LINEA HEADER -->
+  <!-- ===== SUBMENU (uguale al tuo) ===== -->
   <div class="container row-x1">
     <div class="header-items">
       <div class="flex-left">
-        <!-- hamburger + logo -->
         <div class="next-mobile-logo-section main-logo section" id="next-mobile-logo-section" name="Mobile Logo Section">
-          <div class="widget Image" id="Image121" data-version="2">
+          <div class="widget Image" data-version="2" id="Image121">
             <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu" aria-controls="amx-drawer" aria-expanded="false"></a>
-            <a class="logo-img custom-image" href="/" aria-label="AniMMUnity Home">
-              <img id="Image121_img" alt="AniMMunity" src="https://blogger.googleusercontent.com/img/a/AVvXsEhxDE9GIj2qFHrjNIPUkbVn-S8Ii8KepIyQ_LiRWikFLgWIRRvNqjMiSJk3Wx8GTUy8ih6VLcFxF8d65jYpQBrSQnizbaIS_SlatSD2HOvUfy4ZH279Wb0gBkKbD3sXOvqeTL2J-II4UQdCVyXlSMBPIUmQlrP-xAxtfgYmQ-FOZuoyBgpksGTx3_0YPRE=s500">
+            <a class="logo-img custom-image" href="/">
+              <img alt="AniMMunity" id="Image121_img" src="https://blogger.googleusercontent.com/img/a/AVvXsEhxDE9GIj2qFHrjNIPUkbVn-S8Ii8KepIyQ_LiRWikFLgWIRRvNqjMiSJk3Wx8GTUy8ih6VLcFxF8d65jYpQBrSQnizbaIS_SlatSD2HOvUfy4ZH279Wb0gBkKbD3sXOvqeTL2J-II4UQdCVyXlSMBPIUmQlrP-xAxtfgYmQ-FOZuoyBgpksGTx3_0YPRE=s500">
               <h1 id="h1-off">AniMMunity</h1>
             </a>
           </div>
         </div>
 
-        <!-- MAIN NAV (desktop) -->
         <div class="next-pro-main-nav section" id="next-pro-main-nav" name="Header Menu">
-          <div class="widget LinkList show-menu" id="LinkList101" data-version="2">
+          <div class="widget LinkList show-menu" data-version="2" id="LinkList101">
             <a class="mobile-menu-toggle" href="javascript:;" role="button" title="Menu"></a>
             <ul id="next-pro-main-nav-menu" role="menubar">
               <li><a href="https://animmunity.blogspot.com/" role="menuitem">Home</a></li>
@@ -148,7 +137,6 @@
         </div>
       </div>
 
-      <!-- Search button (right) -->
       <div class="flex-right">
         <div class="main-toggle-wrap">
           <a class="main-toggle-style show-search" href="javascript:;" role="button" aria-controls="main-search-wrap" aria-expanded="false" title="Search"></a>
@@ -156,18 +144,18 @@
       </div>
     </div>
 
-    <!-- SEARCH AREA -->
+    <!-- SEARCH slide-down -->
     <div id="main-search-wrap" aria-hidden="true">
       <div class="main-search">
         <form action="https://animmunity.blogspot.com/search" class="search-form" role="search">
-          <input class="search-input" type="search" name="q" placeholder="Search" autocomplete="off">
+          <input autocomplete="off" class="search-input" name="q" placeholder="Search" type="search" value="">
         </form>
         <a class="main-toggle-style hide-search" href="javascript:;" role="button" aria-controls="main-search-wrap" aria-expanded="true" title="Close search"></a>
       </div>
     </div>
   </div>
 
-  <!-- DRAWER MOBILE (full width) -->
+  <!-- Drawer mobile con lo stesso menu -->
   <aside id="amx-drawer" class="amx-drawer" aria-label="Mobile menu">
     <nav>
       <ul class="drawer-nav" role="menubar">
@@ -183,64 +171,39 @@
   <div class="amx-backdrop" id="amx-backdrop" aria-hidden="true"></div>
 
   <script>
-    // ===== Header micro-interactions (scoped to header) =====
+    // Micro JS per drawer e search (scoped)
     (function(){
-      const root = document.currentScript.closest('.amx-header');
-      const hamburger = root.querySelector('.next-mobile-logo-section .mobile-menu-toggle');
+      const root = document.currentScript.closest('.amx-subheader');
+      const burger = root.querySelector('.next-mobile-logo-section .mobile-menu-toggle');
       const drawer = root.querySelector('#amx-drawer');
       const backdrop = root.querySelector('#amx-backdrop');
 
       const searchWrap = root.querySelector('#main-search-wrap');
-      const openSearchBtn = root.querySelector('.main-toggle-style.show-search');
-      const closeSearchBtn = root.querySelector('.main-toggle-style.hide-search');
+      const showSearch = root.querySelector('.main-toggle-style.show-search');
+      const hideSearch = root.querySelector('.main-toggle-style.hide-search');
 
-      // keep drawer below header regardless of sticky height
-      const setDrawerTop = () => {
-        const rect = root.getBoundingClientRect();
-        const top = rect.top + window.scrollY + root.offsetHeight;
-        drawer.style.setProperty('--amx-top', root.offsetHeight + 'px');
-      };
+      // Posiziona il drawer subito sotto l’header
+      const setDrawerTop = () => drawer.style.setProperty('--amx-top', root.offsetHeight + 'px');
       setDrawerTop();
       window.addEventListener('resize', setDrawerTop);
 
       function openDrawer(){
-        drawer.classList.add('open');
-        backdrop.classList.add('open');
-        hamburger.setAttribute('aria-expanded','true');
+        drawer.classList.add('open'); backdrop.classList.add('open');
+        burger.setAttribute('aria-expanded','true');
       }
       function closeDrawer(){
-        drawer.classList.remove('open');
-        backdrop.classList.remove('open');
-        hamburger.setAttribute('aria-expanded','false');
+        drawer.classList.remove('open'); backdrop.classList.remove('open');
+        burger.setAttribute('aria-expanded','false');
       }
-
-      hamburger.addEventListener('click', (e)=>{
-        e.preventDefault();
-        const isOpen = drawer.classList.contains('open');
-        isOpen ? closeDrawer() : openDrawer();
-      });
+      burger.addEventListener('click', (e)=>{ e.preventDefault(); drawer.classList.contains('open')? closeDrawer(): openDrawer(); });
       backdrop.addEventListener('click', closeDrawer);
+      drawer.addEventListener('click', (e)=>{ if(e.target.closest('a')) closeDrawer(); });
 
-      // Search toggle
-      function openSearch(){
-        searchWrap.classList.add('open');
-        searchWrap.setAttribute('aria-hidden','false');
-        openSearchBtn.setAttribute('aria-expanded','true');
-        const input = searchWrap.querySelector('.search-input');
-        input && input.focus();
-      }
-      function closeSearch(){
-        searchWrap.classList.remove('open');
-        searchWrap.setAttribute('aria-hidden','true');
-        openSearchBtn.setAttribute('aria-expanded','false');
-      }
-      openSearchBtn.addEventListener('click', (e)=>{ e.preventDefault(); openSearch(); });
-      closeSearchBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeSearch(); });
-
-      // Close drawer on nav click (mobile)
-      drawer.addEventListener('click', (e)=>{
-        if(e.target.closest('a')) closeDrawer();
-      });
+      // Search
+      function openSearch(){ searchWrap.classList.add('open'); searchWrap.setAttribute('aria-hidden','false'); showSearch.setAttribute('aria-expanded','true'); searchWrap.querySelector('.search-input')?.focus(); }
+      function closeSearch(){ searchWrap.classList.remove('open'); searchWrap.setAttribute('aria-hidden','true'); showSearch.setAttribute('aria-expanded','false'); }
+      showSearch.addEventListener('click', (e)=>{ e.preventDefault(); openSearch(); });
+      hideSearch.addEventListener('click', (e)=>{ e.preventDefault(); closeSearch(); });
     })();
   </script>
 </header>
