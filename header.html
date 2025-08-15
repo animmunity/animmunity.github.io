@@ -2,97 +2,98 @@
   <style>
     /* ===== AniMMUnity Header (scoped, no-JS) ===== */
     .am-header, .am-header * { box-sizing: border-box; }
-    .am-header {
+    .am-header{
       position: sticky; top: 0; z-index: 1000; width: 100%;
-      background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.07);
-      overflow-x: clip; /* evita “dentino” a destra */
+      background:#fff; box-shadow:0 4px 12px rgba(0,0,0,.07);
+      overflow-x: clip; /* niente "dentino" in mobile */
     }
     .am-header .am-container{
-      max-width: 1200px; margin: 0 auto;
-      padding: 12px max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      max-width:1200px; margin:0 auto;
+      padding:12px max(20px, env(safe-area-inset-right)) 12px max(20px, env(safe-area-inset-left));
+      display:flex; align-items:center; gap:12px;
     }
-    .am-header a{ color:#0b1220; text-decoration:none; }
-    .am-header a:hover{ text-decoration:none; }
+    .am-header a{ color:#0b1220; text-decoration:none }
+    .am-header a:hover{ text-decoration:none }
 
     /* Brand */
-    .am-header .am-brand{ display:inline-flex; align-items:center; gap:10px; min-width:0; }
-    .am-header .am-brand img{ height: 48px; width:auto; max-width:100%; display:block; transition: transform .2s ease; }
-    .am-header .am-brand:hover img{ transform: translateY(-1px); }
+    .am-brand{ display:inline-flex; align-items:center; gap:10px; min-width:0 }
+    .am-brand img{ height:48px; width:auto; max-width:100%; display:block }
 
-    /* Menu wrapper (details) */
-    .am-menu { position: relative; }
-    .am-toggle {
-      display:none; border:0; background:#fff; width:44px; height:44px;
+    /* Toggle checkbox (visivamente nascosto) */
+    #am-menu{ position:absolute; left:-9999px; }
+    .am-toggle{
+      border:0; background:#fff; width:44px; height:44px;
       border-radius:10px; box-shadow: inset 0 0 0 1px #e7e9f1; cursor:pointer;
-      display:inline-grid; place-items:center;
-      list-style: none; /* per Firefox */
+      display:none; /* desktop di default */
+      align-items:center; justify-content:center;
     }
-    .am-toggle::-webkit-details-marker { display:none; } /* nasconde il marker di <summary> */
+    .am-toggle svg{ width:22px; height:22px; stroke:#0b1220; stroke-width:2; fill:none; }
+    .am-toggle .icon-close{ display:none; }
+    #am-menu:checked + .am-toggle .icon-bars{ display:none; }
+    #am-menu:checked + .am-toggle .icon-close{ display:block; }
 
     /* Nav */
-    .am-nav{
-      display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-    }
+    .am-nav{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
     .am-link{
-      padding: 8px 14px; border-radius: 10px;
-      font: 500 14px/1.1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      box-shadow: inset 0 0 0 1px #e7e9f1; background:#fff; transition: box-shadow .15s ease, transform .06s ease;
-      white-space: nowrap;
+      padding:8px 14px; border-radius:10px;
+      font:500 14px/1.1 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      box-shadow: inset 0 0 0 1px #e7e9f1; background:#fff;
+      transition: box-shadow .15s ease, transform .06s ease; white-space:nowrap;
     }
     .am-link:hover{ box-shadow: inset 0 0 0 1px #cfd4e6; }
     .am-link:active{ transform: translateY(1px); }
 
     /* ===== Mobile ===== */
-    @media (max-width: 768px){
-      .am-header .am-brand img{ height: 34px; }
+    @media (max-width:768px){
+      .am-brand img{ height:34px; }
       .am-header .am-container{
-        padding: 10px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
-        flex-wrap: wrap;            /* il nav va a capo senza overflow */
-        align-items: center;
+        padding:10px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left));
+        flex-wrap:wrap;
       }
-
-      /* Toggle visibile, nav nascosto finché il menu non è aperto */
-      .am-toggle{ display:inline-grid; order:2; }
-      .am-menu{ order:2; }
+      /* Ordine: Hamburger (sx) -> Brand -> Nav a capo */
+      .am-toggle{ display:inline-flex; order:1; }
+      .am-brand{ order:2; }
       .am-nav{
-        order:3;
-        display:none;
-        width: 100%;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px 0 14px;
+        order:3; width:100%;
+        display:none; flex-direction:column; gap:10px; padding:10px 0 14px;
       }
-      .am-menu[open] .am-nav{ display:flex; } /* stato aperto di <details> */
-
+      /* Mostra nav quando il checkbox è spuntato */
+      #am-menu:checked ~ .am-nav{ display:flex; }
       .am-link{ width:100%; text-align:center; }
     }
 
     /* ===== Desktop ===== */
-    @media (min-width: 769px){
+    @media (min-width:769px){
+      .am-brand{ order:1; }
+      .am-nav{ order:2; display:flex !important; }
       .am-toggle{ display:none; }
-      /* su desktop il nav è sempre visibile */
-      .am-nav{ display:flex !important; flex-direction: row; }
     }
   </style>
 
   <div class="am-container">
+    <!-- Hamburger (a sinistra in mobile) -->
+    <input type="checkbox" id="am-menu" aria-hidden="true">
+    <label for="am-menu" class="am-toggle" aria-label="Toggle menu" aria-controls="site-nav">
+      <!-- bars -->
+      <svg class="icon-bars" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+      <!-- close -->
+      <svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </label>
+
+    <!-- Brand -->
     <a class="am-brand" href="https://animmunity.github.io/">
       <img src="https://blogger.googleusercontent.com/img/a/AVvXsEiR3-hYSCn56AYoM6Tqode6VRp431p_u_t12SPPOgX-FmM2AR2m0CwSMdmJJbVNfE3USmRm-B_XnBfSdjIYvNATG8BxYDVwXjIniPr3RZbV860Ejwai4f6p0Gi0Dd7zFU9SfXQkCf9BlsOpOEjrGoNG5QFxi-2LVj6njD7QSsIWv5uxmWnU3dWQH-VKcAA=s500" alt="AniMMUnity">
     </a>
 
-    <!-- Menu senza JS: <details>/<summary> gestiscono l’apertura -->
-    <details class="am-menu">
-      <summary class="am-toggle" aria-label="Toggle menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0b1220" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <path d="M3 6h18M3 12h18M3 18h18"/>
-        </svg>
-      </summary>
-      <nav id="site-nav" class="am-nav" role="navigation" aria-label="Primary">
-        <a class="am-link" href="/index.html">Home</a>
-        <a class="am-link" href="https://animmunity.blogspot.com/">Magazine</a>
-        <a class="am-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact Us</a>
-      </nav>
-    </details>
+    <!-- Nav (sempre visibile su desktop, a scomparsa in mobile) -->
+    <nav id="site-nav" class="am-nav" role="navigation" aria-label="Primary">
+      <a class="am-link" href="/index.html">Home</a>
+      <a class="am-link" href="https://animmunity.blogspot.com/">Magazine</a>
+      <a class="am-link" href="https://animmunity.blogspot.com/p/contact-us.html">Contact&nbsp;Us</a>
+    </nav>
   </div>
 </header>
