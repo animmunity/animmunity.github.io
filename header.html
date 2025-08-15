@@ -77,17 +77,23 @@
     #amm-open:checked ~ .amm-drawer{ transform:translateX(0) }
     #amm-open:checked ~ .amm-backdrop{ opacity:1; pointer-events:auto }
 
-/* mobile/tablet: logo più grande */
-@media (max-width: 960px){
-  .logo-img img{ max-height: 44px; }
-  /* opzionale: concede un filo più spazio orizzontale al logo */
-  .logo-wrap{ max-width: calc(100% - 108px); }
+/* Logo fluido: cresce automaticamente con la larghezza dello schermo */
+.logo-img img{
+  display:block;
+  width:auto;
+  max-width:100%;
+  height: clamp(42px, 14vw, 84px);  /* min 42px, target 14vw, max 84px */
 }
 
-@media (max-width: 400px){
-  .logo-img img{ max-height: 40px; }
-  /* opzionale: ancora un po' più spazio su telefoni molto piccoli */
-  .logo-wrap{ max-width: calc(100% - 104px); }
+/* La barra si adatta all’altezza del logo (+ padding verticale) */
+.amm-bar{
+  min-height: calc(clamp(42px, 14vw, 84px) + 20px);
+}
+
+/* Anti-overlap: lascia spazio orizzontale al logo centrato
+   (44px hamburger + 44px spacer + margine) */
+.logo-wrap{
+  max-width: calc(100% - 120px);
 }
   </style>
 
