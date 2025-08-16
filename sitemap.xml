@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-static.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-anime-1.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-manga-1.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-manga-2.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-characters-1.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-characters-2.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-characters-3.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://animmunity.github.io/sitemap-characters-4.xml</loc>
+    <lastmod>2025-08-16</lastmod>
+  </sitemap>
+</sitemapindex>
