@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AniMMUnity — Anime & Manga · SEARCH ENGINE</title>
   <meta name="description" content="AniMMUnity: Futuristic interface, instant search, blog and random showcases for Anime & Manga."/>
+ 
+<!-- HEAD — Google tag (gtag.js) — GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  // Consenso iniziale (UE/GDPR): analytics ok, ads off
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted'
+  });
+
+  gtag('js', new Date());
+
+  // Config: niente page_view automatico (gestiamo noi) + invio robusto
+  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+</script>
+
+  
   <meta name="theme-color" content="#ffffff" />
 
   <!-- Perf hints -->
@@ -142,6 +164,190 @@ html, body { overflow-x: hidden; }
   </style>
 </head>
 <body>
+
+<!-- BODY — GA4 tracking per homepage (page_view, search, nav, rails + blog) -->
+<script>
+(function(){
+  if (window.__ga4SpaTrackerInstalled) return;
+  window.__ga4SpaTrackerInstalled = true;
+
+  // Helper per banner cookie (se/quando lo aggiungi)
+  window.acceptAllConsent = function(){
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted'
+    });
+  };
+
+  /* ---------- page_view manuale ---------- */
+  function trackPageView(){
+    gtag('event','page_view', {
+      page_location: location.href,
+      page_path: location.pathname + location.search,
+      page_title: document.title
+    });
+  }
+
+  // Non contare i cambi del solo ?q= (ricerca live)
+  function normalize(url){
+    try{
+      var u = new URL(url, location.origin);
+      u.searchParams.delete('q');
+      return u.pathname + (u.search ? u.search : '');
+    }catch(e){
+      return location.pathname + location.search;
+    }
+  }
+  var prevNorm;
+
+  /* ---------- util ---------- */
+  function textOr(el, fallback){ return (el && (el.textContent || el.getAttribute('aria-label') || '').trim()) || fallback; }
+  function firstN(arr,n){ return Array.prototype.slice.call(arr,0,Math.max(0,n)); }
+
+  /* ---------- view_item_list dai rail (MutationObserver 1-shot) ---------- */
+  function observeRailList(railId, listName){
+    var rail = document.getElementById(railId);
+    if (!rail) return;
+    var sent = false;
+    function maybeSend(){
+      if (sent) return;
+      var items = rail.querySelectorAll('.card-mini');
+      if (items.length >= 1){
+        sent = true;
+        var payload = firstN(items, 10).map(function(a){
+          var t = a.querySelector('.t');
+          return { item_name: textOr(t, 'item') };
+        });
+        gtag('event','view_item_list', { item_list_name: listName, items: payload });
+      }
+    }
+    // prova subito (in caso il rail sia già popolato)
+    maybeSend();
+    // altrimenti osserva cambi
+    var mo = new MutationObserver(function(){ maybeSend(); if (sent) mo.disconnect(); });
+    mo.observe(rail, { childList:true, subtree:true });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    prevNorm = normalize(location.href);
+    trackPageView();
+
+    /* ---------- SEARCH (#q + bottone) ---------- */
+    var q = document.getElementById('q');
+    var go = document.getElementById('search-go');
+    function fireSearch(){
+      var val = (q && q.value || '').trim();
+      if (!val) return;
+      gtag('event','search', { search_term: val });
+    }
+    if (q){
+      q.addEventListener('change', fireSearch);
+      q.addEventListener('keydown', function(e){ if (e.key === 'Enter') fireSearch(); });
+    }
+    if (go){
+      // usa pointerdown per provare a inviare prima della navigazione
+      go.addEventListener('pointerdown', fireSearch, { passive:true });
+      go.addEventListener('click', fireSearch, { passive:true });
+    }
+
+    /* ---------- NAV matrix click ---------- */
+    document.addEventListener('click', function(e){
+      var link = e.target.closest && e.target.closest('.matrix .link3d');
+      if (!link) return;
+      var name = textOr(link.querySelector('.k'), 'nav');
+      gtag('event','select_content', {
+        content_type: 'nav',
+        item_id: 'matrix',
+        item_name: name
+      });
+    }, true);
+
+    /* ---------- Click sui rail (anime/manga) -> select_item ---------- */
+    document.addEventListener('click', function(e){
+      var card = e.target.closest && e.target.closest('#anime-rail .card-mini, #manga-rail .card-mini');
+      if (!card) return;
+      var listName = card.closest('#anime-rail') ? 'Anime Showcase' : 'Manga Showcase';
+      var title = textOr(card.querySelector('.t'), 'item');
+      gtag('event','select_item', {
+        item_list_name: listName,
+        items: [{ item_name: title }]
+      });
+    }, true);
+
+    /* ---------- Blog: click + view list ---------- */
+    // click
+    document.addEventListener('click', function(e){
+      var blog = e.target.closest && e.target.closest('#blog-rail .blog-card');
+      if (!blog) return;
+      var title = textOr(blog.querySelector('.title'), 'blog_item');
+      gtag('event','select_content', {
+        content_type: 'blog',
+        item_id: 'blog_card',
+        item_name: title
+      });
+    }, true);
+    // view list (quando popolato dal JSONP)
+    (function observeBlog(){
+      var rail = document.getElementById('blog-rail');
+      if (!rail) return;
+      var sent = false;
+      function maybeSend(){
+        if (sent) return;
+        var cards = rail.querySelectorAll('.blog-card');
+        if (cards.length){
+          sent = true;
+          gtag('event','view_item_list', {
+            item_list_name: 'Blog Latest',
+            items: firstN(cards, 10).map(function(c){ return { item_name: textOr(c.querySelector('.title'), 'blog_item') }; })
+          });
+        }
+      }
+      maybeSend();
+      var mo = new MutationObserver(function(){ maybeSend(); if (sent) mo.disconnect(); });
+      mo.observe(rail, { childList:true, subtree:true });
+    })();
+
+    /* ---------- Rail nav buttons (prev/next) ---------- */
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest && e.target.closest('.nav-btn');
+      if (!btn) return;
+      var railId = btn.getAttribute('data-for') || 'rail';
+      var dir = btn.classList.contains('nav-next') ? 'next' : 'prev';
+      gtag('event','select_content', {
+        content_type: 'rail_nav',
+        item_id: railId,
+        item_name: dir
+      });
+    }, true);
+
+    /* ---------- view_item_list: osserva i rail contenuti ---------- */
+    observeRailList('anime-rail', 'Anime Showcase');
+    observeRailList('manga-rail', 'Manga Showcase');
+  });
+
+  /* ---------- page_view su navigazioni SPA (se mai usate) ---------- */
+  function maybeTrack(){
+    var nowNorm = normalize(location.href);
+    if (nowNorm !== prevNorm){
+      prevNorm = nowNorm;
+      trackPageView();
+    }
+  }
+  ['pushState','replaceState'].forEach(function(m){
+    var orig = history[m];
+    history[m] = function(){
+      var ret = orig.apply(this, arguments);
+      setTimeout(maybeTrack, 0);
+      return ret;
+    };
+  });
+  window.addEventListener('popstate', maybeTrack);
+})();
+</script>
+  <!-- GA4 END -->
+
   <div class="fx-grid" aria-hidden="true"></div>
 
   <!-- Header slot -->
