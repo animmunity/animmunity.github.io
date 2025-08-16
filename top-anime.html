@@ -5,6 +5,28 @@
   <title>Top Anime — AniMMUnity</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Top Anime Search by title (EN/JP), filter genres, sort by metric, and browse 50 per page. Fixed global ranks per metric/order." />
+
+<!-- Google tag (gtag.js) — GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  // Consenso iniziale (UE/GDPR): analytics ok, ads off
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted'
+  });
+
+  gtag('js', new Date());
+
+  // Config: niente page_view automatico (gestiamo noi) + invio robusto
+  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+</script>
+
+
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
   <meta name="theme-color" content="#ffffff">
 
@@ -204,6 +226,109 @@
 </style>
 </head>
 <body>
+
+<script>
+(function(){
+  if (window.__ga4SpaTrackerInstalled) return;
+  window.__ga4SpaTrackerInstalled = true;
+
+  // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
+  window.acceptAllConsent = function(){
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted'
+    });
+  };
+
+  function trackPageView(){
+    gtag('event','page_view', {
+      page_location: location.href,
+      page_path: location.pathname + location.search,
+      page_title: document.title
+    });
+  }
+
+  // Normalizza l’URL ignorando solo ?q= (ricerca live)
+  function normalize(url){
+    try{
+      var u = new URL(url, location.origin);
+      u.searchParams.delete('q'); // cambiare solo la ricerca non genera page_view
+      return u.pathname + (u.search ? u.search : '');
+    }catch(e){
+      return location.pathname + location.search;
+    }
+  }
+
+  var prevNorm;
+
+  // page_view iniziale + binding eventi
+  document.addEventListener('DOMContentLoaded', function(){
+    prevNorm = normalize(location.href);
+    trackPageView();
+
+    // Evento "search" (campo #searchInput)
+    var el = document.getElementById('searchInput');
+    if (el){
+      function fire(){
+        var q = (el.value || '').trim();
+        if (!q) return;
+        gtag('event','search', { search_term: q });
+      }
+      el.addEventListener('change', fire);
+      el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
+    }
+
+    // Eventi filtri: checkbox (es. Generi) e radio (Metric/Order)
+    document.body.addEventListener('change', function(e){
+      var t = e.target;
+      if (!t) return;
+
+      // Checkbox con data-facet (es. generi)
+      if (t.matches('.filter-menu input[type="checkbox"][data-facet]')){
+        gtag('event','select_content', {
+          content_type: 'filter',
+          item_id: t.getAttribute('data-facet'),
+          item_name: t.value,
+          selected: t.checked
+        });
+      }
+      // Radio per metric/order (name="radio-metric"/"radio-order")
+      else if (t.matches('.filter-menu input[type="radio"]')){
+        var group = (t.name || '').replace(/^radio-/, '') || 'radio';
+        gtag('event','select_content', {
+          content_type: 'filter',
+          item_id: group,       // 'metric' o 'order'
+          item_name: t.value,   // valore selezionato
+          selected: true
+        });
+      }
+    });
+  });
+
+  function maybeTrack(){
+    var nowNorm = normalize(location.href);
+    if (nowNorm !== prevNorm){
+      prevNorm = nowNorm;
+      trackPageView();
+    }
+  }
+
+  // Traccia cambi URL senza reload (paginazione / metric / order / generi)
+  ['pushState','replaceState'].forEach(function(method){
+    var orig = history[method];
+    history[method] = function(){
+      var ret = orig.apply(this, arguments);
+      setTimeout(maybeTrack, 0);
+      return ret;
+    };
+  });
+  window.addEventListener('popstate', maybeTrack);
+})();
+</script>
+
+
   <!-- Preloader -->
   <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
