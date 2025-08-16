@@ -7,6 +7,7 @@
   <title>AniMMUnity — Anime List with Powerful Filters</title>
   <meta name="description" content="Browse the AniMMUnity anime list. Filter by genres, themes, demographics, studios, producers, and licensors. Fast search, clean cards, and detail pages with trailers and info.">
 
+<!-- HEAD -->
 <!-- Google tag (gtag.js) — GA4 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
 <script>
@@ -23,10 +24,10 @@
 
   gtag('js', new Date());
 
-  // Disattivo il page_view automatico: lo inviamo noi (utile per SPA/paginazione)
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false });
+  // Config: niente page_view automatico (gestiamo noi) + invio robusto
+  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
 </script>
-
+<!-- Google tag (gtag.js) — GA4 END-->
 
   <!-- Canonical -->
   <link rel="canonical" href="https://animmunity.github.io/">
@@ -186,62 +187,51 @@
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 </head>
 <body>
-  <script>
-  (function(){
-    if (window.__ga4SpaTrackerInstalled) return;
-    window.__ga4SpaTrackerInstalled = true;
-  
-    function trackPageView(){
-      gtag('event','page_view', {
-        page_location: location.href,
-        page_path: location.pathname + location.search,
-        page_title: document.title
-      });
-    }
-  
-    // Normalizza l'URL ignorando il parametro ?q= (ricerca)
-    function normalize(url){
-      try{
-        var u = new URL(url, location.origin);
-        u.searchParams.delete('q'); // non contare le modifiche della sola ricerca
-        return u.pathname + (u.search ? u.search : '');
-      }catch(e){
-        return location.pathname + location.search;
-      }
-    }
-  
-    var prevNorm = normalize(location.href);
-  
-    function maybeTrack(){
-      if (window.__suppressPV) return; // opzionale: flag per sopprimere manualmente
-      var nowNorm = normalize(location.href);
-      if (nowNorm !== prevNorm){
-        prevNorm = nowNorm;
-        trackPageView();
-      }
-    }
-  
-    // Primo page_view quando la pagina è pronta
-    document.addEventListener('DOMContentLoaded', function(){
-      prevNorm = normalize(location.href);
-      trackPageView();
+ <!-- BODY -->
+<script>
+(function(){
+  if (window.__ga4SpaTrackerInstalled) return;
+  window.__ga4SpaTrackerInstalled = true;
+
+  // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
+  window.acceptAllConsent = function(){
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted'
     });
-  
-    // Auto-tracking per cambi URL senza reload
-    ['pushState','replaceState'].forEach(function(method){
-      var orig = history[method];
-      history[method] = function(){
-        var ret = orig.apply(this, arguments);
-        setTimeout(maybeTrack, 0);
-        return ret;
-      };
+  };
+
+  function trackPageView(){
+    gtag('event','page_view', {
+      page_location: location.href,
+      page_path: location.pathname + location.search,
+      page_title: document.title
     });
-    window.addEventListener('popstate', maybeTrack);
-  
-    // Eventi Ricerca: registra la query (senza creare page_view extra)
-    document.addEventListener('DOMContentLoaded', function(){
-      var el = document.getElementById('searchInput');
-      if (!el) return;
+  }
+
+  // Normalizza URL ignorando ?q= per non contare ogni digitazione nella ricerca
+  function normalize(url){
+    try{
+      var u = new URL(url, location.origin);
+      u.searchParams.delete('q');
+      return u.pathname + (u.search ? u.search : '');
+    }catch(e){
+      return location.pathname + location.search;
+    }
+  }
+
+  var prevNorm;
+
+  // page_view iniziale + binding eventi
+  document.addEventListener('DOMContentLoaded', function(){
+    prevNorm = normalize(location.href);
+    trackPageView();
+
+    // Eventi Ricerca (#searchInput): invia "search" senza page_view extra
+    var el = document.getElementById('searchInput');
+    if (el){
       function fire(){
         var q = (el.value || '').trim();
         if (!q) return;
@@ -249,24 +239,43 @@
       }
       el.addEventListener('change', fire);
       el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
+    }
+
+    // Eventi Filtri (checkbox nei menu filtri)
+    document.body.addEventListener('change', function(e){
+      var t = e.target;
+      if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
+        gtag('event','select_content', {
+          content_type: 'filter',
+          item_id: t.getAttribute('data-facet'),
+          item_name: t.value,
+          selected: t.checked
+        });
+      }
     });
-  
-    // Eventi Filtri
-    document.addEventListener('DOMContentLoaded', function(){
-      document.body.addEventListener('change', function(e){
-        var t = e.target;
-        if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
-          gtag('event','select_content', {
-            content_type: 'filter',
-            item_id: t.getAttribute('data-facet'),
-            item_name: t.value,
-            selected: t.checked
-          });
-        }
-      });
-    });
-  })();
-  </script>
+  });
+
+  function maybeTrack(){
+    var nowNorm = normalize(location.href);
+    if (nowNorm !== prevNorm){
+      prevNorm = nowNorm;
+      trackPageView();
+    }
+  }
+
+  // Traccia cambi URL senza reload (paginazione/navigazione interna)
+  ['pushState','replaceState'].forEach(function(method){
+    var orig = history[method];
+    history[method] = function(){
+      var ret = orig.apply(this, arguments);
+      setTimeout(maybeTrack, 0);
+      return ret;
+    };
+  });
+  window.addEventListener('popstate', maybeTrack);
+})();
+</script>
+  <!-- Google tag (gtag.js) — GA4 END-->
 
   <!-- 🔄 Preloader -->
   <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
