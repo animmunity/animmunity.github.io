@@ -14,7 +14,7 @@ on:
     - cron: '17 3 * * *'   # opzionale: ogni giorno 03:17 UTC
 
 permissions:
-  contents: write   # <-- NECESSARIO per auto-commit
+  contents: write   # NECESSARIO per auto-commit
 
 jobs:
   build:
@@ -30,12 +30,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Cleanup old sitemaps
+        run: |
+          rm -f sitemap*.xml sitemap*.xml.gz || true
+
       - name: Generate sitemaps
         run: |
           python3 --version
           python3 scripts/generate_sitemap.py
           echo "---- generated files ----"
-          ls -la sitemap*.xml || true
+          ls -lah sitemap*.xml* || true
 
       - name: Auto-commit sitemap files
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -43,3 +47,4 @@ jobs:
           commit_message: "chore(sitemap): regenerate"
           file_pattern: |
             sitemap*.xml
+            sitemap*.xml.gz
