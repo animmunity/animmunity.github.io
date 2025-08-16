@@ -1,27 +1,45 @@
-name: Build sitemap
+name: Generate sitemaps
+
 on:
-  push:
-    paths:
-      - "data/anime.csv"
-      - "scripts/generate_sitemap.py"
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'data/**'
+      - 'scripts/generate_sitemap.py'
+      - '*.html'
+      - 'robots.txt'
+      - '.github/workflows/sitemap.yml'
+  schedule:
+    - cron: '17 3 * * *'   # opzionale: ogni giorno 03:17 UTC
 
 permissions:
-  contents: write
+  contents: write   # <-- NECESSARIO per auto-commit
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          python-version: "3.x"
+          fetch-depth: 0
 
-      - run: python3 scripts/generate_sitemap.py
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          commit_message: "chore: update sitemap.xml"
-          file_pattern: sitemap.xml
+          python-version: '3.11'
+
+      - name: Generate sitemaps
+        run: |
+          python3 --version
+          python3 scripts/generate_sitemap.py
+          echo "---- generated files ----"
+          ls -la sitemap*.xml || true
+
+      - name: Auto-commit sitemap files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(sitemap): regenerate"
+          file_pattern: |
+            sitemap*.xml
