@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AniMMUnity — OP/ED Gallery</title>
   <meta name="description" content="Lightweight OP/ED gallery. The page starts empty; videos appear only after you search. Powered by AnimeThemes API or local JSON."/>
+
+  <!-- Google tag (gtag.js) — GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  // Consenso iniziale (UE/GDPR): analytics on, ads off
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted'
+  });
+
+  gtag('js', new Date());
+
+  // Niente page_view automatico: lo tracciamo noi
+  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+</script>
+
+  
   <meta name="theme-color" content="#ffffff" />
 
   <!-- Base site styles for consistency -->
@@ -56,6 +78,228 @@
   </style>
 </head>
 <body>
+
+<script>
+(function(){
+  if (window.__ga4SpaTrackerInstalled) return;
+  window.__ga4SpaTrackerInstalled = true;
+
+  // Helper da richiamare quando l’utente accetta tutti i cookie (se aggiungi un banner)
+  window.acceptAllConsent = function(){
+    gtag('consent', 'update', {
+      ad_storage: 'granted',
+      ad_user_data: 'granted',
+      ad_personalization: 'granted',
+      analytics_storage: 'granted'
+    });
+  };
+
+  /* ========== PAGE VIEW (manuale) ========== */
+  function trackPageView(){
+    gtag('event','page_view', {
+      page_location: location.href,
+      page_path: location.pathname + location.search,
+      page_title: document.title
+    });
+  }
+
+  // Normalizza URL (ignora solo ?q= se presente)
+  function normalize(url){
+    try{
+      var u = new URL(url, location.origin);
+      u.searchParams.delete('q');
+      return u.pathname + (u.search ? u.search : '');
+    }catch(e){ return location.pathname + location.search; }
+  }
+  var prevNorm;
+
+  /* ========== UTILS ========== */
+  function $(sel, root){ return (root||document).querySelector(sel); }
+  function $all(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function text(el){ return (el && el.textContent || '').trim(); }
+  function firstN(arr,n){ return arr.slice(0, Math.max(0,n)); }
+
+  // Anti-duplicazione per "search"
+  var __lastSearch = { term:'', at:0 };
+  function sendSearchOnce(term){
+    term = (term||'').trim();
+    if (!term) return;
+    var now = Date.now();
+    if (term !== __lastSearch.term || (now - __lastSearch.at) > 1500){
+      gtag('event','search', { search_term: term });
+      __lastSearch.term = term; __lastSearch.at = now;
+    }
+  }
+
+  /* ========== BINDINGS ========== */
+  document.addEventListener('DOMContentLoaded', function(){
+    prevNorm = normalize(location.href);
+    trackPageView();
+
+    var input = $('#q');
+    var go    = $('#go');
+    var clear = $('#clear');
+    var results = $('#results');
+
+    // 1) SEARCH — da input (debounced) + Enter + bottone
+    var debT;
+    if (input){
+      input.addEventListener('input', function(){
+        clearTimeout(debT);
+        debT = setTimeout(function(){ sendSearchOnce(input.value); }, 520);
+      });
+      input.addEventListener('change', function(){ sendSearchOnce(input.value); });
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter') sendSearchOnce(input.value); });
+    }
+    if (go){
+      // pointerdown per tentare l'invio anche se subito dopo si aggiorna il DOM
+      go.addEventListener('pointerdown', function(){ input && sendSearchOnce(input.value); }, {passive:true});
+      go.addEventListener('click', function(){ input && sendSearchOnce(input.value); }, {passive:true});
+    }
+    if (clear){
+      clear.addEventListener('click', function(){
+        gtag('event','select_content', {
+          content_type: 'results_action',
+          item_id: 'clear',
+          item_name: 'Clear results'
+        });
+      });
+    }
+
+    // 2) RESULTS VIEW — quando la lista si popola dopo la ricerca
+    if (results){
+      var lastSnapshotKey = '';
+      function snapshotKey(){
+        // chiave semplice per non inviare eventi identici (term + numero cards)
+        var term = (input && input.value || '').trim();
+        var ac = $all('.anime-card', results).length;
+        var tc = $all('.theme-card', results).length;
+        return term + '|' + ac + '|' + tc;
+      }
+      function fireResultsEvents(){
+        var term = (input && input.value || '').trim();
+        var animeCards = $all('.anime-card', results);
+        var themeCards = $all('.theme-card', results);
+        var key = snapshotKey();
+        if (!animeCards.length && !themeCards.length) return;
+        if (key === lastSnapshotKey) return;
+        lastSnapshotKey = key;
+
+        // a) riepilogo risultati
+        gtag('event','search_results', {
+          search_term: term || '(empty)',
+          results_anime: animeCards.length || 0,
+          results_themes: themeCards.length || 0
+        });
+
+        // b) view_item_list — elenco anime (max 10)
+        var items = firstN(animeCards, 10).map(function(card){
+          return { item_name: text(card.querySelector('.anime-title')) || 'Anime' };
+        });
+        if (items.length){
+          gtag('event','view_item_list', {
+            item_list_name: 'OP/ED — Anime results',
+            items: items
+          });
+        }
+      }
+
+      // Prova immediata e poi osserva mutazioni
+      setTimeout(fireResultsEvents, 0);
+      var mo = new MutationObserver(function(){ setTimeout(fireResultsEvents, 0); });
+      mo.observe(results, { childList:true, subtree:true });
+    }
+
+    // 3) PLAY THEME — click su "Play" nelle card
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest && e.target.closest('.theme-card .play button');
+      if (!btn) return;
+
+      var card = btn.closest('.theme-card');
+      var anime = text(card.closest('.anime-card')?.querySelector('.anime-title')) || 'Anime';
+      var label = text(card.querySelector('.tag')) || 'Theme';
+      var meta  = text(card.querySelector('.meta')); // "Song — Artists"
+      var song  = (meta.split(' — ')[0] || '').trim();
+      var artists = (meta.split(' — ')[1] || '').trim();
+
+      // a) selezione tema (click Play)
+      gtag('event','select_content', {
+        content_type: 'theme_play',
+        item_id: label,
+        item_name: anime + ' — ' + label,
+        item_category: 'OP/ED',
+        song: song || undefined,
+        artists: artists || undefined
+      });
+
+      // b) prova a rilevare l'iframe/video inserito dopo il click per inviare "video_start"
+      setTimeout(function(){
+        var embed = card.querySelector('.embed');
+        if (!embed) return;
+        var ifr = embed.querySelector('iframe');
+        var vid = embed.querySelector('video');
+
+        if (ifr){
+          var src = ifr.getAttribute('src') || '';
+          var m = src.match(/embed\/([A-Za-z0-9_-]{6,})/);
+          gtag('event','video_start', {
+            video_provider: src.includes('youtube') ? 'youtube' : 'unknown',
+            video_id: m ? m[1] : undefined,
+            item_name: anime,
+            item_category: 'OP/ED',
+            theme_label: label,
+            song: song || undefined,
+            artists: artists || undefined
+          });
+        }else if (vid){
+          gtag('event','video_start', {
+            video_provider: 'html5',
+            item_name: anime,
+            item_category: 'OP/ED',
+            theme_label: label,
+            song: song || undefined,
+            artists: artists || undefined
+          });
+        }
+      }, 0);
+    }, true);
+
+    // 4) Click su link esterni dentro gli embed (es. "Open on AnimeThemes")
+    document.addEventListener('click', function(e){
+      var a = e.target.closest && e.target.closest('.embed a[href]');
+      if (!a) return;
+      var card = a.closest('.theme-card');
+      var anime = text(card.closest('.anime-card')?.querySelector('.anime-title')) || 'Anime';
+      var label = text(card.querySelector('.tag')) || 'Theme';
+      gtag('event','select_content', {
+        content_type: 'external_link',
+        item_id: 'animethemes',
+        item_name: anime + ' — ' + label
+      });
+    }, true);
+  });
+
+  /* ========== page_view su navigazioni SPA (se mai usate) ========== */
+  function maybeTrack(){
+    var nowNorm = normalize(location.href);
+    if (nowNorm !== prevNorm){
+      prevNorm = nowNorm;
+      trackPageView();
+    }
+  }
+  ['pushState','replaceState'].forEach(function(m){
+    var orig = history[m];
+    history[m] = function(){
+      var ret = orig.apply(this, arguments);
+      setTimeout(maybeTrack, 0);
+      return ret;
+    };
+  });
+  window.addEventListener('popstate', maybeTrack);
+})();
+</script>
+  <!-- GA4 END -->
+
   <!-- Header -->
   <div id="header-placeholder"></div>
 
