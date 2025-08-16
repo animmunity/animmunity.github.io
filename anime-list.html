@@ -7,24 +7,25 @@
   <title>AniMMUnity — Anime List with Powerful Filters</title>
   <meta name="description" content="Browse the AniMMUnity anime list. Filter by genres, themes, demographics, studios, producers, and licensors. Fast search, clean cards, and detail pages with trailers and info.">
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-  
-    // (UE/GDPR) Impostazione iniziale del consenso
-    // Metti 'denied' se vuoi bloccare tutto finché l’utente non accetta
-    gtag('consent', 'default', {
-      ad_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      analytics_storage: 'granted'
-    });
-  
-    gtag('js', new Date());
-    gtag('config', 'G-KJTF6C789Y'); // page_view automatico
-  </script>
+<!-- Google tag (gtag.js) — GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+
+  // Consenso iniziale (UE/GDPR): analytics ok, ads off
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'granted'
+  });
+
+  gtag('js', new Date());
+
+  // Disattivo il page_view automatico: lo inviamo noi (utile per SPA/paginazione)
+  gtag('config', 'G-KJTF6C789Y', { send_page_view: false });
+</script>
 
 
   <!-- Canonical -->
@@ -185,6 +186,68 @@
   <script id="ld-itemlist" type="application/ld+json">{"@context":"https://schema.org","@type":"ItemList","itemListElement":[]}</script>
 </head>
 <body>
+  <script>
+  (function(){
+    if (window.__ga4SpaTrackerInstalled) return; 
+    window.__ga4SpaTrackerInstalled = true;
+  
+    function trackPageView(){
+      gtag('event','page_view', {
+        page_location: location.href,
+        page_path: location.pathname + location.search,
+        page_title: document.title
+      });
+    }
+  
+    // 2.1) Primo page_view quando la pagina è pronta
+    document.addEventListener('DOMContentLoaded', trackPageView);
+  
+    // 2.2) Auto-tracking per cambi URL senza reload (pushState/replaceState/popstate)
+    ['pushState','replaceState'].forEach(function(method){
+      var orig = history[method];
+      history[method] = function(){
+        var ret = orig.apply(this, arguments);
+        setTimeout(trackPageView, 0);
+        return ret;
+      };
+    });
+    window.addEventListener('popstate', trackPageView);
+  
+    // 2.3) Eventi Ricerca (se esiste #searchInput)
+    function bindSearch(){
+      var el = document.getElementById('searchInput');
+      if (!el) return;
+      function fire(){
+        var q = (el.value || '').trim();
+        if (!q) return;
+        gtag('event', 'search', { search_term: q });
+        // invia anche un page_view coerente con il nuovo URL
+        trackPageView();
+      }
+      el.addEventListener('change', fire);
+      el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
+    }
+    document.addEventListener('DOMContentLoaded', bindSearch);
+  
+    // 2.4) Eventi Filtri (se usi i checkbox nei menu filtri)
+    function bindFilters(){
+      document.body.addEventListener('change', function(e){
+        var t = e.target;
+        if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
+          gtag('event','select_content', {
+            content_type: 'filter',
+            item_id: t.getAttribute('data-facet'),
+            item_name: t.value,
+            selected: t.checked
+          });
+          // opzionale: conteggia come nuova vista pagina se l'URL cambia
+          // trackPageView();
+        }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', bindFilters);
+  })();
+  </script>
 
   <!-- 🔄 Preloader -->
   <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
