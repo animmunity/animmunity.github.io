@@ -188,7 +188,7 @@
 <body>
   <script>
   (function(){
-    if (window.__ga4SpaTrackerInstalled) return; 
+    if (window.__ga4SpaTrackerInstalled) return;
     window.__ga4SpaTrackerInstalled = true;
   
     function trackPageView(){
@@ -199,38 +199,60 @@
       });
     }
   
-    // 2.1) Primo page_view quando la pagina è pronta
-    document.addEventListener('DOMContentLoaded', trackPageView);
+    // Normalizza l'URL ignorando il parametro ?q= (ricerca)
+    function normalize(url){
+      try{
+        var u = new URL(url, location.origin);
+        u.searchParams.delete('q'); // non contare le modifiche della sola ricerca
+        return u.pathname + (u.search ? u.search : '');
+      }catch(e){
+        return location.pathname + location.search;
+      }
+    }
   
-    // 2.2) Auto-tracking per cambi URL senza reload (pushState/replaceState/popstate)
+    var prevNorm = normalize(location.href);
+  
+    function maybeTrack(){
+      if (window.__suppressPV) return; // opzionale: flag per sopprimere manualmente
+      var nowNorm = normalize(location.href);
+      if (nowNorm !== prevNorm){
+        prevNorm = nowNorm;
+        trackPageView();
+      }
+    }
+  
+    // Primo page_view quando la pagina è pronta
+    document.addEventListener('DOMContentLoaded', function(){
+      prevNorm = normalize(location.href);
+      trackPageView();
+    });
+  
+    // Auto-tracking per cambi URL senza reload
     ['pushState','replaceState'].forEach(function(method){
       var orig = history[method];
       history[method] = function(){
         var ret = orig.apply(this, arguments);
-        setTimeout(trackPageView, 0);
+        setTimeout(maybeTrack, 0);
         return ret;
       };
     });
-    window.addEventListener('popstate', trackPageView);
+    window.addEventListener('popstate', maybeTrack);
   
-    // 2.3) Eventi Ricerca (se esiste #searchInput)
-    function bindSearch(){
+    // Eventi Ricerca: registra la query (senza creare page_view extra)
+    document.addEventListener('DOMContentLoaded', function(){
       var el = document.getElementById('searchInput');
       if (!el) return;
       function fire(){
         var q = (el.value || '').trim();
         if (!q) return;
-        gtag('event', 'search', { search_term: q });
-        // invia anche un page_view coerente con il nuovo URL
-        trackPageView();
+        gtag('event','search', { search_term: q });
       }
       el.addEventListener('change', fire);
       el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
-    }
-    document.addEventListener('DOMContentLoaded', bindSearch);
+    });
   
-    // 2.4) Eventi Filtri (se usi i checkbox nei menu filtri)
-    function bindFilters(){
+    // Eventi Filtri
+    document.addEventListener('DOMContentLoaded', function(){
       document.body.addEventListener('change', function(e){
         var t = e.target;
         if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
@@ -240,12 +262,9 @@
             item_name: t.value,
             selected: t.checked
           });
-          // opzionale: conteggia come nuova vista pagina se l'URL cambia
-          // trackPageView();
         }
       });
-    }
-    document.addEventListener('DOMContentLoaded', bindFilters);
+    });
   })();
   </script>
 
