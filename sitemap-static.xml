@@ -42,10 +42,4 @@
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
-  <url>
-    <loc>https://animmunity.github.io/characters-list.html</loc>
-    <lastmod>2025-08-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
 </urlset>
