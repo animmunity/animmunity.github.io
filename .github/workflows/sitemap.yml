@@ -19,7 +19,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,21 +30,28 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cleanup old sitemaps
+      # 1) Rimuovi TUTTE le vecchie sitemap dalla root
+      - name: Remove old root sitemaps
         run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           rm -f sitemap*.xml sitemap*.xml.gz || true
+          git rm -f sitemap*.xml sitemap*.xml.gz || true
+          git commit -m "chore(sitemap): remove root sitemaps" || echo "nothing to remove"
 
-      - name: Generate sitemaps
+      # 2) Genera nuove sitemap in /sitemaps/
+      - name: Generate sitemaps (into /sitemaps/)
         run: |
           python3 --version
           python3 scripts/generate_sitemap.py
           echo "---- generated files ----"
-          ls -lah sitemap*.xml* || true
+          ls -lah sitemaps || true
 
-      - name: Auto-commit sitemap files
+      # 3) Commit SOLO della cartella /sitemaps/
+      - name: Auto-commit sitemaps folder
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore(sitemap): regenerate"
+          commit_message: "chore(sitemap): regenerate into /sitemaps/"
           file_pattern: |
-            sitemap*.xml
-            sitemap*.xml.gz
+            sitemaps/**
