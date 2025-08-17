@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-Sitemaps AniMMUnity:
-- sitemap-static.xml
-- sitemap-anime-*.xml        (da data/anime.csv)
-- sitemap-manga-*.xml        (merge data/manga_text_part*.csv + fallback lastmod da manga_core.csv)
-- sitemap-characters-*.xml   (da data/anime_characters_part[1..6].csv)
-- sitemap-mini.xml           (home + pagine base, piccola per test rapido)
-- sitemap.xml                (indice -> punta alle .xml)
+Sitemaps AniMMUnity (in /sitemaps/):
+- /sitemaps/static.xml
+- /sitemaps/anime-*.xml        (da data/anime.csv)
+- /sitemaps/manga-*.xml        (merge data/manga_text_part*.csv + fallback lastmod da manga_core.csv)
+- /sitemaps/characters-*.xml   (da data/anime_characters_part[1..6].csv)
+- /sitemaps/mini.xml           (home + pagine base, piccola per smoke-test)
+- /sitemaps/index.xml          (indice principale)
 
 Note:
 - Split a 5_000 URL/file per fetch più affidabile.
@@ -20,7 +20,6 @@ import csv
 import os
 import re
 import html
-# import gzip  # Se in futuro vuoi generare anche i .gz, decommenta e usa also_gz=True
 from pathlib import Path
 from urllib.parse import urlparse, quote
 from datetime import datetime, timezone
@@ -40,16 +39,17 @@ CHAR_PARTS  = [
     Path("data/anime_characters_part6.csv"),
 ]
 
-OUT_INDEX         = "sitemap.xml"
-OUT_STATIC        = "sitemap-static.xml"
-OUT_ANIME_PATTERN = "sitemap-anime-{i}.xml"
-OUT_MANGA_PATTERN = "sitemap-manga-{i}.xml"
-OUT_CHAR_PATTERN  = "sitemap-characters-{i}.xml"
-OUT_MINI          = "sitemap-mini.xml"
+OUT_DIR          = Path("sitemaps")
+OUT_INDEX        = OUT_DIR / "index.xml"
+OUT_STATIC       = OUT_DIR / "static.xml"
+OUT_ANIME        = OUT_DIR / "anime-{i}.xml"
+OUT_MANGA        = OUT_DIR / "manga-{i}.xml"
+OUT_CHAR         = OUT_DIR / "characters-{i}.xml"
+OUT_MINI         = OUT_DIR / "mini.xml"
 
-MAX_URLS_PER_FILE = 5_000  # più piccoli = fetch più affidabile
+MAX_URLS_PER_FILE = 5_000  # dimensioni ridotte = fetch più affidabile
 
-# Pagine STATICHE reali presenti nel repo (includo anche /index.html come richiesto)
+# Pagine STATICHE reali presenti nel repo
 STATIC_PAGES = [
     "/",  # home
     "/index.html",
@@ -152,7 +152,7 @@ def chunk(lst, size):
     for i in range(0, len(lst), size):
         yield lst[i:i+size]
 
-# ===== Writer (solo .xml; se vuoi anche .gz, vedi commento nel corpo) =====
+# ===== Writer (XML) =====
 def _build_urlset_text(entries: list[dict]) -> str:
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -161,7 +161,7 @@ def _build_urlset_text(entries: list[dict]) -> str:
         out.append(f"    <loc>{html.escape(u['loc'])}</loc>")
         if u.get("lastmod"):
             out.append(f"    <lastmod>{u['lastmod']}</lastmod>")
-        # Google ignora changefreq/priority, ma se vuoi puoi lasciarli
+        # (Google ignora questi, ma tenerli per le statiche non fa male)
         if u.get("changefreq"):
             out.append(f"    <changefreq>{u['changefreq']}</changefreq>")
         if u.get("priority") is not None:
@@ -170,13 +170,9 @@ def _build_urlset_text(entries: list[dict]) -> str:
     out.append("</urlset>")
     return "\n".join(out) + "\n"
 
-def write_urlset(path_xml: Path, entries: list[dict], also_gz: bool = False):
-    text = _build_urlset_text(entries)
-    path_xml.write_text(text, encoding="utf-8")
-    # Se vuoi anche i .gz, metti also_gz=True e decommenta l'import gzip in testa
-    # if also_gz:
-    #     with gzip.open(str(path_xml) + ".gz", "wt", encoding="utf-8") as f:
-    #         f.write(text)
+def write_urlset(path_xml: Path, entries: list[dict]):
+    path_xml.parent.mkdir(parents=True, exist_ok=True)
+    path_xml.write_text(_build_urlset_text(entries), encoding="utf-8")
 
 def write_index(path_xml: Path, locs: list[str]):
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -188,6 +184,7 @@ def write_index(path_xml: Path, locs: list[str]):
         out.append(f"    <lastmod>{now}</lastmod>")
         out.append("  </sitemap>")
     out.append("</sitemapindex>\n")
+    path_xml.parent.mkdir(parents=True, exist_ok=True)
     path_xml.write_text("\n".join(out), encoding="utf-8")
 
 # ===== Builders =====
@@ -256,20 +253,22 @@ def build_char_group(parts: list[list[dict]]) -> list[dict]:
 
 # ========== MAIN ==========
 def main():
-    # Pulizia vecchie sitemap (il workflow fa già cleanup, ma non nuoce)
-    for p in list(ROOT.glob("sitemap*.xml")) + list(ROOT.glob("sitemap*.xml.gz")):
-        try:
-            p.unlink()
-        except Exception:
-            pass
+    # 1) Pulisci vecchie sitemap nella CARTELLA /sitemaps/
+    if OUT_DIR.exists():
+        for p in list(OUT_DIR.glob("*.xml")):
+            try:
+                p.unlink()
+            except Exception:
+                pass
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Carica dati
+    # 2) Carica dati
     anime_rows = read_if_exists(ANIME_CSV)
     manga_core_rows = read_if_exists(MANGA_CORE)
     manga_parts_rows = [read_if_exists(p) for p in MANGA_PARTS if (ROOT / p).exists()]
     char_parts_rows  = [read_if_exists(p) for p in CHAR_PARTS  if (ROOT / p).exists()]
 
-    # Costruisci gruppi
+    # 3) Costruisci gruppi
     static_entries = build_static_group()
     anime_entries  = build_anime_group(anime_rows)
     manga_entries  = build_manga_group(manga_parts_rows, manga_core_rows) if manga_parts_rows else []
@@ -277,56 +276,56 @@ def main():
 
     out_locs_for_index = []
 
-    # STATIC (solo .xml)
-    write_urlset(ROOT / OUT_STATIC, static_entries, also_gz=False)
-    out_locs_for_index.append(f"{BASE}/{OUT_STATIC}")
+    # STATIC
+    write_urlset(OUT_STATIC, static_entries)
+    out_locs_for_index.append(f"{BASE}/sitemaps/{OUT_STATIC.name}")
 
-    # MINI (solo .xml) — utile come smoke-test in GSC
+    # MINI (smoke-test)
     mini = [u for u in static_entries if u["loc"] in {
         f"{BASE}/", f"{BASE}/anime-list.html", f"{BASE}/manga-list.html",
         f"{BASE}/top-anime.html", f"{BASE}/top-manga.html"
     }]
-    write_urlset(ROOT / OUT_MINI, mini, also_gz=False)
-    out_locs_for_index.append(f"{BASE}/{OUT_MINI}")
+    write_urlset(OUT_MINI, mini)
+    out_locs_for_index.append(f"{BASE}/sitemaps/{OUT_MINI.name}")
 
     # ANIME
     if not anime_entries:
-        fname = OUT_ANIME_PATTERN.format(i=1)
-        write_urlset(ROOT / fname, [], also_gz=False)
-        out_locs_for_index.append(f"{BASE}/{fname}")
+        fname = OUT_ANIME.with_name(OUT_ANIME.name.format(i=1))
+        write_urlset(fname, [])
+        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
     else:
         idx = 1
         for ch in chunk(anime_entries, MAX_URLS_PER_FILE):
-            fname = OUT_ANIME_PATTERN.format(i=idx); idx += 1
-            write_urlset(ROOT / fname, ch, also_gz=False)
-            out_locs_for_index.append(f"{BASE}/{fname}")
+            fname = OUT_ANIME.with_name(OUT_ANIME.name.format(i=idx)); idx += 1
+            write_urlset(fname, ch)
+            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
 
     # MANGA
     if not manga_entries:
-        fname = OUT_MANGA_PATTERN.format(i=1)
-        write_urlset(ROOT / fname, [], also_gz=False)
-        out_locs_for_index.append(f"{BASE}/{fname}")
+        fname = OUT_MANGA.with_name(OUT_MANGA.name.format(i=1))
+        write_urlset(fname, [])
+        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
     else:
         idx = 1
         for ch in chunk(manga_entries, MAX_URLS_PER_FILE):
-            fname = OUT_MANGA_PATTERN.format(i=idx); idx += 1
-            write_urlset(ROOT / fname, ch, also_gz=False)
-            out_locs_for_index.append(f"{BASE}/{fname}")
+            fname = OUT_MANGA.with_name(OUT_MANGA.name.format(i=idx)); idx += 1
+            write_urlset(fname, ch)
+            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
 
     # CHARACTERS
     if not char_entries:
-        fname = OUT_CHAR_PATTERN.format(i=1)
-        write_urlset(ROOT / fname, [], also_gz=False)
-        out_locs_for_index.append(f"{BASE}/{fname}")
+        fname = OUT_CHAR.with_name(OUT_CHAR.name.format(i=1))
+        write_urlset(fname, [])
+        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
     else:
         idx = 1
         for ch in chunk(char_entries, MAX_URLS_PER_FILE):
-            fname = OUT_CHAR_PATTERN.format(i=idx); idx += 1
-            write_urlset(ROOT / fname, ch, also_gz=False)
-            out_locs_for_index.append(f"{BASE}/{fname}")
+            fname = OUT_CHAR.with_name(OUT_CHAR.name.format(i=idx)); idx += 1
+            write_urlset(fname, ch)
+            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
 
-    # INDICE -> punta alle versioni .xml (non .gz)
-    write_index(ROOT / OUT_INDEX, out_locs_for_index)
+    # INDICE (unico entrypoint da dare a GSC)
+    write_index(OUT_INDEX, out_locs_for_index)
 
     # Log
     print(f"✔ statiche     : {len(static_entries)}")
