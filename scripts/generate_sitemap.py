@@ -7,19 +7,13 @@ Sitemaps AniMMUnity (in /sitemaps/):
 - /sitemaps/anime-*.xml        (da data/anime.csv)
 - /sitemaps/manga-*.xml        (merge data/manga_text_part*.csv + fallback lastmod da manga_core.csv)
 - /sitemaps/characters-*.xml   (da data/anime_characters_part[1..6].csv)
-- /sitemaps/mini.xml           (home + pagine base, piccola per smoke-test)
+- /sitemaps/mini.xml           (home + pagine base, per smoke-test)
 - /sitemaps/index.xml          (indice principale)
 
-Note:
-- Split a 5_000 URL/file per fetch più affidabile.
-- Dedup su URL canonico finale.
-- <lastmod> in YYYY-MM-DD dove disponibile.
+Split: 5_000 URL/file. Dedup su URL finale. <lastmod> in YYYY-MM-DD dove disponibile.
 """
 
-import csv
-import os
-import re
-import html
+import csv, os, re, html
 from pathlib import Path
 from urllib.parse import urlparse, quote
 from datetime import datetime, timezone
@@ -39,19 +33,18 @@ CHAR_PARTS  = [
     Path("data/anime_characters_part6.csv"),
 ]
 
-OUT_DIR          = Path("sitemaps")
-OUT_INDEX        = OUT_DIR / "index.xml"
-OUT_STATIC       = OUT_DIR / "static.xml"
-OUT_ANIME        = OUT_DIR / "anime-{i}.xml"
-OUT_MANGA        = OUT_DIR / "manga-{i}.xml"
-OUT_CHAR         = OUT_DIR / "characters-{i}.xml"
-OUT_MINI         = OUT_DIR / "mini.xml"
+OUT_DIR    = Path("sitemaps")
+OUT_INDEX  = OUT_DIR / "index.xml"
+OUT_STATIC = OUT_DIR / "static.xml"
+OUT_ANIME  = OUT_DIR / "anime-{i}.xml"
+OUT_MANGA  = OUT_DIR / "manga-{i}.xml"
+OUT_CHAR   = OUT_DIR / "characters-{i}.xml"
+OUT_MINI   = OUT_DIR / "mini.xml"
 
-MAX_URLS_PER_FILE = 5_000  # dimensioni ridotte = fetch più affidabile
+MAX_URLS_PER_FILE = 5_000
 
-# Pagine STATICHE reali presenti nel repo
 STATIC_PAGES = [
-    "/",  # home
+    "/",
     "/index.html",
     "/anime-list.html",
     "/manga-list.html",
@@ -61,14 +54,14 @@ STATIC_PAGES = [
     "/character-list.html",
 ]
 
-# ====== Root repo ======
+# ===== Root del repo =====
 ROOT = Path(__file__).resolve().parent
 for p in [ROOT, *ROOT.parents]:
     if (p / ANIME_CSV).exists():
         ROOT = p
         break
 
-# ========== Helpers ==========
+# ===== Helpers =====
 def read_csv_rows(path: Path):
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
         return list(csv.DictReader(f))
@@ -88,13 +81,10 @@ def mal_slug_from_url(mal_url: str) -> str:
 CTL_RE = re.compile(r"[\u200E\u200F\u202A-\u202E]")  # invisibili/RTL
 
 def is_bad_slug(s: str) -> bool:
-    if not s:
-        return True
+    if not s: return True
     s = CTL_RE.sub("", s).strip()
-    if not s or s == "-":
-        return True
-    # solo simboli/punteggiatura?
-    if re.fullmatch(r"[^\w]+", s, flags=re.UNICODE):
+    if not s or s == "-": return True
+    if re.fullmatch(r"[^\w]+", s, flags=re.UNICODE):  # solo simboli/punteggiatura
         return True
     return False
 
@@ -102,8 +92,7 @@ def enc(v: str) -> str:
     return quote(v, safe="~._-")
 
 def to_iso(date_str: str) -> str | None:
-    if not date_str:
-        return None
+    if not date_str: return None
     s = str(date_str).strip()
     if re.fullmatch(r"\d{4}", s):         # YYYY
         return f"{s}-01-01"
@@ -113,13 +102,11 @@ def to_iso(date_str: str) -> str | None:
     return m.group(1) if m else None
 
 def max_date(a: str | None, b: str | None) -> str | None:
-    if not a:
-        return b
-    if not b:
-        return a
+    if not a: return b
+    if not b: return a
     return a if a >= b else b
 
-# Canoniche (coerenti con il front-end)
+# Canoniche
 def anime_loc(slug: str | None, anime_id: str | None) -> str | None:
     if slug and not is_bad_slug(slug):
         return f"{BASE}/anime.html?slug={enc(slug)}"
@@ -141,8 +128,7 @@ def slugify(name: str) -> str:
     return s
 
 def char_loc(char_id: str | None, name: str | None) -> str | None:
-    if not char_id and not name:
-        return None
+    if not char_id and not name: return None
     s = slugify(name or "") if name else ""
     if char_id:
         return f"{BASE}/character.html?id={enc(str(char_id))}{('&slug=' + enc(s)) if s else ''}"
@@ -152,7 +138,7 @@ def chunk(lst, size):
     for i in range(0, len(lst), size):
         yield lst[i:i+size]
 
-# ===== Writer (XML) =====
+# ===== Writer =====
 def _build_urlset_text(entries: list[dict]) -> str:
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
@@ -161,7 +147,6 @@ def _build_urlset_text(entries: list[dict]) -> str:
         out.append(f"    <loc>{html.escape(u['loc'])}</loc>")
         if u.get("lastmod"):
             out.append(f"    <lastmod>{u['lastmod']}</lastmod>")
-        # (Google ignora questi, ma tenerli per le statiche non fa male)
         if u.get("changefreq"):
             out.append(f"    <changefreq>{u['changefreq']}</changefreq>")
         if u.get("priority") is not None:
@@ -203,8 +188,7 @@ def build_anime_group(rows: list[dict]) -> list[dict]:
         slug = mal_slug_from_url(r.get("url") or "")
         aid  = str(r.get("anime_id") or "").strip() or None
         loc  = anime_loc(slug, aid)
-        if not loc:
-            continue
+        if not loc: continue
         lastmod = None
         for k in ("updated_at","real_end_date","end_date","start_date","created_at"):
             lastmod = max_date(lastmod, to_iso(r.get(k) or ""))
@@ -217,16 +201,14 @@ def build_manga_group(parts: list[list[dict]], core_rows: list[dict]) -> list[di
     core_by_id = {}
     for r in core_rows:
         mid = str(r.get("manga_id") or "").strip()
-        if mid:
-            core_by_id[mid] = r
+        if mid: core_by_id[mid] = r
     seen = {}
     for rows in parts:
         for r in rows:
             slug = mal_slug_from_url(r.get("url") or "")
             mid  = str(r.get("manga_id") or "").strip() or None
             loc  = manga_loc(slug, mid)
-            if not loc:
-                continue
+            if not loc: continue
             lastmod = None
             for k in ("updated_at","real_end_date","end_date","start_date","created_at_before","created_at"):
                 lastmod = max_date(lastmod, to_iso(r.get(k) or ""))
@@ -246,86 +228,82 @@ def build_char_group(parts: list[list[dict]]) -> list[dict]:
             cid  = str(r.get("mal_id") or "").strip() or None
             name = (r.get("name") or "").strip() or None
             loc  = char_loc(cid, name)
-            if not loc:
-                continue
+            if not loc: continue
             seen[loc] = {"loc": loc, "lastmod": None}
     return [seen[k] for k in sorted(seen.keys())]
 
-# ========== MAIN ==========
+# ===== MAIN =====
 def main():
-    # 1) Pulisci vecchie sitemap nella CARTELLA /sitemaps/
+    # Pulisci la cartella /sitemaps/
     if OUT_DIR.exists():
-        for p in list(OUT_DIR.glob("*.xml")):
-            try:
-                p.unlink()
-            except Exception:
-                pass
+        for p in OUT_DIR.glob("*.xml"):
+            try: p.unlink()
+            except Exception: pass
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 2) Carica dati
+    # Carica dati
     anime_rows = read_if_exists(ANIME_CSV)
     manga_core_rows = read_if_exists(MANGA_CORE)
     manga_parts_rows = [read_if_exists(p) for p in MANGA_PARTS if (ROOT / p).exists()]
     char_parts_rows  = [read_if_exists(p) for p in CHAR_PARTS  if (ROOT / p).exists()]
 
-    # 3) Costruisci gruppi
+    # Costruisci
     static_entries = build_static_group()
     anime_entries  = build_anime_group(anime_rows)
     manga_entries  = build_manga_group(manga_parts_rows, manga_core_rows) if manga_parts_rows else []
     char_entries   = build_char_group(char_parts_rows) if char_parts_rows else []
 
-    out_locs_for_index = []
+    out_locs = []
 
-    # STATIC
+    # STATIC + MINI
     write_urlset(OUT_STATIC, static_entries)
-    out_locs_for_index.append(f"{BASE}/sitemaps/{OUT_STATIC.name}")
+    out_locs.append(f"{BASE}/sitemaps/{OUT_STATIC.name}")
 
-    # MINI (smoke-test)
     mini = [u for u in static_entries if u["loc"] in {
         f"{BASE}/", f"{BASE}/anime-list.html", f"{BASE}/manga-list.html",
         f"{BASE}/top-anime.html", f"{BASE}/top-manga.html"
     }]
     write_urlset(OUT_MINI, mini)
-    out_locs_for_index.append(f"{BASE}/sitemaps/{OUT_MINI.name}")
+    out_locs.append(f"{BASE}/sitemaps/{OUT_MINI.name}")
 
     # ANIME
     if not anime_entries:
-        fname = OUT_ANIME.with_name(OUT_ANIME.name.format(i=1))
-        write_urlset(fname, [])
-        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+        f = OUT_ANIME.with_name(OUT_ANIME.name.format(i=1))
+        write_urlset(f, [])
+        out_locs.append(f"{BASE}/sitemaps/{f.name}")
     else:
-        idx = 1
+        i = 1
         for ch in chunk(anime_entries, MAX_URLS_PER_FILE):
-            fname = OUT_ANIME.with_name(OUT_ANIME.name.format(i=idx)); idx += 1
-            write_urlset(fname, ch)
-            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+            f = OUT_ANIME.with_name(OUT_ANIME.name.format(i=i)); i += 1
+            write_urlset(f, ch)
+            out_locs.append(f"{BASE}/sitemaps/{f.name}")
 
     # MANGA
     if not manga_entries:
-        fname = OUT_MANGA.with_name(OUT_MANGA.name.format(i=1))
-        write_urlset(fname, [])
-        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+        f = OUT_MANGA.with_name(OUT_MANGA.name.format(i=1))
+        write_urlset(f, [])
+        out_locs.append(f"{BASE}/sitemaps/{f.name}")
     else:
-        idx = 1
+        i = 1
         for ch in chunk(manga_entries, MAX_URLS_PER_FILE):
-            fname = OUT_MANGA.with_name(OUT_MANGA.name.format(i=idx)); idx += 1
-            write_urlset(fname, ch)
-            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+            f = OUT_MANGA.with_name(OUT_MANGA.name.format(i=i)); i += 1
+            write_urlset(f, ch)
+            out_locs.append(f"{BASE}/sitemaps/{f.name}")
 
     # CHARACTERS
     if not char_entries:
-        fname = OUT_CHAR.with_name(OUT_CHAR.name.format(i=1))
-        write_urlset(fname, [])
-        out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+        f = OUT_CHAR.with_name(OUT_CHAR.name.format(i=1))
+        write_urlset(f, [])
+        out_locs.append(f"{BASE}/sitemaps/{f.name}")
     else:
-        idx = 1
+        i = 1
         for ch in chunk(char_entries, MAX_URLS_PER_FILE):
-            fname = OUT_CHAR.with_name(OUT_CHAR.name.format(i=idx)); idx += 1
-            write_urlset(fname, ch)
-            out_locs_for_index.append(f"{BASE}/sitemaps/{fname.name}")
+            f = OUT_CHAR.with_name(OUT_CHAR.name.format(i=i)); i += 1
+            write_urlset(f, ch)
+            out_locs.append(f"{BASE}/sitemaps/{f.name}")
 
-    # INDICE (unico entrypoint da dare a GSC)
-    write_index(OUT_INDEX, out_locs_for_index)
+    # INDICE
+    write_index(OUT_INDEX, out_locs)
 
     # Log
     print(f"✔ statiche     : {len(static_entries)}")
@@ -333,8 +311,8 @@ def main():
     print(f"✔ anime        : {len(anime_entries)}")
     print(f"✔ manga        : {len(manga_entries)}")
     print(f"✔ characters   : {len(char_entries)}")
-    print(f"✔ indice scritto: {OUT_INDEX}")
-    for loc in out_locs_for_index:
+    print(f"✔ index scritto: {OUT_INDEX}")
+    for loc in out_locs:
         print(" -", loc)
 
 if __name__ == "__main__":
