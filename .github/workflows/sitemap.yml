@@ -14,7 +14,7 @@ on:
     - cron: '17 3 * * *'   # opzionale: ogni giorno 03:17 UTC
 
 permissions:
-  contents: write   # NECESSARIO per auto-commit
+  contents: write
 
 jobs:
   build:
@@ -30,22 +30,32 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 1) Rimuovi TUTTE le vecchie sitemap dalla root
+      # 1) Rimuovi TUTTE le sitemap in root (tracciate + file orfani)
       - name: Remove old root sitemaps
         run: |
           set -e
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          rm -f sitemap*.xml sitemap*.xml.gz || true
-          git rm -f sitemap*.xml sitemap*.xml.gz || true
-          git commit -m "chore(sitemap): remove root sitemaps" || echo "nothing to remove"
 
-      # 2) Genera nuove sitemap in /sitemaps/
+          # elimina file tracciati
+          git ls-files -z "sitemap*.xml" "sitemap*.xml.gz" | xargs -0 -r git rm -f
+
+          # elimina eventuali file non tracciati rimasti nella workspace
+          rm -f sitemap*.xml sitemap*.xml.gz || true
+
+          # commit della rimozione (se ci sono cambi staged)
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(sitemap): remove old root sitemaps"
+          else
+            echo "No tracked root sitemaps to remove."
+          fi
+
+      # 2) Genera le nuove sitemap dentro /sitemaps/
       - name: Generate sitemaps (into /sitemaps/)
         run: |
           python3 --version
           python3 scripts/generate_sitemap.py
-          echo "---- generated files ----"
+          echo "---- generated files in /sitemaps ----"
           ls -lah sitemaps || true
 
       # 3) Commit SOLO della cartella /sitemaps/
