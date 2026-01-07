@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://animmunity.github.io/sitemaps/index.xml
+Sitemap: https://wiki.animmunity.com/sitemaps/index.xml
