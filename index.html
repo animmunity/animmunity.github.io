@@ -548,7 +548,7 @@ html, body { overflow-x: hidden; }
     }
 
     // ======= DATA ENDPOINTS =======
-    const DATA_BASE = 'https://animmunity.github.io/data/';
+    const DATA_BASE = '/data/';
     const URLS = {
       anime: DATA_BASE + 'anime.csv',
       mangaCore: DATA_BASE + 'manga_core.csv',          // non usato in streaming homepage
@@ -768,7 +768,7 @@ html, body { overflow-x: hidden; }
           }catch(err){ status.textContent='Unable to load posts.'; }
         };
         const s=document.createElement('script');
-        s.src='https://animmunity.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
+        s.src='https://animmunity.blogspot.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
         s.async=true;
         s.onerror=()=>{ status.textContent='Feed unavailable.'; };
         document.body.appendChild(s);
