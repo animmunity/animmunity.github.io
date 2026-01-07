@@ -7,27 +7,26 @@
   <title>Anime Detail — AniMMUnity</title>
   <meta name="description" content="Anime detail page with trailer, information, studios, genres and full metadata on AniMMUnity.">
 
-<!-- Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <!-- Google tag (gtag.js) — GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics ok, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics ok, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Niente page_view automatico: lo gestiamo noi
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Niente page_view automatico: lo gestiamo noi
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
-  
   <!-- Robots -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
@@ -68,190 +67,167 @@
   <!-- 🚀 Preload del CSV (usa percorso assoluto per sicurezza) -->
   <link rel="preload" href="/data/anime.csv" as="fetch" type="text/csv">
 
-<style>
-  /* =====================
-     NOVA WHITE UI — Fresh, airy, tactile
-     (JS invariato, markup aggiornato)
-     ===================== */
-  :root{
-    /* Palette */
-    --bg: #f6f7fb;              /* sfondo pagina chiaro */
-    --ink: #0f172a;             /* testo principale */
-    --muted: #5b6478;           /* testo attenuato */
-    --panel: #ffffff;           /* superfici */
-    --soft: #f0f2f8;            /* superfici secondarie */
-    --border: #e6e9f2;          /* bordi */
-    --primary: #4f46e5;         /* indaco */
-    --primary-ink: #3532b3;
-    --accent: #06b6d4;          /* ciano */
-    --success: #16a34a;         /* verde */
-    --danger: #ef4444;          /* rosso */
-    --warning: #f59e0b;         /* ambra */
+  <style>
+    :root{
+      --bg: #f6f7fb;
+      --ink: #0f172a;
+      --muted: #5b6478;
+      --panel: #ffffff;
+      --soft: #f0f2f8;
+      --border: #e6e9f2;
+      --primary: #4f46e5;
+      --primary-ink: #3532b3;
+      --accent: #06b6d4;
+      --success: #16a34a;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
+      --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
+      --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
+      --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
+              radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
+    }
 
-    /* Raggi e ombre */
-    --r-lg: 18px; --r-md: 14px; --r-sm: 10px;
-    --shadow-1: 0 10px 30px rgba(17, 24, 39, .06);
-    --shadow-2: 0 16px 50px rgba(17, 24, 39, .08);
+    *{box-sizing:border-box}
+    html, body{height:100%}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink); background: var(--bg);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale;
+      background-image: var(--grad);
+      background-attachment: fixed;
+    }
 
-    /* Gradiente brand */
-    --grad: radial-gradient(900px 500px at 105% 0%, rgba(79,70,229,.10), transparent 60%),
-            radial-gradient(700px 400px at -5% 20%, rgba(6,182,212,.12), transparent 60%);
-  }
+    a{color:var(--primary); text-decoration: none}
+    a:hover{ text-decoration: underline }
 
-  *{box-sizing:border-box}
-  html, body{height:100%}
-  body{
-    margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color:var(--ink); background: var(--bg);
-    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing:grayscale;
-    background-image: var(--grad);
-    background-attachment: fixed; /* verrà disattivato in mobile */
-  }
+    .topbar{
+      position: sticky; top:0; z-index: 50;
+      backdrop-filter: saturate(130%) blur(10px);
+      background: rgba(255,255,255,.75);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
+    .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
+    .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
 
-  a{color:var(--primary); text-decoration: none}
-  a:hover{ text-decoration: underline }
+    .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
 
-  /* ===== Topbar (se non usi l'header custom, puoi rimuovere questi stili) ===== */
-  .topbar{
-    position: sticky; top:0; z-index: 50;
-    backdrop-filter: saturate(130%) blur(10px);
-    background: rgba(255,255,255,.75);
-    border-bottom: 1px solid var(--border);
-  }
-  .topbar-inner{ max-width:1200px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; gap:14px; }
-  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.05rem; letter-spacing:.2px; }
-  .brand-badge{ width:28px; height:28px; border-radius:8px; background: linear-gradient(135deg, var(--primary), var(--accent)); box-shadow: var(--shadow-1); }
-  .crumbs{ margin-left:auto; font-size:.9rem; color:var(--muted); }
+    .layout{ display:grid; grid-template-columns: 360px 1fr; gap: 24px; }
+    @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
 
-  /* ===== Container principale ===== */
-  .shell{ max-width:1200px; margin:30px auto; padding: 0 18px; }
+    .aside{
+      position: sticky; top: 84px; align-self: start;
+      display: grid; gap:16px;
+    }
 
-  .layout{
-    display:grid; grid-template-columns: 360px 1fr; gap: 24px;
-  }
-  @media (max-width: 980px){ .layout{ grid-template-columns: 1fr; } }
+    .poster{
+      position: relative; z-index: 1;
+      border-radius: var(--r-lg); overflow:hidden; background: var(--panel);
+      border:1px solid var(--border); box-shadow: var(--shadow-2);
+    }
+    .poster img{ width:100%; display:block; aspect-ratio: 3/4; object-fit: cover; }
 
-  /* ===== Aside sticky (poster + info chiave) ===== */
-  .aside{
-    position: sticky; top: 84px; align-self: start;
-    display: grid; gap:16px;
-  }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.8rem; padding:8px 12px;
+      border-radius:999px; border:1px solid var(--border); background: var(--soft); color:#334155;
+    }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; }
 
-  .poster{
-    position: relative; z-index: 1;            /* evita che sembri “dietro” in mobile */
-    border-radius: var(--r-lg); overflow:hidden; background: var(--panel);
-    border:1px solid var(--border); box-shadow: var(--shadow-2);
-  }
-  .poster img{ width:100%; display:block; aspect-ratio: 3/4; object-fit: cover; }
+    .stat-card{
+      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+      padding: 14px; box-shadow: var(--shadow-1);
+    }
+    .stat-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size:.95rem; }
+    .stat-row p{ margin:0; color:var(--muted); }
+    .stat-row strong{ color:var(--ink); }
 
-  .pill{ display:inline-flex; align-items:center; gap:8px; font-weight:700; font-size:.8rem; padding:8px 12px;
-    border-radius:999px; border:1px solid var(--border); background: var(--soft); color:#334155; }
-  .pills{ display:flex; gap:8px; flex-wrap:wrap; }
+    .main{ display:grid; gap: 18px; }
 
-  .stat-card{
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-    padding: 14px; box-shadow: var(--shadow-1);
-  }
-  .stat-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size:.95rem; }
-  .stat-row p{ margin:0; color:var(--muted); }
-  .stat-row strong{ color:var(--ink); }
+    .hero{
+      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+      box-shadow: var(--shadow-2); padding: 18px; position: relative; overflow: clip;
+    }
+    .hero::after{
+      content:""; position:absolute; inset:auto -20% -50% -20%; height: 180px; background:
+      radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%);
+    }
+    .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
+    .sub{ color: var(--muted); font-size: .95rem; }
 
-  /* ===== Main content ===== */
-  .main{
-    display:grid; gap: 18px;
-  }
+    .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 10px; }
+    .chip{ background: #eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius: 999px; font-size:.8rem; }
 
-  .hero{
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-    box-shadow: var(--shadow-2); padding: 18px; position: relative; overflow: clip;
-  }
-  .hero::after{
-    content:""; position:absolute; inset:auto -20% -50% -20%; height: 180px; background:
-    radial-gradient(60% 70% at 50% 0%, rgba(79,70,229,.08), transparent 60%);
-  }
-  .hero h1{ margin:6px 0 10px; font-size: clamp(1.6rem, 2.1vw + 1rem, 2.3rem); letter-spacing:.2px; }
-  .sub{ color: var(--muted); font-size: .95rem; }
+    .panel{
+      background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
+      box-shadow: var(--shadow-1); padding: 16px;
+    }
+    .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
 
-  .chips{ display:flex; flex-wrap: wrap; gap:8px; margin-top: 10px; }
-  .chip{ background: #eef2ff; color:#3730a3; border:1px solid #e0e7ff; padding:6px 10px; border-radius: 999px; font-size:.8rem; }
+    .grid-kv{
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 16px;
+    }
+    .grid-kv p{ margin:0; }
+    .grid-kv strong{ color: var(--ink); }
+    .desc{ line-height:1.8; color:#1f2937; }
 
-  .panel{
-    background: var(--panel); border:1px solid var(--border); border-radius: var(--r-lg);
-    box-shadow: var(--shadow-1); padding: 16px;
-  }
-  .panel h2{ margin:0 0 10px; font-size:1.05rem; letter-spacing:.2px; }
+    iframe{
+      width:100%; height: 400px; border:0; border-radius: var(--r-md);
+      background: var(--soft); border:1px solid var(--border);
+    }
 
-  .grid-kv{
-    display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px 16px;
-  }
-  .grid-kv p{ margin:0; }
-  .grid-kv strong{ color: var(--ink); }
-  .desc{ line-height:1.8; color:#1f2937; }
+    .nav-prevnext{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .link-btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 12px;
+      border-radius: 12px; border:1px solid var(--border); background: var(--panel);
+      box-shadow: var(--shadow-1);
+    }
+    .link-btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
 
-  iframe{ width:100%; height: 400px; border:0; border-radius: var(--r-md); background: var(--soft); border:1px solid var(--border); }
+    .center{ text-align:center; padding: 48px 0; color: var(--muted); }
+    .error{ color: var(--danger); }
 
-  .nav-prevnext{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-  .link-btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius: 12px; border:1px solid var(--border); background: var(--panel); box-shadow: var(--shadow-1); }
-  .link-btn:hover{ transform: translateY(-1px); transition: transform .15s ease; text-decoration:none }
+    @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
+    .hero, .panel, .poster, .stat-card{ animation: pop .35s ease both }
 
-  /* ===== Loading & Error ===== */
-  .center{ text-align:center; padding: 48px 0; color: var(--muted); }
-  .error{ color: var(--danger); }
+    @media (max-width: 980px) {
+      .aside { position: static; top: auto; }
+      .hero { overflow: visible; }
+    }
 
-  /* ===== Entrance motion ===== */
-  @keyframes pop{ from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none} }
-  .hero, .panel, .poster, .stat-card{ animation: pop .35s ease both }
+    @media (max-width: 980px), (hover: none) and (pointer: coarse) {
+      body { background-attachment: scroll; }
+    }
 
-  /* ======= FIX RESPONSIVE: abilita lo scroll e rimuovi effetti che “bloccano” ======= */
-  /* 1) In mobile disattiva sticky: tutto scorre normalmente */
-  @media (max-width: 980px) {
-    .aside { position: static; top: auto; }
-    .hero { overflow: visible; } /* evita clipping che può sembrare “dietro” */
-  }
+    /* Preloader */
+    #preloader{
+      position: fixed; inset: 0; background: #ffffff;
+      display: grid; place-items: center;
+      transition: opacity .4s ease; z-index: 9999;
+    }
+    .spinner{
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 4px solid #e3e3e3; border-top-color: #007BFF;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* 2) Evita glitch di background fisso su iOS/Android */
-  @media (max-width: 980px), (hover: none) and (pointer: coarse) {
-    body { background-attachment: scroll; }
-  }
-
-  /* Preloader (come index) */
-#preloader{
-  position: fixed; inset: 0; background: #ffffff;
-  display: grid; place-items: center;
-  transition: opacity .4s ease; z-index: 9999;
-}
-.spinner{
-  width: 44px; height: 44px; border-radius: 50%;
-  border: 4px solid #e3e3e3; border-top-color: #007BFF;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* 1) Taglia qualsiasi extrabordo nei caroselli */
-.rail-wrap { overflow: hidden; }
-
-/* 2) Non far sporgere i bottoni: niente valori negativi */
-.nav-prev { left: 6px; transform: translateY(-50%); }
-.nav-next { right: 6px; transform: translateY(-50%); }
-
-/* 3) Cintura di sicurezza globale contro lo scroll orizzontale */
-html, body { overflow-x: hidden; }
-
-/* 4) Effetto griglia: evita che il ::before allarghi il layout */
-.fx-grid { overflow: hidden; }
-.fx-grid::before { inset: 0; } /* se vuoi mantenere l’effetto ampio, usa max(…):
-/* .fx-grid::before { inset: max(-10vw, -80px); } */
-
-</style>
+    .rail-wrap { overflow: hidden; }
+    .nav-prev { left: 6px; transform: translateY(-50%); }
+    .nav-next { right: 6px; transform: translateY(-50%); }
+    html, body { overflow-x: hidden; }
+    .fx-grid { overflow: hidden; }
+    .fx-grid::before { inset: 0; }
+  </style>
 </head>
 <body>
 
-  <script>
+<script>
 (function(){
   if (window.__ga4AnimeDetailInstalled) return;
   window.__ga4AnimeDetailInstalled = true;
 
-  // Helper per banner cookie (se aggiungi un CMP)
   window.acceptAllConsent = function(){
     gtag('consent', 'update', {
       ad_storage: 'granted',
@@ -261,7 +237,6 @@ html, body { overflow-x: hidden; }
     });
   };
 
-  /* ========== PAGE VIEW (manuale) ========== */
   function trackPageView(){
     gtag('event','page_view', {
       page_location: location.href,
@@ -270,7 +245,6 @@ html, body { overflow-x: hidden; }
     });
   }
 
-  // Normalizza URL (toglie param marketing ma NON rimuove id/slug)
   function normalize(url){
     try{
       var u = new URL(url, location.origin);
@@ -280,7 +254,6 @@ html, body { overflow-x: hidden; }
   }
   var prevNorm;
 
-  /* ========== UTILS ========== */
   function $(sel, root){ return (root||document).querySelector(sel); }
   function text(el){ return (el && el.textContent || '').trim(); }
 
@@ -307,7 +280,6 @@ html, body { overflow-x: hidden; }
     return m ? m[1] : '';
   }
 
-  /* ========== INVII EVENTI ========== */
   var lastViewKey = '';
   function trySendViewItem(){
     var ent = parseEntity();
@@ -328,7 +300,6 @@ html, body { overflow-x: hidden; }
       item_category: ent['@type'] || undefined,
       item_brand: ent.productionCompany && ent.productionCompany.name || undefined
     };
-    // Extra param utili (se disponibili)
     var rating = ent.aggregateRating || {};
     var params = {
       items: [item],
@@ -349,7 +320,7 @@ html, body { overflow-x: hidden; }
     if (!ifr) return;
 
     var sent = false;
-    function fire(e){
+    function fire(){
       if (sent) return;
       sent = true;
       var ent = parseEntity() || {};
@@ -361,9 +332,7 @@ html, body { overflow-x: hidden; }
         item_category: 'Trailer'
       });
     }
-    // Prova a intercettare il click sul contenitore/iframe
     panel.addEventListener('pointerdown', fire, { passive:true });
-    ifr.addEventListener('load', function(){ /* opzionale future hooks */ }, { once:true });
   }
 
   function bindChipClicks(){
@@ -408,12 +377,10 @@ html, body { overflow-x: hidden; }
     }, true);
   }
 
-  /* ========== BOOT ========== */
   document.addEventListener('DOMContentLoaded', function(){
     prevNorm = normalize(location.href);
     trackPageView();
 
-    // Invia view_item quando lo schema è pronto (setDynamicMeta lo aggiorna)
     trySendViewItem();
     var entEl = document.getElementById('ld-entity');
     if (entEl){
@@ -429,13 +396,11 @@ html, body { overflow-x: hidden; }
     bindOutbound();
   });
 
-  /* ========== page_view su navigazioni SPA (se mai usate) ========== */
   function maybeTrack(){
     var nowNorm = normalize(location.href);
     if (nowNorm !== prevNorm){
       prevNorm = nowNorm;
       trackPageView();
-      // Prova a rilanciare view_item su cambio URL SPA
       setTimeout(trySendViewItem, 0);
     }
   }
@@ -457,369 +422,351 @@ html, body { overflow-x: hidden; }
   <div class="spinner" role="status" aria-label="Loading"></div>
 </div>
   
-  <div id="header"></div>
+<div id="header"></div>
 
-  <div class="shell">
-    <main id="content" role="main" aria-live="polite">
-      <div class="center" id="loading">Loading…</div>
-    </main>
-  </div>
+<div class="shell">
+  <main id="content" role="main" aria-live="polite">
+    <div class="center" id="loading">Loading…</div>
+  </main>
+</div>
 
-  <div id="footer"></div>
+<div id="footer"></div>
 
-  <script>
-    // ===== Utils =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-    const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
-    const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
-    const parseArray = (str) => {
-      if (!str) return [];
-      try { const arr = JSON.parse(str); return Array.isArray(arr) ? arr : [String(str)]; }
-      catch { return String(str).replace(/^\[|\]$/g,'').split(',').map(s=>s.replace(/^[\'"\s]+|[\'"\s]+$/g,'').trim()).filter(Boolean); }
-    };
-    const toYouTubeEmbed = (url) => {
-      if (!url) return null;
-      try {
-        let id = null;
-        const u = new URL(url);
-        if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
-        else if (u.searchParams.get('v')) id = u.searchParams.get('v');
-        else {
-          const m = url.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
-          if (m) id = m[1];
-        }
-        if (!id) return null;
-    
-        const params = new URLSearchParams({
-          rel: '0',
-          modestbranding: '1',
-          iv_load_policy: '3',
-          playsinline: '1',
-          origin: location.origin
-        });
-    
-        return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
-      } catch {
-        return null;
+<script>
+  const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+  const safe = (v) => (v===null||v===undefined||v==='') ? '—' : String(v);
+  const parseCSV = (t) => Papa.parse(t, { header:true, skipEmptyLines:true }).data || [];
+  const parseArray = (str) => {
+    if (!str) return [];
+    try { const arr = JSON.parse(str); return Array.isArray(arr) ? arr : [String(str)]; }
+    catch {
+      return String(str)
+        .replace(/^\[|\]$/g,'')
+        .split(',')
+        .map(s=>s.replace(/^[\'"\s]+|[\'"\s]+$/g,'').trim())
+        .filter(Boolean);
+    }
+  };
+  const toYouTubeEmbed = (url) => {
+    if (!url) return null;
+    try {
+      let id = null;
+      const u = new URL(url);
+      if (u.hostname.includes('youtu.be')) id = u.pathname.slice(1);
+      else if (u.searchParams.get('v')) id = u.searchParams.get('v');
+      else {
+        const m = url.match(/\/embed\/([a-zA-Z0-9_-]{11})/);
+        if (m) id = m[1];
       }
-    };
-    const getSlugFromPath = () => {
-      const parts = location.pathname.split("/").filter(Boolean);
-      const i = parts.indexOf("anime"); return (i!==-1 && parts[i+1]) ? parts[i+1] : "";
-    };
-const getMalSlug = (malUrl) => {
-  try {
-    const u = new URL(malUrl);
-    const p = u.pathname.split('/').filter(Boolean);
-    const seg = p[p.length - 1] || "";
-    return decodeURIComponent(seg); // decode dell’ultimo segmento
-  } catch {
-    return "";
-  }
-};
+      if (!id) return null;
 
-const normalizeSlug = (s) => decodeURIComponent(String(s || "")).trim();
-    
-    const buildPrettyUrl = (anime) =>
-  `${location.origin}/anime.html?slug=${getMalSlug(anime.url)}`;
-    const schemaTypeFromType = (t) => {
-      const v = String(t||'').toLowerCase();
-      if (v.includes('movie')) return 'Movie';
-      if (v.includes('tv')) return 'TVSeries';
-      if (v.includes('ova') || v.includes('ona')) return 'CreativeWorkSeries';
-      return 'CreativeWork';
-    };
+      const params = new URLSearchParams({
+        rel: '0',
+        modestbranding: '1',
+        iv_load_policy: '3',
+        playsinline: '1',
+        origin: location.origin
+      });
 
-    // Header/Footer
-    fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
-    fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
-
-    // ===== Preloader lifecycle (uguale all'index) =====
-let assetsLoaded = false;
-let dataRendered = false;
-
-function hidePreloader() {
-  const pre = document.getElementById("preloader");
-  if (!pre) return;
-  pre.style.opacity = "0";
-  pre.style.pointerEvents = "none";
-  setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
-}
-function tryHidePreloader() {
-  if (assetsLoaded && dataRendered) hidePreloader();
-}
-
-// Quando tutte le risorse (font, immagini, ecc.) sono caricate
-window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
-
-// Safety net (se qualcosa resta appeso, chiudi comunque)
-setTimeout(() => hidePreloader(), 8000);
-
-    // Labels/Sections
-    const columnLabels = {
-      anime_id:"Anime ID", title:"Title", type:"Type", score:"Score", scored_by:"Ratings Count",
-      status:"Status", episodes:"Episodes", start_date:"Start Date", end_date:"End Date",
-      source:"Source", members:"Members", favorites:"Favorites",
-      episode_duration:"Episode Duration", total_duration:"Total Duration", rating:"Content Rating", sfw:"SFW",
-      approved:"Approved", created_at:"Created At", updated_at:"Updated At", start_year:"Start Year",
-      start_season:"Start Season", real_start_date:"Real Start Date", real_end_date:"Real End Date",
-      broadcast_day:"Broadcast Day", broadcast_time:"Broadcast Time", genres:"Genres", themes:"Themes", demographics:"Demographics",
-      studios:"Studios", producers:"Producers", licensors:"Licensors", synopsis:"Synopsis", background:"Background",
-      main_picture:"Main Image", url:"Source URL", trailer_url:"Trailer URL", title_english:"English Title",
-      title_japanese:"Japanese Title", title_synonyms:"Alternative Titles"
-    };
-
-    const sections = {
-      "Identity & Titles": ["title","title_english","title_japanese","title_synonyms"],
-      "Classification & Ratings": ["type","score","scored_by","status","rating","sfw"],
-      "Episodes & Duration": ["episodes","episode_duration","total_duration"],
-      "Dates & Broadcast": ["start_date","end_date","real_start_date","real_end_date","start_year","start_season","broadcast_day","broadcast_time"],
-      "Origin & Production": ["source","studios","producers","licensors"],
-      "Popularity & Insight": ["members","favorites","approved","genres","themes","demographics"],
-      "Technical": ["created_at","updated_at"]
-    };
-
-    function formatMultiline(text) {
-      if (!text) return "—";
-      const stripped = String(text).replace(/\[Written by MAL Rewrite\]$/,'');
-      return esc(stripped).replace(/\r\n|\r|\n/g, "<br>");
+      return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
+    } catch {
+      return null;
     }
-
-function renderDetails(anime) {
-  const genresArr = parseArray(anime.genres);
-  const studiosArr = parseArray(anime.studios);
-  const genresList = genresArr.join(", ") || "—";
-  const studiosList = studiosArr.join(", ") || "—";
-  const imgSrc = (anime.main_picture && anime.main_picture.trim())
-    ? anime.main_picture
-    : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
-
-  // Helper: normalizza qualsiasi valore potenzialmente "lista in stringa"
-  const prettyValue = (val) => {
-    if (val === null || val === undefined || val === "") return "—";
-    // Se è una stringa tipo "['A','B']" prova a parsare
-    if (typeof val === "string" && val.trim().startsWith("[") && val.trim().endsWith("]")) {
-      const arr = parseArray(val);
-      if (Array.isArray(arr) && arr.length) return arr.join(", ");
-      // fallback pulizia semplice
-      return val.replace(/^\[|\]$/g, "").replace(/['"]/g, "").trim() || "—";
-    }
-    return String(val);
   };
 
-  let html = `
-    <div class="layout">
-      <aside class="aside" aria-label="Poster and primary facts">
-        <figure class="poster">
-          <img src="${esc(imgSrc)}" alt="${esc(anime.title || anime.title_english || 'Anime cover')}"
-               onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'" />
-        </figure>
-        <div class="pills">
-          <span class="pill">${esc(safe(anime.type))}</span>
-          ${anime.rating ? `<span class="pill">${esc(safe(anime.rating))}</span>` : ''}
-        </div>
-        <div class="stat-card" aria-label="Quick stats">
-          <div class="stat-row">
-            <p>Score</p><strong>${esc(safe(anime.score))}</strong>
-            <p>Ratings</p><strong>${esc(safe(anime.scored_by))}</strong>
-            <p>Episodes</p><strong>${esc(safe(anime.episodes))}</strong>
-            <p>Status</p><strong>${esc(safe(anime.status))}</strong>
-          </div>
-        </div>
-      </aside>
-
-      <section class="main">
-        <header class="hero">
-          <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
-          <div class="sub">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
-          <div class="sub">📺 Studio: ${esc(studiosList)}</div>
-          <div class="chips" role="list">${genresArr.map(g=>`<span class='chip' role='listitem'>${esc(g)}</span>`).join('')}</div>
-        </header>
-
-        ${toYouTubeEmbed(anime.trailer_url) ? `
-        <section class="panel" aria-label="Trailer">
-          <h2>Trailer</h2>
-          <iframe
-            src="${esc(toYouTubeEmbed(anime.trailer_url))}"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            loading="lazy"
-            referrerpolicy="strict-origin-when-cross-origin"
-            title="Trailer"></iframe>
-        </section>`: ''}
-
-        <section class="panel" aria-label="Synopsis">
-          <h2>Synopsis</h2>
-          <p class="desc">${formatMultiline(anime.synopsis)}</p>
-        </section>
-
-        ${Object.entries(sections).map(([name, fields])=>{
-          const parts = [];
-          for (const f of fields) {
-            let v = anime[f];
-
-            // salta valori vuoti/lista vuota
-            if (v === null || v === undefined || v === '' || (typeof v === 'string' && v.trim() === '[]')) continue;
-
-            // formatta liste come "A, B, C"
-            if (typeof v === 'string' && v.trim().startsWith('[') && v.trim().endsWith(']')) {
-              const arr = parseArray(v);
-              v = (Array.isArray(arr) && arr.length) ? arr.join(', ') : v.replace(/^\[|\]$/g,'').replace(/['"]/g,'').trim();
-            }
-
-            parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(prettyValue(v)))}</p>`);
-          }
-          return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
-        }).join('')}
-
-        <nav class="nav-prevnext" aria-label="Previous/Next"></nav>
-      </section>
-    </div>`;
-
-  return html;
-}
-
-function setDynamicMeta(anime) {
-  const title = (anime.title_english || anime.title || "Anime").trim();
-  const desc  = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
-
-  const rawSlug = getMalSlug(anime.url);
-  const url     = `${location.origin}/anime.html?slug=${encodeURIComponent(rawSlug)}`; // ✅ encode
-
-  const img = (anime.main_picture && anime.main_picture.trim())
-    ? anime.main_picture
-    : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
-
-      // Title & Description
-      document.title = `${title} — AniMMUnity`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) metaDesc.setAttribute('content', desc);
-
-      // Canonical
-      const can = document.getElementById('canonicalLink');
-      if (can) can.href = url;
-
-      // OG/Twitter
-      const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
-      set('meta[property="og:title"]', title);
-      set('meta[property="og:description"]', desc);
-      set('meta[property="og:url"]', url);
-      set('meta[property="og:image"]', img);
-      set('meta[name="twitter:title"]', title);
-      set('meta[name="twitter:description"]', desc);
-      set('meta[name="twitter:image"]', img);
-
-      // Breadcrumbs
-      const bc = {
-        "@context":"https://schema.org",
-        "@type":"BreadcrumbList",
-        "itemListElement":[
-          {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
-          {"@type":"ListItem","position":2,"name":"Anime List","item":`${location.origin}/`},
-          {"@type":"ListItem","position":3,"name":title,"item":url}
-        ]
-      };
-      document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
-
-      // Entity (TVSeries/Movie/CreativeWork)
-      const schemaType = schemaTypeFromType(anime.type);
-       const entity = {
-         "@context":"https://schema.org",
-         "@type": schemaType,
-         "name": title,
-         "url": url,
-         "image": img,
-         "genre": parseArray(anime.genres),
-         "inLanguage": "ja",
-         "numberOfEpisodes": Number(anime.episodes) || undefined,
-         "datePublished": anime.start_date || undefined,
-         "dateEnded": anime.end_date || undefined,
-         "dateModified": anime.updated_at || undefined,
-         "sameAs": anime.url || undefined,
-         "productionCompany": parseArray(anime.studios).length ? {
-           "@type":"Organization",
-           "name": parseArray(anime.studios).join(", ")
-         } : undefined,
-         "aggregateRating": (anime.score && anime.scored_by) ? {
-           "@type":"AggregateRating",
-            "ratingValue": Number(anime.score),
-            "ratingCount": Number(anime.scored_by)
-         } : undefined,
-         "description": desc
-       };
-      const embedUrl = toYouTubeEmbed(anime.trailer_url);
-      if (embedUrl) {
-        entity.trailer = {
-          "@type":"VideoObject",
-          "name": `${title} — Trailer`,
-          "embedUrl": embedUrl,
-          "thumbnailUrl": img
-        };
-      }
-      document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+  const getSlugFromPath = () => {
+    const parts = location.pathname.split("/").filter(Boolean);
+    const i = parts.indexOf("anime"); return (i!==-1 && parts[i+1]) ? parts[i+1] : "";
+  };
+  const getMalSlug = (malUrl) => {
+    try {
+      const u = new URL(malUrl);
+      const p = u.pathname.split('/').filter(Boolean);
+      const seg = p[p.length - 1] || "";
+      return decodeURIComponent(seg);
+    } catch {
+      return "";
     }
+  };
+  const normalizeSlug = (s) => decodeURIComponent(String(s || "")).trim();
 
-    // Prev/Next (alphabetical)
-function renderPrevNext(navRoot, data, current) {
-  const byTitle = [...data].sort((a,b) => (a.title||'').localeCompare(b.title||''));
-  const idx = byTitle.findIndex(a => a.anime_id === current.anime_id);
-  const prev = idx > 0 ? byTitle[idx-1] : null;
-  const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
-  if (!prev && !next) return;
+  const schemaTypeFromType = (t) => {
+    const v = String(t||'').toLowerCase();
+    if (v.includes('movie')) return 'Movie';
+    if (v.includes('tv')) return 'TVSeries';
+    if (v.includes('ova') || v.includes('ona')) return 'CreativeWorkSeries';
+    return 'CreativeWork';
+  };
 
-  const hrefPrev = prev ? `/anime.html?slug=${encodeURIComponent(getMalSlug(prev.url))}` : '';
-  const hrefNext = next ? `/anime.html?slug=${encodeURIComponent(getMalSlug(next.url))}` : '';
+  fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
+  fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
 
-  navRoot.innerHTML = `
-    <div>${prev ? `<a class="link-btn" href="${hrefPrev}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
-    <div>${next ? `<a class="link-btn" href="${hrefNext}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
-  `;
-}
+  let assetsLoaded = false;
+  let dataRendered = false;
 
-    // Boot
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(location.search);
-  const animeId = (params.get("id")||"").trim();
-  const slugFromQuery = normalizeSlug(params.get("slug"));
-  const slugFromPath  = normalizeSlug(getSlugFromPath());
+  function hidePreloader() {
+    const pre = document.getElementById("preloader");
+    if (!pre) return;
+    pre.style.opacity = "0";
+    pre.style.pointerEvents = "none";
+    setTimeout(() => pre && pre.parentNode && pre.parentNode.removeChild(pre), 400);
+  }
+  function tryHidePreloader() {
+    if (assetsLoaded && dataRendered) hidePreloader();
+  }
 
-  fetch("/data/anime.csv")
-    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
-    .then(csv => {
-      const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
+  window.addEventListener("load", () => { assetsLoaded = true; tryHidePreloader(); });
+  setTimeout(() => hidePreloader(), 8000);
 
-      let anime = null;
-      if (animeId) {
-        anime = data.find(a => a.anime_id === animeId);
-      } else {
-        const wanted = slugFromQuery || slugFromPath;
-        if (wanted) {
-          anime = data.find(a => normalizeSlug(getMalSlug(a.url)) === wanted);
+  const columnLabels = {
+    anime_id:"Anime ID", title:"Title", type:"Type", score:"Score", scored_by:"Ratings Count",
+    status:"Status", episodes:"Episodes", start_date:"Start Date", end_date:"End Date",
+    source:"Source", members:"Members", favorites:"Favorites",
+    episode_duration:"Episode Duration", total_duration:"Total Duration", rating:"Content Rating", sfw:"SFW",
+    approved:"Approved", created_at:"Created At", updated_at:"Updated At", start_year:"Start Year",
+    start_season:"Start Season", real_start_date:"Real Start Date", real_end_date:"Real End Date",
+    broadcast_day:"Broadcast Day", broadcast_time:"Broadcast Time", genres:"Genres", themes:"Themes", demographics:"Demographics",
+    studios:"Studios", producers:"Producers", licensors:"Licensors", synopsis:"Synopsis", background:"Background",
+    main_picture:"Main Image", url:"Source URL", trailer_url:"Trailer URL", title_english:"English Title",
+    title_japanese:"Japanese Title", title_synonyms:"Alternative Titles"
+  };
+
+  const sections = {
+    "Identity & Titles": ["title","title_english","title_japanese","title_synonyms"],
+    "Classification & Ratings": ["type","score","scored_by","status","rating","sfw"],
+    "Episodes & Duration": ["episodes","episode_duration","total_duration"],
+    "Dates & Broadcast": ["start_date","end_date","real_start_date","real_end_date","start_year","start_season","broadcast_day","broadcast_time"],
+    "Origin & Production": ["source","studios","producers","licensors"],
+    "Popularity & Insight": ["members","favorites","approved","genres","themes","demographics"],
+    "Technical": ["created_at","updated_at"]
+  };
+
+  function formatMultiline(text) {
+    if (!text) return "—";
+    const stripped = String(text).replace(/\[Written by MAL Rewrite\]$/,'');
+    return esc(stripped).replace(/\r\n|\r|\n/g, "<br>");
+  }
+
+  function renderDetails(anime) {
+    const genresArr = parseArray(anime.genres);
+    const studiosArr = parseArray(anime.studios);
+    const genresList = genresArr.join(", ") || "—";
+    const studiosList = studiosArr.join(", ") || "—";
+    const imgSrc = (anime.main_picture && anime.main_picture.trim())
+      ? anime.main_picture
+      : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
+
+    const prettyValue = (val) => {
+      if (val === null || val === undefined || val === "") return "—";
+      if (typeof val === "string" && val.trim().startsWith("[") && val.trim().endsWith("]")) {
+        const arr = parseArray(val);
+        if (Array.isArray(arr) && arr.length) return arr.join(", ");
+        return val.replace(/^\[|\]$/g, "").replace(/['"]/g, "").trim() || "—";
+      }
+      return String(val);
+    };
+
+    let html = `
+      <div class="layout">
+        <aside class="aside" aria-label="Poster and primary facts">
+          <figure class="poster">
+            <img src="${esc(imgSrc)}" alt="${esc(anime.title || anime.title_english || 'Anime cover')}"
+                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'" />
+          </figure>
+          <div class="pills">
+            <span class="pill">${esc(safe(anime.type))}</span>
+            ${anime.rating ? `<span class="pill">${esc(safe(anime.rating))}</span>` : ''}
+          </div>
+          <div class="stat-card" aria-label="Quick stats">
+            <div class="stat-row">
+              <p>Score</p><strong>${esc(safe(anime.score))}</strong>
+              <p>Ratings</p><strong>${esc(safe(anime.scored_by))}</strong>
+              <p>Episodes</p><strong>${esc(safe(anime.episodes))}</strong>
+              <p>Status</p><strong>${esc(safe(anime.status))}</strong>
+            </div>
+          </div>
+        </aside>
+
+        <section class="main">
+          <header class="hero">
+            <h1>${esc(anime.title_english || anime.title || 'Anime')}</h1>
+            <div class="sub">🗓 ${esc(safe(anime.start_date))} — ${anime.end_date ? esc(safe(anime.end_date)) : "Ongoing"}</div>
+            <div class="sub">📺 Studio: ${esc(studiosList)}</div>
+            <div class="chips" role="list">${genresArr.map(g=>`<span class='chip' role='listitem'>${esc(g)}</span>`).join('')}</div>
+          </header>
+
+          ${toYouTubeEmbed(anime.trailer_url) ? `
+          <section class="panel" aria-label="Trailer">
+            <h2>Trailer</h2>
+            <iframe
+              src="${esc(toYouTubeEmbed(anime.trailer_url))}"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              title="Trailer"></iframe>
+          </section>`: ''}
+
+          <section class="panel" aria-label="Synopsis">
+            <h2>Synopsis</h2>
+            <p class="desc">${formatMultiline(anime.synopsis)}</p>
+          </section>
+
+          ${Object.entries(sections).map(([name, fields])=>{
+            const parts = [];
+            for (const f of fields) {
+              let v = anime[f];
+              if (v === null || v === undefined || v === '' || (typeof v === 'string' && v.trim() === '[]')) continue;
+              if (typeof v === 'string' && v.trim().startsWith('[') && v.trim().endsWith(']')) {
+                const arr = parseArray(v);
+                v = (Array.isArray(arr) && arr.length) ? arr.join(', ') : v.replace(/^\[|\]$/g,'').replace(/['"]/g,'').trim();
+              }
+              parts.push(`<p><strong>${esc(columnLabels[f]||f)}:</strong> ${esc(safe(prettyValue(v)))}</p>`);
+            }
+            return parts.length ? `<section class="panel" aria-label="${esc(name)}"><h2>${esc(name)}</h2><div class="grid-kv">${parts.join('')}</div></section>` : '';
+          }).join('')}
+
+          <nav class="nav-prevnext" aria-label="Previous/Next"></nav>
+        </section>
+      </div>`;
+
+    return html;
+  }
+
+  function setDynamicMeta(anime) {
+    const title = (anime.title_english || anime.title || "Anime").trim();
+    const desc  = (anime.synopsis || "").replace(/\s+/g,' ').slice(0, 160);
+
+    const rawSlug = getMalSlug(anime.url);
+    const base = "https://wiki.animmunity.com";          <!-- ✅ base fisso -->
+    const url  = `${base}/anime.html?slug=${encodeURIComponent(rawSlug)}`;
+
+    const img = (anime.main_picture && anime.main_picture.trim())
+      ? anime.main_picture
+      : "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
+
+    document.title = `${title} — AniMMUnity`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', desc);
+
+    const can = document.getElementById('canonicalLink');
+    if (can) can.href = url;
+
+    const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
+    set('meta[property="og:title"]', title);
+    set('meta[property="og:description"]', desc);
+    set('meta[property="og:url"]', url);
+    set('meta[property="og:image"]', img);
+    set('meta[name="twitter:title"]', title);
+    set('meta[name="twitter:description"]', desc);
+    set('meta[name="twitter:image"]', img);
+
+    const bc = {
+      "@context":"https://schema.org",
+      "@type":"BreadcrumbList",
+      "itemListElement":[
+        {"@type":"ListItem","position":1,"name":"Home","item":"https://wiki.animmunity.com/"},
+        {"@type":"ListItem","position":2,"name":"Anime List","item":"https://wiki.animmunity.com/anime-list.html"},
+        {"@type":"ListItem","position":3,"name":title,"item":url}
+      ]
+    };
+    document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
+
+    const schemaType = schemaTypeFromType(anime.type);
+    const entity = {
+      "@context":"https://schema.org",
+      "@type": schemaType,
+      "name": title,
+      "url": url,
+      "image": img,
+      "genre": parseArray(anime.genres),
+      "inLanguage": "ja",
+      "numberOfEpisodes": Number(anime.episodes) || undefined,
+      "datePublished": anime.start_date || undefined,
+      "dateEnded": anime.end_date || undefined,
+      "dateModified": anime.updated_at || undefined,
+      "sameAs": anime.url || undefined,
+      "productionCompany": parseArray(anime.studios).length ? {
+        "@type":"Organization",
+        "name": parseArray(anime.studios).join(", ")
+      } : undefined,
+      "aggregateRating": (anime.score && anime.scored_by) ? {
+        "@type":"AggregateRating",
+        "ratingValue": Number(anime.score),
+        "ratingCount": Number(anime.scored_by)
+      } : undefined,
+      "description": desc
+    };
+    const embedUrl = toYouTubeEmbed(anime.trailer_url);
+    if (embedUrl) {
+      entity.trailer = {
+        "@type":"VideoObject",
+        "name": `${title} — Trailer`,
+        "embedUrl": embedUrl,
+        "thumbnailUrl": img
+      };
+    }
+    document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+  }
+
+  function renderPrevNext(navRoot, data, current) {
+    const byTitle = [...data].sort((a,b) => (a.title||'').localeCompare(b.title||''));
+    const idx = byTitle.findIndex(a => a.anime_id === current.anime_id);
+    const prev = idx > 0 ? byTitle[idx-1] : null;
+    const next = idx < byTitle.length-1 ? byTitle[idx+1] : null;
+    if (!prev && !next) return;
+
+    const hrefPrev = prev ? `/anime.html?slug=${encodeURIComponent(getMalSlug(prev.url))}` : '';
+    const hrefNext = next ? `/anime.html?slug=${encodeURIComponent(getMalSlug(next.url))}` : '';
+
+    navRoot.innerHTML = `
+      <div>${prev ? `<a class="link-btn" href="${hrefPrev}">⬅️ ${esc(prev.title || prev.title_english || 'Previous')}</a>` : ''}</div>
+      <div>${next ? `<a class="link-btn" href="${hrefNext}">${esc(next.title || next.title_english || 'Next')} ➡️</a>` : ''}</div>
+    `;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(location.search);
+    const animeId = (params.get("id")||"").trim();
+    const slugFromQuery = normalizeSlug(params.get("slug"));
+    const slugFromPath  = normalizeSlug(getSlugFromPath());
+
+    fetch("/data/anime.csv")
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); })
+      .then(csv => {
+        const data = parseCSV(csv).map(r => ({ ...r, anime_id: String(r.anime_id || '').trim() }));
+
+        let anime = null;
+        if (animeId) {
+          anime = data.find(a => a.anime_id === animeId);
+        } else {
+          const wanted = slugFromQuery || slugFromPath;
+          if (wanted) {
+            anime = data.find(a => normalizeSlug(getMalSlug(a.url)) === wanted);
+          }
         }
-      }
 
-      const contentEl = document.getElementById("content");
-      if (!anime) {
-        const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
-        contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
+        const contentEl = document.getElementById("content");
+        if (!anime) {
+          const msg = animeId ? `ID: ${esc(animeId)}` : `Slug: ${esc(slugFromQuery || slugFromPath || '—')}`;
+          contentEl.innerHTML = `<div class="center error">Anime not found<br>${msg}</div>`;
+          dataRendered = true; tryHidePreloader();
+          return;
+        }
+
+        contentEl.innerHTML = renderDetails(anime);
+        setDynamicMeta(anime);
+        const navRoot = contentEl.querySelector('.nav-prevnext');
+        if (navRoot) renderPrevNext(navRoot, data, anime);
+
         dataRendered = true; tryHidePreloader();
-        return;
-      }
-
-      // (niente canonical qui: lo setta setDynamicMeta)
-      contentEl.innerHTML = renderDetails(anime);
-      setDynamicMeta(anime);
-      const navRoot = contentEl.querySelector('.nav-prevnext');
-      if (navRoot) renderPrevNext(navRoot, data, anime);
-
-      dataRendered = true; tryHidePreloader();
-    })
-    .catch(err => {
-      document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
-      dataRendered = true; tryHidePreloader();
-    })
-    .finally(() => document.getElementById("loading")?.remove());
+      })
+      .catch(err => {
+        document.getElementById("content").innerHTML = `<div class="center error">Load error: ${esc(err?.message || err)}</div>`;
+        dataRendered = true; tryHidePreloader();
+      })
+      .finally(() => document.getElementById("loading")?.remove());
   });
-  </script>
+</script>
 </body>
 </html>
