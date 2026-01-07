@@ -6,27 +6,43 @@
   <title>AniMMUnity — OP/ED Gallery</title>
   <meta name="description" content="Lightweight OP/ED gallery. The page starts empty; videos appear only after you search. Powered by AnimeThemes API or local JSON."/>
 
+  <!-- Canonical -->
+  <link rel="canonical" href="https://wiki.animmunity.com/anime-themes.html">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="AniMMUnity">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://wiki.animmunity.com/anime-themes.html">
+  <meta property="og:title" content="AniMMUnity — OP/ED Gallery">
+  <meta property="og:description" content="Search anime openings and endings. The page starts empty and loads themes after you search.">
+  <meta property="og:image" content="https://wiki.animmunity.com/assets/og-image.jpg">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AniMMUnity — OP/ED Gallery">
+  <meta name="twitter:description" content="Search anime OP/ED themes powered by AnimeThemes.">
+  <meta name="twitter:image" content="https://wiki.animmunity.com/assets/og-image.jpg">
+
   <!-- Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics on, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics on, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Niente page_view automatico: lo tracciamo noi
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Niente page_view automatico: lo tracciamo noi
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
-  
   <meta name="theme-color" content="#ffffff" />
 
   <!-- Base site styles for consistency -->
@@ -76,6 +92,17 @@
     .bar > i{display:block;height:100%;width:30%;background:#2563eb;animation:ldr 1s linear infinite}
     @keyframes ldr{0%{transform:translateX(-100%)}100%{transform:translateX(400%)}}
   </style>
+
+  <!-- (Opzionale) JSON-LD minima per la pagina -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"WebPage",
+    "name":"AniMMUnity — OP/ED Gallery",
+    "url":"https://wiki.animmunity.com/anime-themes.html",
+    "description":"Search anime openings and endings powered by AnimeThemes."
+  }
+  </script>
 </head>
 <body>
 
@@ -339,7 +366,7 @@
     const PAGE_SIZE = 50; // results per request
 
     // ====== HELPERS ======
-    const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+    const esc = s => String(s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const getArtists = theme => (theme.song?.artists || theme.song?.artist || []).map(a=>a?.name).filter(Boolean).join(', ');
     const themeCode = t => `${t.type || t.kind || 'OP'}${t.sequence || t.number || ''}`;
 
