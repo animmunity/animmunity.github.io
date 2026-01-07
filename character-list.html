@@ -8,27 +8,28 @@
   <meta name="description" content="Browse AniMMUnity's anime characters. Full-width search, filters under the search, clean cards, and internal detail links.">
 
   <!-- HEAD -->
-<!-- Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <!-- Google tag (gtag.js) — GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics ok, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics ok, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Config: niente page_view automatico (gestiamo noi) + invio robusto
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Config: niente page_view automatico (gestiamo noi) + invio robusto
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
-  <link rel="canonical" href="https://animmunity.github.io/characters.html">
+  <!-- ✅ Canonical spostato sul dominio nuovo -->
+  <link rel="canonical" href="https://wiki.animmunity.com/characters.html">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
   <link rel="icon" href="/favicon.ico">
@@ -37,15 +38,18 @@
 
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://animmunity.github.io/characters.html">
+  <!-- ✅ OG URL aggiornato -->
+  <meta property="og:url" content="https://wiki.animmunity.com/characters.html">
   <meta property="og:title" content="AniMMUnity — Characters Explorer">
   <meta property="og:description" content="Search and filter characters with a full-width search bar and filters below.">
-  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
+  <!-- ✅ OG image sul dominio nuovo (puoi tenerla relativa se preferisci) -->
+  <meta property="og:image" content="https://wiki.animmunity.com/assets/og-image.jpg">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AniMMUnity — Characters Explorer">
   <meta name="twitter:description" content="Search and filter characters with a full-width search bar and filters below.">
-  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
+  <!-- ✅ Twitter image aggiornata -->
+  <meta name="twitter:image" content="https://wiki.animmunity.com/assets/og-image.jpg">
 
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -95,10 +99,10 @@
     "@context":"https://schema.org",
     "@type":"WebSite",
     "name":"AniMMUnity",
-    "url":"https://animmunity.github.io/characters.html",
+    "url":"https://wiki.animmunity.com/characters.html",
     "potentialAction":{
       "@type":"SearchAction",
-      "target":"https://animmunity.github.io/characters.html?q={search_term_string}",
+      "target":"https://wiki.animmunity.com/characters.html?q={search_term_string}",
       "query-input":"required name=search_term_string"
     }
   }
@@ -109,93 +113,93 @@
 </head>
 <body>
   <!-- BODY -->
-<script>
-(function(){
-  if (window.__ga4SpaTrackerInstalled) return;
-  window.__ga4SpaTrackerInstalled = true;
+  <script>
+  (function(){
+    if (window.__ga4SpaTrackerInstalled) return;
+    window.__ga4SpaTrackerInstalled = true;
 
-  // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
-  window.acceptAllConsent = function(){
-    gtag('consent', 'update', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      ad_personalization: 'granted',
-      analytics_storage: 'granted'
-    });
-  };
-
-  function trackPageView(){
-    gtag('event','page_view', {
-      page_location: location.href,
-      page_path: location.pathname + location.search,
-      page_title: document.title
-    });
-  }
-
-  // Normalizza URL ignorando ?q= per non contare ogni digitazione nella ricerca
-  function normalize(url){
-    try{
-      var u = new URL(url, location.origin);
-      u.searchParams.delete('q');
-      return u.pathname + (u.search ? u.search : '');
-    }catch(e){
-      return location.pathname + location.search;
-    }
-  }
-
-  var prevNorm;
-
-  // page_view iniziale + binding eventi
-  document.addEventListener('DOMContentLoaded', function(){
-    prevNorm = normalize(location.href);
-    trackPageView();
-
-    // Eventi Ricerca (#searchInput): invia "search" senza page_view extra
-    var el = document.getElementById('searchInput');
-    if (el){
-      function fire(){
-        var q = (el.value || '').trim();
-        if (!q) return;
-        gtag('event','search', { search_term: q });
-      }
-      el.addEventListener('change', fire);
-      el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
-    }
-
-    // Eventi Filtri (checkbox nei menu filtri)
-    document.body.addEventListener('change', function(e){
-      var t = e.target;
-      if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
-        gtag('event','select_content', {
-          content_type: 'filter',
-          item_id: t.getAttribute('data-facet'),
-          item_name: t.value,
-          selected: t.checked
-        });
-      }
-    });
-  });
-
-  function maybeTrack(){
-    var nowNorm = normalize(location.href);
-    if (nowNorm !== prevNorm){
-      prevNorm = nowNorm;
-      trackPageView();
-    }
-  }
-
-  // Traccia cambi URL senza reload (paginazione/navigazione interna)
-  ['pushState','replaceState'].forEach(function(method){
-    var orig = history[method];
-    history[method] = function(){
-      var ret = orig.apply(this, arguments);
-      setTimeout(maybeTrack, 0);
-      return ret;
+    // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
+    window.acceptAllConsent = function(){
+      gtag('consent', 'update', {
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted'
+      });
     };
-  });
-  window.addEventListener('popstate', maybeTrack);
-})();
-</script>
+
+    function trackPageView(){
+      gtag('event','page_view', {
+        page_location: location.href,
+        page_path: location.pathname + location.search,
+        page_title: document.title
+      });
+    }
+
+    // Normalizza URL ignorando ?q= per non contare ogni digitazione nella ricerca
+    function normalize(url){
+      try{
+        var u = new URL(url, location.origin);
+        u.searchParams.delete('q');
+        return u.pathname + (u.search ? u.search : '');
+      }catch(e){
+        return location.pathname + location.search;
+      }
+    }
+
+    var prevNorm;
+
+    // page_view iniziale + binding eventi
+    document.addEventListener('DOMContentLoaded', function(){
+      prevNorm = normalize(location.href);
+      trackPageView();
+
+      // Eventi Ricerca (#searchInput): invia "search" senza page_view extra
+      var el = document.getElementById('searchInput');
+      if (el){
+        function fire(){
+          var q = (el.value || '').trim();
+          if (!q) return;
+          gtag('event','search', { search_term: q });
+        }
+        el.addEventListener('change', fire);
+        el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
+      }
+
+      // Eventi Filtri (checkbox nei menu filtri) – lasciato per compatibilità, anche se qui non ci sono .filter-menu
+      document.body.addEventListener('change', function(e){
+        var t = e.target;
+        if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
+          gtag('event','select_content', {
+            content_type: 'filter',
+            item_id: t.getAttribute('data-facet'),
+            item_name: t.value,
+            selected: t.checked
+          });
+        }
+      });
+    });
+
+    function maybeTrack(){
+      var nowNorm = normalize(location.href);
+      if (nowNorm !== prevNorm){
+        prevNorm = nowNorm;
+        trackPageView();
+      }
+    }
+
+    // Traccia cambi URL senza reload (paginazione/navigazione interna)
+    ['pushState','replaceState'].forEach(function(method){
+      var orig = history[method];
+      history[method] = function(){
+        var ret = orig.apply(this, arguments);
+        setTimeout(maybeTrack, 0);
+        return ret;
+      };
+    });
+    window.addEventListener('popstate', maybeTrack);
+  })();
+  </script>
   
   <!-- 🔄 Preloader -->
   <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
@@ -509,6 +513,11 @@
           if (grid) grid.innerHTML = `<div style="background:#fff;border-radius:12px;padding:16px;color:#b00;">Error loading data. Please try again later.</div>`;
           dataRendered = true; tryHidePreloader();
         });
+
+      function fetchAndParse(path){
+        return fetch(path).then(res=>{ if(!res.ok) throw new Error(`HTTP ${res.status} on ${path}`); return res.text(); })
+          .then(text => Papa.parse(text, { header:true, skipEmptyLines:true }).data.map(normalizeRow));
+      }
     });
   </script>
 </body>
