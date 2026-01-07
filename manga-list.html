@@ -288,7 +288,7 @@
       <p>
         Explore a curated list of manga with fast search and multi-facet filters:
         <strong>genres</strong>, <strong>themes</strong>, <strong>demographics</strong>,
-        plus publishing metadata like <strong>serializations</strong> (magazines/imprints)
+        plus publishing data such as <strong>serializations</strong> (magazines/imprints)
         and <strong>authors</strong>. Open any title to see descriptions and full details.
       </p>
     </section>
@@ -329,7 +329,7 @@
 
   <script>
     // ===== Utilities =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
     const fallbackImage = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
@@ -402,23 +402,27 @@
       const urlQ = (new URLSearchParams(location.search).get('q') || '').trim();
       if (urlQ) window.__initialQuery = urlQ;
 
-      // Facets for manga
+      // Facets for manga (ESTESI)
       const facets = [
-        { key: 'demographics',  label: 'Demographics' },
-        { key: 'themes',        label: 'Themes' },
-        { key: 'genres',        label: 'Genres' }
+        { key: 'demographics',   label: 'Demographics' },
+        { key: 'themes',         label: 'Themes' },
+        { key: 'genres',         label: 'Genres' },
+        { key: 'serializations', label: 'Serializations' },
+        { key: 'authors',        label: 'Authors' }
       ];
       const optionSets = Object.fromEntries(facets.map(f => [f.key, new Set()]));
       const selections = Object.fromEntries(facets.map(f => [f.key, new Set()]));
 
       function fillOptionSetsFromRow(row) {
-        // list-like fields
-        parseList(row.demographics).forEach(v => optionSets.demographics.add(v));
-        parseList(row.themes).forEach(v => optionSets.themes.add(v));
-        parseList(row.genres).forEach(v => optionSets.genres.add(v));
+        // list-like fields per tutti i facet
+        parseList(row.demographics).forEach(v  => optionSets.demographics.add(v));
+        parseList(row.themes).forEach(v        => optionSets.themes.add(v));
+        parseList(row.genres).forEach(v        => optionSets.genres.add(v));
+        parseList(row.serializations).forEach(v=> optionSets.serializations.add(v));
+        parseList(row.authors).forEach(v       => optionSets.authors.add(v));
       }
 
-      // Build dropdowns (identico alla pagina Anime)
+      // Build dropdowns (identico alla pagina Anime, ma dinamico sui facet)
       function buildDropdowns() {
         const bar = document.getElementById('filtersBar');
         const resetBtn = document.getElementById('clearFilters');
@@ -714,10 +718,12 @@
           const title_japanese = (core.title_japanese || det.title_japanese || "").trim();
           const main_picture = safeMainPicture(det.main_picture || core.main_picture);
 
-          // filters data
-          const demographics = parseList(det.demographics || core.demographics);
-          const themes        = parseList(det.themes || core.themes);
-          const genres        = parseList(det.genres || core.genres);
+          // filters data (TUTTI i facet)
+          const demographics   = parseList(det.demographics   || core.demographics);
+          const themes         = parseList(det.themes         || core.themes);
+          const genres         = parseList(det.genres         || core.genres);
+          const serializations = parseList(det.serializations || core.serializations);
+          const authors        = parseList(det.authors        || core.authors);
 
           // Detail URL preference: slug from MAL url if present
           const malSlug = det.url ? getMalSlug(det.url) : '';
@@ -725,8 +731,8 @@
             ? `${location.origin}/manga.html?slug=${encodeURIComponent(malSlug)}`
             : `${location.origin}/manga.html?id=${encodeURIComponent(core.manga_id)}`;
 
-          // fill facets option sets
-          fillOptionSetsFromRow({ demographics, themes, genres });
+          // fill facets option sets (usa la row con tutti i campi)
+          fillOptionSetsFromRow({ demographics, themes, genres, serializations, authors });
 
           return {
             manga_id: core.manga_id,
@@ -737,6 +743,8 @@
             demographics,
             themes,
             genres,
+            serializations,
+            authors,
             _detailUrl: detailUrl
           };
         });
