@@ -414,7 +414,7 @@ html, body { overflow-x: hidden; }
     <section class="section" aria-label="Latest blog posts">
       <div class="section-h">
         <h2>Latest articles</h2>
-        <a href="https://animmunity.blogspot.com/" target="_blank" rel="noopener">open blog →</a>
+        <a href="https://animmunity.com/" target="_blank" rel="noopener">open blog →</a>
       </div>
       <div class="rail-wrap">
         <button class="nav-btn nav-prev" data-for="blog-rail" aria-label="Scroll left" title="Prev">
@@ -768,7 +768,7 @@ html, body { overflow-x: hidden; }
           }catch(err){ status.textContent='Unable to load posts.'; }
         };
         const s=document.createElement('script');
-        s.src='https://animmunity.blogspot.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
+        s.src='https://animmunity.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
         s.async=true;
         s.onerror=()=>{ status.textContent='Feed unavailable.'; };
         document.body.appendChild(s);
