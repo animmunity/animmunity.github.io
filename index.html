@@ -6,27 +6,26 @@
   <title>AniMMUnity — Anime & Manga · SEARCH ENGINE</title>
   <meta name="description" content="AniMMUnity: Futuristic interface, instant search, blog and random showcases for Anime & Manga."/>
  
-<!-- HEAD — Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <!-- HEAD — Google tag (gtag.js) — GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics ok, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics ok, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Config: niente page_view automatico (gestiamo noi) + invio robusto
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Config: niente page_view automatico (gestiamo noi) + invio robusto
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
-  
   <meta name="theme-color" content="#ffffff" />
 
   <!-- Perf hints -->
@@ -154,13 +153,14 @@
     @media (max-width:680px){
       .nav-btn{display:none}
     }
+
     /* Fix overflow responsive */
-.rail-wrap { overflow: hidden; }
-.nav-prev { left: 6px; transform: translateY(-50%); }
-.nav-next { right: 6px; transform: translateY(-50%); }
-html, body { overflow-x: hidden; }
-.fx-grid { overflow: hidden; }
-.fx-grid::before { inset: 0; }
+    .rail-wrap { overflow: hidden; }
+    .nav-prev { left: 6px; transform: translateY(-50%); }
+    .nav-next { right: 6px; transform: translateY(-50%); }
+    html, body { overflow-x: hidden; }
+    .fx-grid { overflow: hidden; }
+    .fx-grid::before { inset: 0; }
   </style>
 </head>
 <body>
@@ -548,7 +548,9 @@ html, body { overflow-x: hidden; }
     }
 
     // ======= DATA ENDPOINTS =======
-    const DATA_BASE = '/data/';
+    const ORIGIN = window.location.origin;
+    const DATA_BASE = ORIGIN + '/data/';
+
     const URLS = {
       anime: DATA_BASE + 'anime.csv',
       mangaCore: DATA_BASE + 'manga_core.csv',          // non usato in streaming homepage
@@ -560,7 +562,15 @@ html, body { overflow-x: hidden; }
     function streamCSV(url, {onRow, onDone, want=40, hardLimit=5000}) {
       let hits = 0;
       let seen = 0;
-      Papa.parse(url, {
+
+      // 🔒 Normalizza qualunque URL che punti ancora a animmunity.github.io/data
+      let finalUrl = url;
+      const legacyPrefix = 'https://animmunity.github.io/data/';
+      if (finalUrl.startsWith(legacyPrefix)) {
+        finalUrl = DATA_BASE + finalUrl.slice(legacyPrefix.length);
+      }
+
+      Papa.parse(finalUrl, {
         download: true,
         header: true,
         worker: true,
@@ -727,7 +737,7 @@ html, body { overflow-x: hidden; }
         hardLimit: 4000
       });
 
-      // Blogger feed via JSONP (CORS-safe)
+      // Blogger feed via JSONP (CORS-safe, HTTPS-only)
       (function loadBlogger(){
         const status=document.getElementById('blog-status');
         const rail=document.getElementById('blog-rail');
