@@ -19,7 +19,7 @@ from urllib.parse import urlparse, quote
 from datetime import datetime, timezone
 
 # ===================== CONFIG =====================
-BASE = os.environ.get("SITE_BASE", "https://animmunity.github.io")
+BASE = os.environ.get("SITE_BASE", "https://wiki.animmunity.com")
 
 ANIME_CSV   = Path("data/anime.csv")
 MANGA_CORE  = Path("data/manga_core.csv")  # opzionale
