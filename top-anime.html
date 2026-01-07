@@ -37,11 +37,11 @@
   <meta property="og:title" content="Top Anime — AniMMUnity">
   <meta property="og:description" content="Search, filter, sort, and paginate with fixed ranks.">
   <meta property="og:url" content="">
-  <meta property="og:image" content="">
+  <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Top Anime — AniMMUnity">
   <meta name="twitter:description" content="Search, filter, sort, and paginate with fixed ranks.">
-  <meta name="twitter:image" content="">
+  <meta name="twitter:image" content="https://animmunity.github.io/assets/og-image.jpg">
 
   <link id="canonicalLink" rel="canonical" href="">
 
@@ -687,10 +687,18 @@
 
     function hydrateFromURL(){
       const q=new URLSearchParams(location.search);
-      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText.toLowerCase(); searchInput.value=qText; }
-      const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
+      const qText=(q.get('q')||'').trim(); 
+      if(qText){ 
+        queryText=qText.toLowerCase(); 
+        searchInput.value=qText; 
+      }
+      const m=q.get('metric'); 
+      const o=q.get('order'); 
+      const p=parseInt(q.get('page')||'1',10);
       const rawGenres=q.get('genres');
-      if(rawGenres){ rawGenres.split('|').forEach(g=> selectedGenres.add(g)); updateCountBadge('genres', selectedGenres.size); }
+      if(rawGenres){ 
+        rawGenres.split('|').forEach(g=> selectedGenres.add(g)); 
+      }
       if(m) currentMetric=m;
       if(o) currentOrder=o;
       return Math.max(1, isNaN(p)?1:p);
@@ -709,12 +717,17 @@
           const sample = rows.find(r=>Object.values(r).some(v=>v!=='' && v!==null && v!==undefined));
           numericColumns = sample ? detectNumericColumns(sample) : ['score'];
 
-          // Dropdowns
+          // 1) Hydration dallo stato URL (metric/order/genres/page/search)
+          const startPage = hydrateFromURL();
+
+          // 2) Dropdowns costruiti DOPO hydrateFromURL, usando lo stato corrente
           buildDropdown({
             key:'genres',
             label:'Genres',
             type:'multi',
-            options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
+            options:[...genreSet]
+              .sort((a,b)=>a.localeCompare(b))
+              .map(v=>({label:v,value:v,selected:selectedGenres.has(v)})),
             withSearch:true,
             onSelect:(inp)=>{
               if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
@@ -723,7 +736,11 @@
             }
           });
 
-          const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
+          const metricOptions = numericColumns.map(v=>({
+            label:v, 
+            value:v, 
+            selected: v===currentMetric
+          }));
           buildDropdown({
             key:'metric',
             label:`Metric: ${currentMetric}`,
@@ -732,7 +749,8 @@
             withSearch:true,
             onSelect:(inp)=>{
               currentMetric = inp.value;
-              const labelEl=document.getElementById('btn-label-metric'); if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
+              const labelEl=document.getElementById('btn-label-metric'); 
+              if(labelEl) labelEl.textContent=`Metric: ${currentMetric}`;
               applyAndRender(1);
             }
           });
@@ -749,12 +767,16 @@
             withSearch:false,
             onSelect:(inp)=>{
               currentOrder = inp.value;
-              const labelEl=document.getElementById('btn-label-order'); if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
+              const labelEl=document.getElementById('btn-label-order'); 
+              if(labelEl) labelEl.textContent=`Order: ${currentOrder}`;
               applyAndRender(1);
             }
           });
 
-          const startPage = hydrateFromURL();
+          // Aggiorna badge dei generi ora che esistono nel DOM
+          updateCountBadge('genres', selectedGenres.size);
+
+          // 3) Render iniziale coerente con URL
           applyAndRender(startPage);
 
           dataRendered=true; tryHidePreloader(); statusEl.textContent='';
@@ -772,14 +794,32 @@
 
       // Reset
       clearBtn.addEventListener('click', ()=>{
+        // Generi
         selectedGenres.clear();
         document.querySelectorAll('.filter-menu input[type="checkbox"][data-facet="genres"]').forEach(chk=> chk.checked=false);
         updateCountBadge('genres', 0);
-        queryText=''; searchInput.value='';
+
+        // Ricerca
+        queryText=''; 
+        searchInput.value='';
+
+        // Metric & Order (stato)
         currentMetric = 'score';
         currentOrder = 'desc';
-        const mLabel=document.getElementById('btn-label-metric'); if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
-        const oLabel=document.getElementById('btn-label-order');  if(oLabel) oLabel.textContent=`Order: ${currentOrder}`;
+
+        // Metric & Order (UI: label + radio)
+        const mLabel=document.getElementById('btn-label-metric'); 
+        if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
+        const oLabel=document.getElementById('btn-label-order');  
+        if(oLabel) oLabel.textContent=`Order: ${currentOrder}`;
+
+        document.querySelectorAll('input[name="radio-metric"]').forEach(r=>{
+          r.checked = (r.value === 'score');
+        });
+        document.querySelectorAll('input[name="radio-order"]').forEach(r=>{
+          r.checked = (r.value === 'desc');
+        });
+
         applyAndRender(1);
       });
     });
