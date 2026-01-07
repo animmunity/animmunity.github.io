@@ -7,27 +7,26 @@
   <title>Character Detail — AniMMUnity</title>
   <meta name="description" content="Character detail page on AniMMUnity with name, kanji, nicknames, favorites and full biography.">
 
-<!-- Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <!-- Google tag (gtag.js) — GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics ok, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics ok, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Niente page_view automatico: lo gestiamo noi
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Niente page_view automatico: lo gestiamo noi
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
-  
   <!-- Robots -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
@@ -129,437 +128,443 @@
 <body>
 
   <script>
-(function(){
-  if (window.__ga4AnimeDetailInstalled) return;
-  window.__ga4AnimeDetailInstalled = true;
+  (function(){
+    if (window.__ga4AnimeDetailInstalled) return;
+    window.__ga4AnimeDetailInstalled = true;
 
-  // Helper per banner cookie (se aggiungi un CMP)
-  window.acceptAllConsent = function(){
-    gtag('consent', 'update', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      ad_personalization: 'granted',
-      analytics_storage: 'granted'
-    });
-  };
-
-  /* ========== PAGE VIEW (manuale) ========== */
-  function trackPageView(){
-    gtag('event','page_view', {
-      page_location: location.href,
-      page_path: location.pathname + location.search,
-      page_title: document.title
-    });
-  }
-
-  // Normalizza URL (toglie param marketing ma NON rimuove id/slug)
-  function normalize(url){
-    try{
-      var u = new URL(url, location.origin);
-      ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid','ref'].forEach(k=>u.searchParams.delete(k));
-      return u.pathname + (u.search ? u.search : '');
-    }catch(e){ return location.pathname + location.search; }
-  }
-  var prevNorm;
-
-  /* ========== UTILS ========== */
-  function $(sel, root){ return (root||document).querySelector(sel); }
-  function text(el){ return (el && el.textContent || '').trim(); }
-
-  function parseEntity(){
-    try{
-      var el = $('#ld-entity');
-      if (!el) return null;
-      var json = JSON.parse(el.textContent || '{}');
-      if (!json || !json.name) return null;
-      return json;
-    }catch(e){ return null; }
-  }
-
-  function malSlugFromSameAs(sameAs){
-    try{
-      var u = new URL(sameAs);
-      var p = u.pathname.split('/').filter(Boolean);
-      return decodeURIComponent(p[p.length-1] || sameAs || '');
-    }catch(e){ return sameAs || ''; }
-  }
-
-  function ytIdFromEmbedSrc(src){
-    var m = String(src||'').match(/\/embed\/([A-Za-z0-9_-]{6,})/);
-    return m ? m[1] : '';
-  }
-
-  /* ========== INVII EVENTI ========== */
-  var lastViewKey = '';
-  function trySendViewItem(){
-    var ent = parseEntity();
-    if (!ent) return;
-
-    var idParam = new URLSearchParams(location.search).get('id') || '';
-    var sameAs = ent.sameAs || '';
-    var slug = malSlugFromSameAs(sameAs);
-    var item_id = idParam || slug || (ent.url || '');
-
-    var key = String(item_id)+'|'+String(ent.name);
-    if (key === lastViewKey) return;
-    lastViewKey = key;
-
-    var item = {
-      item_id: item_id || '(unknown)',
-      item_name: ent.name || 'Anime',
-      item_category: ent['@type'] || undefined,
-      item_brand: ent.productionCompany && ent.productionCompany.name || undefined
+    // Helper per banner cookie (se aggiungi un CMP)
+    window.acceptAllConsent = function(){
+      gtag('consent', 'update', {
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted'
+      });
     };
-    // Extra param utili (se disponibili)
-    var rating = ent.aggregateRating || {};
-    var params = {
-      items: [item],
-      score: rating.ratingValue || undefined,
-      rating_count: rating.ratingCount || undefined,
-      genres: Array.isArray(ent.genre) ? ent.genre.join(', ') : undefined,
-      episodes: ent.numberOfEpisodes || undefined,
-      start_date: ent.datePublished || undefined
-    };
-    gtag('event','view_item', params);
-  }
 
-  function bindTrailerTracking(){
-    var panel = document.querySelector('section.panel[aria-label="Trailer"]');
-    if (!panel) return;
-
-    var ifr = panel.querySelector('iframe');
-    if (!ifr) return;
-
-    var sent = false;
-    function fire(e){
-      if (sent) return;
-      sent = true;
-      var ent = parseEntity() || {};
-      var vid = ytIdFromEmbedSrc(ifr.getAttribute('src') || '');
-      gtag('event','video_start', {
-        video_provider: (ifr.src || '').includes('youtube') ? 'youtube' : 'unknown',
-        video_id: vid || undefined,
-        item_name: ent.name || 'Anime',
-        item_category: 'Trailer'
+    /* ========== PAGE VIEW (manuale) ========== */
+    function trackPageView(){
+      gtag('event','page_view', {
+        page_location: location.href,
+        page_path: location.pathname + location.search,
+        page_title: document.title
       });
     }
-    // Prova a intercettare il click sul contenitore/iframe
-    panel.addEventListener('pointerdown', fire, { passive:true });
-    ifr.addEventListener('load', function(){ /* opzionale future hooks */ }, { once:true });
-  }
 
-  function bindChipClicks(){
-    document.addEventListener('click', function(e){
-      var chip = e.target.closest && e.target.closest('.chip');
-      if (!chip) return;
-      var label = text(chip);
-      gtag('event','select_content', {
-        content_type: 'genre_chip',
-        item_id: label.toLowerCase(),
-        item_name: label
-      });
-    }, true);
-  }
+    // Normalizza URL (toglie param marketing ma NON rimuove id/slug)
+    function normalize(url){
+      try{
+        var u = new URL(url, location.origin);
+        ['utm_source','utm_medium','utm_campaign','utm_term','utm_content','gclid','fbclid','ref'].forEach(k=>u.searchParams.delete(k));
+        return u.pathname + (u.search ? u.search : '');
+      }catch(e){ return location.pathname + location.search; }
+    }
+    var prevNorm;
 
-  function bindPrevNext(){
-    document.addEventListener('click', function(e){
-      var link = e.target.closest && e.target.closest('.nav-prevnext .link-btn');
-      if (!link) return;
-      var dir = link.textContent.indexOf('⬅️') !== -1 ? 'prev' : 'next';
-      gtag('event','select_content', {
-        content_type: 'prevnext',
-        item_id: dir,
-        item_name: dir.toUpperCase()
-      });
-    }, true);
-  }
+    /* ========== UTILS ========== */
+    function $(sel, root){ return (root||document).querySelector(sel); }
+    function text(el){ return (el && el.textContent || '').trim(); }
 
-  function bindOutbound(){
-    document.addEventListener('click', function(e){
-      var a = e.target.closest && e.target.closest('a[href]');
-      if (!a) return;
-      var u;
-      try{ u = new URL(a.href, location.href); }catch(e){ return; }
-      if (u.origin !== location.origin){
-        gtag('event','select_content', {
-          content_type: 'outbound',
-          item_id: u.hostname,
-          item_name: (a.textContent || u.href).trim().slice(0,80)
+    function parseEntity(){
+      try{
+        var el = $('#ld-entity');
+        if (!el) return null;
+        var json = JSON.parse(el.textContent || '{}');
+        if (!json || !json.name) return null;
+        return json;
+      }catch(e){ return null; }
+    }
+
+    function malSlugFromSameAs(sameAs){
+      try{
+        var u = new URL(sameAs);
+        var p = u.pathname.split('/').filter(Boolean);
+        return decodeURIComponent(p[p.length-1] || sameAs || '');
+      }catch(e){ return sameAs || ''; }
+    }
+
+    function ytIdFromEmbedSrc(src){
+      var m = String(src||'').match(/\/embed\/([A-Za-z0-9_-]{6,})/);
+      return m ? m[1] : '';
+    }
+
+    /* ========== INVII EVENTI ========== */
+    var lastViewKey = '';
+    function trySendViewItem(){
+      var ent = parseEntity();
+      if (!ent) return;
+
+      var idParam = new URLSearchParams(location.search).get('id') || '';
+      var sameAs = ent.sameAs || '';
+      var slug = malSlugFromSameAs(sameAs);
+      var item_id = idParam || slug || (ent.url || '');
+
+      var key = String(item_id)+'|'+String(ent.name);
+      if (key === lastViewKey) return;
+      lastViewKey = key;
+
+      var item = {
+        item_id: item_id || '(unknown)',
+        item_name: ent.name || 'Anime',
+        item_category: ent['@type'] || undefined,
+        item_brand: ent.productionCompany && ent.productionCompany.name || undefined
+      };
+      // Extra param utili (se disponibili)
+      var rating = ent.aggregateRating || {};
+      var params = {
+        items: [item],
+        score: rating.ratingValue || undefined,
+        rating_count: rating.ratingCount || undefined,
+        genres: Array.isArray(ent.genre) ? ent.genre.join(', ') : undefined,
+        episodes: ent.numberOfEpisodes || undefined,
+        start_date: ent.datePublished || undefined
+      };
+      gtag('event','view_item', params);
+    }
+
+    function bindTrailerTracking(){
+      var panel = document.querySelector('section.panel[aria-label="Trailer"]');
+      if (!panel) return;
+
+      var ifr = panel.querySelector('iframe');
+      if (!ifr) return;
+
+      var sent = false;
+      function fire(e){
+        if (sent) return;
+        sent = true;
+        var ent = parseEntity() || {};
+        var vid = ytIdFromEmbedSrc(ifr.getAttribute('src') || '');
+        gtag('event','video_start', {
+          video_provider: (ifr.src || '').includes('youtube') ? 'youtube' : 'unknown',
+          video_id: vid || undefined,
+          item_name: ent.name || 'Anime',
+          item_category: 'Trailer'
         });
       }
-    }, true);
-  }
-
-  /* ========== BOOT ========== */
-  document.addEventListener('DOMContentLoaded', function(){
-    prevNorm = normalize(location.href);
-    trackPageView();
-
-    // Invia view_item quando lo schema è pronto (setDynamicMeta lo aggiorna)
-    trySendViewItem();
-    var entEl = document.getElementById('ld-entity');
-    if (entEl){
-      var mo = new MutationObserver(function(){
-        trySendViewItem();
-      });
-      mo.observe(entEl, { characterData:true, childList:true, subtree:true });
+      // Prova a intercettare il click sul contenitore/iframe
+      panel.addEventListener('pointerdown', fire, { passive:true });
+      ifr.addEventListener('load', function(){ /* opzionale future hooks */ }, { once:true });
     }
 
-    bindTrailerTracking();
-    bindChipClicks();
-    bindPrevNext();
-    bindOutbound();
-  });
+    function bindChipClicks(){
+      document.addEventListener('click', function(e){
+        var chip = e.target.closest && e.target.closest('.chip');
+        if (!chip) return;
+        var label = text(chip);
+        gtag('event','select_content', {
+          content_type: 'genre_chip',
+          item_id: label.toLowerCase(),
+          item_name: label
+        });
+      }, true);
+    }
 
-  /* ========== page_view su navigazioni SPA (se mai usate) ========== */
-  function maybeTrack(){
-    var nowNorm = normalize(location.href);
-    if (nowNorm !== prevNorm){
-      prevNorm = nowNorm;
+    function bindPrevNext(){
+      document.addEventListener('click', function(e){
+        var link = e.target.closest && e.target.closest('.nav-prevnext .link-btn');
+        if (!link) return;
+        var dir = link.textContent.indexOf('⬅️') !== -1 ? 'prev' : 'next';
+        gtag('event','select_content', {
+          content_type: 'prevnext',
+          item_id: dir,
+          item_name: dir.toUpperCase()
+        });
+      }, true);
+    }
+
+    function bindOutbound(){
+      document.addEventListener('click', function(e){
+        var a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        var u;
+        try{ u = new URL(a.href, location.href); }catch(e){ return; }
+        if (u.origin !== location.origin){
+          gtag('event','select_content', {
+            content_type: 'outbound',
+            item_id: u.hostname,
+            item_name: (a.textContent || u.href).trim().slice(0,80)
+          });
+        }
+      }, true);
+    }
+
+    /* ========== BOOT ========== */
+    document.addEventListener('DOMContentLoaded', function(){
+      prevNorm = normalize(location.href);
       trackPageView();
-      // Prova a rilanciare view_item su cambio URL SPA
-      setTimeout(trySendViewItem, 0);
-    }
-  }
-  ['pushState','replaceState'].forEach(function(m){
-    var orig = history[m];
-    history[m] = function(){
-      var ret = orig.apply(this, arguments);
-      setTimeout(maybeTrack, 0);
-      return ret;
-    };
-  });
-  window.addEventListener('popstate', maybeTrack);
-})();
-</script>
-<!-- GA4 END -->
 
-<!-- 🔄 Preloader -->
-<div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
-
-<div id="header"></div>
-
-<div class="shell">
-  <main id="content" role="main" aria-live="polite">
-    <div class="hero"><h1>Loading…</h1></div>
-  </main>
-</div>
-
-<div id="footer"></div>
-
-<script>
-  // ===== Utils =====
-  const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
-  const safe = v => (v===null||v===undefined||v==='') ? '—' : String(v);
-  const debounce = (fn, wait=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; };
-  const slugify = str => String(str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/-{2,}/g,'-');
-  const numberFmt = n => (isFinite(n) ? Number(n).toLocaleString() : String(n||'0'));
-
-  function parseNicknames(s){
-    if(!s) return [];
-    return String(s).split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
-  }
-
-  function normalizeRow(r){
-    return {
-      id: String(r.mal_id || '').trim(),
-      url: String(r.url || '').trim(),
-      name: (r.name || '').trim(),
-      name_kanji: (r.name_kanji || '').trim(),
-      nicknames: parseNicknames(r.nicknames || ''),
-      favorites: Number(String(r.favorites||'').replace(/[^0-9.-]/g,'')) || 0,
-      about: (r.about || '').trim(),
-      image: (r.image_webp_url || r.image_jpg_url || r.image_webp_small_url || '').trim()
-    };
-  }
-
-  function safeImg(src){
-    return (src && src.length > 6) ? src : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
-  }
-
-  // Header/Footer
-  fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
-  fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
-
-  // Preloader lifecycle
-  let assetsLoaded=false, dataRendered=false;
-  function hidePreloader(){ const pre=document.getElementById('preloader'); if(!pre) return; pre.style.opacity='0'; pre.style.pointerEvents='none'; setTimeout(()=>pre&&pre.remove(),400); }
-  function tryHidePreloader(){ if(assetsLoaded && dataRendered) hidePreloader(); }
-  window.addEventListener('load', ()=>{ assetsLoaded=true; tryHidePreloader(); });
-  setTimeout(()=>hidePreloader(), 8000);
-
-  // ===== Render =====
-  function renderCharacter(c){
-    const img = safeImg(c.image);
-    const chips = (c.nicknames||[]).map(n=>`<span class="chip">${esc(n)}</span>`).join('');
-    const favs = numberFmt(c.favorites);
-
-    return `
-      <div class="layout">
-        <aside class="aside" aria-label="Portrait and quick facts">
-          <figure class="poster">
-            <img src="${esc(img)}" alt="${esc(c.name || 'Character portrait')}"
-                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
-          </figure>
-          <div class="stat-card" aria-label="Quick stats">
-            <div class="stat-row">
-              <p>Favorites</p><strong>❤ ${esc(favs)}</strong>
-              <p>Kanji</p><strong>${esc(safe(c.name_kanji))}</strong>
-            </div>
-          </div>
-          <div class="actions">
-            <a class="btn" target="_blank" rel="noopener"
-               href="https://www.youtube.com/results?search_query=${encodeURIComponent(c.name || '')}">
-              Open YouTube search ↗
-            </a>
-            <a class="btn" href="characters-list.html">← Back to Characters</a>
-          </div>
-        </aside>
-
-        <section class="main">
-          <header class="hero">
-            <h1>${esc(c.name || 'Character')}</h1>
-            ${c.name_kanji ? `<div class="sub">${esc(c.name_kanji)}</div>` : ''}
-            ${chips ? `<div class="chips" aria-label="Nicknames">${chips}</div>` : ''}
-          </header>
-
-          ${c.about ? `
-          <section class="panel" aria-label="Biography">
-            <h2>About</h2>
-            <p class="desc">${esc(c.about)}</p>
-          </section>` : ''}
-
-          <nav class="panel" id="prevnext" aria-label="Previous/Next" style="display:none"></nav>
-        </section>
-      </div>
-    `;
-  }
-
-  // ===== Meta / SEO =====
-  function setDynamicMeta(c){
-    const title = (c.name || "Character").trim();
-    const desc  = (c.about || "").replace(/\s+/g,' ').slice(0, 160);
-    const slug  = slugify(title);
-    const url   = `${location.origin}/character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slug)}`;
-    const img   = safeImg(c.image);
-
-    document.title = `${title} — AniMMUnity`;
-    const set = (sel, val) => { const el=document.querySelector(sel); if (el) el.setAttribute('content', val); };
-    const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute('content', desc);
-    const can = document.getElementById('canonicalLink'); if (can) can.href = url;
-
-    set('meta[property="og:title"]', title);
-    set('meta[property="og:description"]', desc);
-    set('meta[property="og:url"]', url);
-    set('meta[property="og:image"]', img);
-    set('meta[name="twitter:title"]', title);
-    set('meta[name="twitter:description"]', desc);
-    set('meta[name="twitter:image"]', img);
-
-    const bc = {
-      "@context":"https://schema.org","@type":"BreadcrumbList",
-      "itemListElement":[
-        {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
-        {"@type":"ListItem","position":2,"name":"Characters","item":`${location.origin}/characters-list.html`},
-        {"@type":"ListItem","position":3,"name":title,"item":url}
-      ]
-    };
-    document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
-
-    // Person schema
-    const entity = {
-      "@context":"https://schema.org",
-      "@type":"Person",
-      "name": title,
-      "alternateName": (c.nicknames && c.nicknames.length) ? c.nicknames : undefined,
-      "image": img,
-      "url": url,
-      "sameAs": c.url || undefined,
-      "description": desc,
-      "interactionStatistic": {
-        "@type":"InteractionCounter",
-        "interactionType":"https://schema.org/LikeAction",
-        "userInteractionCount": Number(c.favorites) || 0
+      // Invia view_item quando lo schema è pronto (setDynamicMeta lo aggiorna)
+      trySendViewItem();
+      var entEl = document.getElementById('ld-entity');
+      if (entEl){
+        var mo = new MutationObserver(function(){
+          trySendViewItem();
+        });
+        mo.observe(entEl, { characterData:true, childList:true, subtree:true });
       }
-    };
-    document.getElementById('ld-entity').textContent = JSON.stringify(entity);
-  }
 
-  // ===== Prev/Next (alphabetical by name) =====
-  function renderPrevNext(root, list, current){
-    const arr = [...list].sort((a,b)=> (a.name||'').localeCompare(b.name||''));
-    const idx = arr.findIndex(x=> x.id === current.id);
-    if (idx === -1) return;
-    const prev = idx>0 ? arr[idx-1] : null;
-    const next = idx < arr.length-1 ? arr[idx+1] : null;
+      bindTrailerTracking();
+      bindChipClicks();
+      bindPrevNext();
+      bindOutbound();
+    });
 
-    const href = c => `character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slugify(c.name||c.id))}`;
+    /* ========== page_view su navigazioni SPA (se mai usate) ========== */
+    function maybeTrack(){
+      var nowNorm = normalize(location.href);
+      if (nowNorm !== prevNorm){
+        prevNorm = nowNorm;
+        trackPageView();
+        // Prova a rilanciare view_item su cambio URL SPA
+        setTimeout(trySendViewItem, 0);
+      }
+    }
+    ['pushState','replaceState'].forEach(function(m){
+      var orig = history[m];
+      history[m] = function(){
+        var ret = orig.apply(this, arguments);
+        setTimeout(maybeTrack, 0);
+        return ret;
+      };
+    });
+    window.addEventListener('popstate', maybeTrack);
+  })();
+  </script>
+  <!-- GA4 END -->
 
-    root.style.display = (prev||next) ? '' : 'none';
-    root.innerHTML = `
-      <div class="actions" style="justify-content:space-between;">
-        <div>${prev ? `<a class="btn" href="${href(prev)}">⬅️ ${esc(prev.name || 'Previous')}</a>` : ''}</div>
-        <div>${next ? `<a class="btn" href="${href(next)}">${esc(next.name || 'Next')} ➡️</a>` : ''}</div>
-      </div>
-    `;
-  }
+  <!-- 🔄 Preloader -->
+  <div id="preloader" aria-hidden="true"><div class="spinner" role="status" aria-label="Loading"></div></div>
 
-  // ===== Boot =====
-  window.addEventListener('DOMContentLoaded', () => {
-    const FILES = [
-      '/data/anime_characters_part1.csv',
-      '/data/anime_characters_part2.csv',
-      '/data/anime_characters_part3.csv',
-      '/data/anime_characters_part4.csv',
-      '/data/anime_characters_part5.csv',
-      '/data/anime_characters_part6.csv',
-    ];
-    const params = new URLSearchParams(location.search);
-    const idParam = (params.get('id') || '').trim();
-    const slugParam = (params.get('slug') || '').trim().toLowerCase();
+  <div id="header"></div>
 
-    Promise.all(FILES.map(p => fetch(p).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status} on ${p}`); return r.text(); })
-      .then(t => Papa.parse(t,{header:true,skipEmptyLines:true}).data.map(normalizeRow))))
-      .then(parts => {
-        const flat = parts.flat();
-        // dedup per id (tieni quello con più favorites)
-        const map = new Map();
-        for (const c of flat){
-          if (!c.id) continue;
-          if (!map.has(c.id) || c.favorites > (map.get(c.id).favorites||0)) map.set(c.id, c);
+  <div class="shell">
+    <main id="content" role="main" aria-live="polite">
+      <div class="hero"><h1>Loading…</h1></div>
+    </main>
+  </div>
+
+  <div id="footer"></div>
+
+  <script>
+    // ===== Utils =====
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const safe = v => (v===null||v===undefined||v==='') ? '—' : String(v);
+    const debounce = (fn, wait=250) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), wait); }; };
+    const slugify = str => String(str||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').replace(/-{2,}/g,'-');
+    const numberFmt = n => (isFinite(n) ? Number(n).toLocaleString() : String(n||'0'));
+
+    function parseNicknames(s){
+      if(!s) return [];
+      return String(s).split(/\s*,\s*/).map(x=>x.trim()).filter(Boolean);
+    }
+
+    function normalizeRow(r){
+      return {
+        id: String(r.mal_id || '').trim(),
+        url: String(r.url || '').trim(),
+        name: (r.name || '').trim(),
+        name_kanji: (r.name_kanji || '').trim(),
+        nicknames: parseNicknames(r.nicknames || ''),
+        favorites: Number(String(r.favorites||'').replace(/[^0-9.-]/g,'')) || 0,
+        about: (r.about || '').trim(),
+        image: (r.image_webp_url || r.image_jpg_url || r.image_webp_small_url || '').trim()
+      };
+    }
+
+    function safeImg(src){
+      return (src && src.length > 6) ? src : 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
+    }
+
+    // Header/Footer
+    fetch("/header.html").then(r=>r.text()).then(t=>{ document.getElementById("header").innerHTML = t; }).catch(()=>{});
+    fetch("/footer.html").then(r=>r.text()).then(t=>{ document.getElementById("footer").innerHTML = t; }).catch(()=>{});
+
+    // Preloader lifecycle
+    let assetsLoaded=false, dataRendered=false;
+    function hidePreloader(){ const pre=document.getElementById('preloader'); if(!pre) return; pre.style.opacity='0'; pre.style.pointerEvents='none'; setTimeout(()=>pre&&pre.remove(),400); }
+    function tryHidePreloader(){ if(assetsLoaded && dataRendered) hidePreloader(); }
+    window.addEventListener('load', ()=>{ assetsLoaded=true; tryHidePreloader(); });
+    setTimeout(()=>hidePreloader(), 8000);
+
+    // ===== Render =====
+    function renderCharacter(c){
+      const img = safeImg(c.image);
+      const chips = (c.nicknames||[]).map(n=>`<span class="chip">${esc(n)}</span>`).join('');
+      const favs = numberFmt(c.favorites);
+
+      return `
+        <div class="layout">
+          <aside class="aside" aria-label="Portrait and quick facts">
+            <figure class="poster">
+              <img src="${esc(img)}" alt="${esc(c.name || 'Character portrait')}"
+                   onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg'"/>
+            </figure>
+            <div class="stat-card" aria-label="Quick stats">
+              <div class="stat-row">
+                <p>Favorites</p><strong>❤ ${esc(favs)}</strong>
+                <p>Kanji</p><strong>${esc(safe(c.name_kanji))}</strong>
+              </div>
+            </div>
+            <div class="actions">
+              <a class="btn" target="_blank" rel="noopener"
+                 href="https://www.youtube.com/results?search_query=${encodeURIComponent(c.name || '')}">
+                Open YouTube search ↗
+              </a>
+              <!-- ✅ Link corretto alla lista personaggi -->
+              <a class="btn" href="characters.html">← Back to Characters</a>
+            </div>
+          </aside>
+
+          <section class="main">
+            <header class="hero">
+              <h1>${esc(c.name || 'Character')}</h1>
+              ${c.name_kanji ? `<div class="sub">${esc(c.name_kanji)}</div>` : ''}
+              ${chips ? `<div class="chips" aria-label="Nicknames">${chips}</div>` : ''}
+            </header>
+
+            ${c.about ? `
+            <section class="panel" aria-label="Biography">
+              <h2>About</h2>
+              <p class="desc">${esc(c.about)}</p>
+            </section>` : ''}
+
+            <nav class="panel" id="prevnext" aria-label="Previous/Next" style="display:none"></nav>
+          </section>
+        </div>
+      `;
+    }
+
+    // ===== Meta / SEO =====
+    function setDynamicMeta(c){
+      const title = (c.name || "Character").trim();
+      const desc  = (c.about || "").replace(/\s+/g,' ').slice(0, 160);
+      const slug  = slugify(title);
+      const url   = `${location.origin}/character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slug)}`;
+      const img   = safeImg(c.image);
+
+      document.title = `${title} — AniMMUnity`;
+      const set = (sel, val) => { const el=document.querySelector(sel); if (el) el.setAttribute('content', val); };
+      const metaDesc = document.querySelector('meta[name="description"]'); if (metaDesc) metaDesc.setAttribute('content', desc);
+      const can = document.getElementById('canonicalLink'); if (can) can.href = url;
+
+      set('meta[property="og:title"]', title);
+      set('meta[property="og:description"]', desc);
+      set('meta[property="og:url"]', url);
+      set('meta[property="og:image"]', img);
+      set('meta[name="twitter:title"]', title);
+      set('meta[name="twitter:description"]', desc);
+      set('meta[name="twitter:image"]', img);
+
+      const bc = {
+        "@context":"https://schema.org","@type":"BreadcrumbList",
+        "itemListElement":[
+          {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
+          {
+            "@type":"ListItem",
+            "position":2,
+            "name":"Characters",
+            "item":`${location.origin}/characters.html`  <!-- ✅ percorso corretto -->
+          },
+          {"@type":"ListItem","position":3,"name":title,"item":url}
+        ]
+      };
+      document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
+
+      // Person schema
+      const entity = {
+        "@context":"https://schema.org",
+        "@type":"Person",
+        "name": title,
+        "alternateName": (c.nicknames && c.nicknames.length) ? c.nicknames : undefined,
+        "image": img,
+        "url": url,
+        "sameAs": c.url || undefined,
+        "description": desc,
+        "interactionStatistic": {
+          "@type":"InteractionCounter",
+          "interactionType":"https://schema.org/LikeAction",
+          "userInteractionCount": Number(c.favorites) || 0
         }
-        const characters = Array.from(map.values());
+      };
+      document.getElementById('ld-entity').textContent = JSON.stringify(entity);
+    }
 
-        let current = null;
-        if (idParam) {
-          current = characters.find(x => x.id === idParam);
-        }
-        if (!current && slugParam) {
-          current = characters.find(x => slugify(x.name) === slugParam);
-        }
-        if (!current) {
-          document.getElementById('content').innerHTML = `
-            <div class="panel">
-              <h2>Character not found</h2>
-              <p>Id: <code>${esc(idParam||'—')}</code> — Slug: <code>${esc(slugParam||'—')}</code></p>
-              <p><a class="btn" href="characters-list.html">← Back to Characters</a></p>
-            </div>`;
-          dataRendered = true; tryHidePreloader(); return;
-        }
+    // ===== Prev/Next (alphabetical by name) =====
+    function renderPrevNext(root, list, current){
+      const arr = [...list].sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      const idx = arr.findIndex(x=> x.id === current.id);
+      if (idx === -1) return;
+      const prev = idx>0 ? arr[idx-1] : null;
+      const next = idx < arr.length-1 ? arr[idx+1] : null;
 
-        const root = document.getElementById('content');
-        root.innerHTML = renderCharacter(current);
-        setDynamicMeta(current);
-        const pn = document.getElementById('prevnext');
-        if (pn) renderPrevNext(pn, characters, current);
+      const href = c => `character.html?id=${encodeURIComponent(c.id)}&slug=${encodeURIComponent(slugify(c.name||c.id))}`;
 
-        dataRendered = true; tryHidePreloader();
-      })
-      .catch(err => {
-        document.getElementById('content').innerHTML = `<div class="panel"><h2>Error</h2><p style="color:#b00">${esc(err?.message || err)}</p></div>`;
-        dataRendered = true; tryHidePreloader();
-      });
-  });
-</script>
+      root.style.display = (prev||next) ? '' : 'none';
+      root.innerHTML = `
+        <div class="actions" style="justify-content:space-between;">
+          <div>${prev ? `<a class="btn" href="${href(prev)}">⬅️ ${esc(prev.name || 'Previous')}</a>` : ''}</div>
+          <div>${next ? `<a class="btn" href="${href(next)}">${esc(next.name || 'Next')} ➡️</a>` : ''}</div>
+        </div>
+      `;
+    }
+
+    // ===== Boot =====
+    window.addEventListener('DOMContentLoaded', () => {
+      const FILES = [
+        '/data/anime_characters_part1.csv',
+        '/data/anime_characters_part2.csv',
+        '/data/anime_characters_part3.csv',
+        '/data/anime_characters_part4.csv',
+        '/data/anime_characters_part5.csv',
+        '/data/anime_characters_part6.csv',
+      ];
+      const params = new URLSearchParams(location.search);
+      const idParam = (params.get('id') || '').trim();
+      const slugParam = (params.get('slug') || '').trim().toLowerCase();
+
+      Promise.all(FILES.map(p => fetch(p).then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status} on ${p}`); return r.text(); })
+        .then(t => Papa.parse(t,{header:true,skipEmptyLines:true}).data.map(normalizeRow))))
+        .then(parts => {
+          const flat = parts.flat();
+          // dedup per id (tieni quello con più favorites)
+          const map = new Map();
+          for (const c of flat){
+            if (!c.id) continue;
+            if (!map.has(c.id) || c.favorites > (map.get(c.id).favorites||0)) map.set(c.id, c);
+          }
+          const characters = Array.from(map.values());
+
+          let current = null;
+          if (idParam) {
+            current = characters.find(x => x.id === idParam);
+          }
+          if (!current && slugParam) {
+            current = characters.find(x => slugify(x.name) === slugParam);
+          }
+          if (!current) {
+            document.getElementById('content').innerHTML = `
+              <div class="panel">
+                <h2>Character not found</h2>
+                <p>Id: <code>${esc(idParam||'—')}</code> — Slug: <code>${esc(slugParam||'—')}</code></p>
+                <p><a class="btn" href="characters.html">← Back to Characters</a></p>
+              </div>`;
+            dataRendered = true; tryHidePreloader(); return;
+          }
+
+          const root = document.getElementById('content');
+          root.innerHTML = renderCharacter(current);
+          setDynamicMeta(current);
+          const pn = document.getElementById('prevnext');
+          if (pn) renderPrevNext(pn, characters, current);
+
+          dataRendered = true; tryHidePreloader();
+        })
+        .catch(err => {
+          document.getElementById('content').innerHTML = `<div class="panel"><h2>Error</h2><p style="color:#b00">${esc(err?.message || err)}</p></div>`;
+          dataRendered = true; tryHidePreloader();
+        });
+    });
+  </script>
 </body>
 </html>
