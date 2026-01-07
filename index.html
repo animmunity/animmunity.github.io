@@ -738,51 +738,53 @@
       });
 
       // Blogger feed via JSONP (CORS-safe, HTTPS-only)
-      (function loadBlogger(){
-        const status=document.getElementById('blog-status');
-        const rail=document.getElementById('blog-rail');
-        if(!rail) return;
-
-        // skeletons
-        rail.innerHTML='';
-        const sk=document.createElement('div'); sk.className='skeleton-rail';
-        for(let i=0;i<4;i++){
-          const c=document.createElement('div'); c.className='sk-card shimmer';
-          c.style.width='270px'; c.style.height='210px';
-          c.innerHTML='<div class="sk-thumb" style="height:150px"></div><div class="sk-line" style="height:16px"></div>';
-          sk.appendChild(c);
-        }
-        rail.appendChild(sk);
-        status.textContent='Loading posts…';
-
-        window.__bloggerCB=function(json){
-          try{
-            const entries=(json&&json.feed&&json.feed.entry)? json.feed.entry : [];
-            rail.innerHTML='';
-            if(!entries.length){ status.textContent='No articles found.'; updateRailNavState('blog-rail'); return; }
-            entries.slice(0,12).forEach(e=>{
-              const title=(e.title&&e.title.$t)||'Article';
-              const link=(e.link||[]).find(l=>l.rel==='alternate')?.href||'#';
-              const thumb=(e['media$thumbnail']&&e['media$thumbnail'].url)||PLACEHOLDER;
-              const dateStr=(e.published&&e.published.$t)||'';
-              const d=dateStr? new Date(dateStr):null;
-              const nice=d? d.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'}) : '';
-              const a=document.createElement('a');
-              a.className='blog-card';
-              a.href=link; a.target='_blank'; a.rel='noopener';
-              a.innerHTML = `<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
-              rail.appendChild(a);
-            });
-            status.textContent='';
-            updateRailNavState('blog-rail');
-          }catch(err){ status.textContent='Unable to load posts.'; }
-        };
-        const s=document.createElement('script');
-        s.src='https://animmunity.blogspot.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
-        s.async=true;
-        s.onerror=()=>{ status.textContent='Feed unavailable.'; };
-        document.body.appendChild(s);
-      })();
+    (function loadBlogger(){
+      const status=document.getElementById('blog-status');
+      const rail=document.getElementById('blog-rail');
+      if(!rail) return;
+    
+      // skeletons
+      rail.innerHTML='';
+      const sk=document.createElement('div'); sk.className='skeleton-rail';
+      for(let i=0;i<4;i++){
+        const c=document.createElement('div'); c.className='sk-card shimmer';
+        c.style.width='270px'; c.style.height='210px';
+        c.innerHTML='<div class="sk-thumb" style="height:150px"></div><div class="sk-line" style="height:16px"></div>';
+        sk.appendChild(c);
+      }
+      rail.appendChild(sk);
+      status.textContent='Loading posts…';
+    
+      window.__bloggerCB=function(json){
+        try{
+          const entries=(json&&json.feed&&json.feed.entry)? json.feed.entry : [];
+          rail.innerHTML='';
+          if(!entries.length){ status.textContent='No articles found.'; updateRailNavState('blog-rail'); return; }
+          entries.slice(0,12).forEach(e=>{
+            const title=(e.title&&e.title.$t)||'Article';
+            const link=(e.link||[]).find(l=>l.rel==='alternate')?.href||'#';
+            const thumb=(e['media$thumbnail']&&e['media$thumbnail'].url)||PLACEHOLDER;
+            const dateStr=(e.published&&e.published.$t)||'';
+            const d=dateStr? new Date(dateStr):null;
+            const nice=d? d.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'2-digit'}) : '';
+            const a=document.createElement('a');
+            a.className='blog-card';
+            a.href=link; a.target='_blank'; a.rel='noopener';
+            a.innerHTML = `<img class="cover" src="${esc(thumb)}" alt="${esc(title)}"><div class="body"><h3 class="title">${esc(title)}</h3><div class="meta">${esc(nice)}</div></div>`;
+            rail.appendChild(a);
+          });
+          status.textContent='';
+          updateRailNavState('blog-rail');
+        }catch(err){ status.textContent='Unable to load posts.'; }
+      };
+    
+      const s=document.createElement('script');
+      // 👇 QUI LA MODIFICA IMPORTANTE
+      s.src='https://www.animmunity.com/feeds/posts/default?alt=json-in-script&max-results=12&callback=__bloggerCB';
+      s.async=true;
+      s.onerror=()=>{ status.textContent='Feed unavailable.'; };
+      document.body.appendChild(s);
+    })();
     });
   </script>
 </body>
