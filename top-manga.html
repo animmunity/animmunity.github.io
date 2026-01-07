@@ -275,7 +275,7 @@
       }
     });
 
-    // Click sui risultati (card -> select_item). Funziona con .rank-card a (thumb o titolo)
+    // Click sui risultati (card -> select_item)
     document.addEventListener('click', function(e){
       var link = e.target.closest('.rank-card a');
       if(!link) return;
@@ -369,14 +369,12 @@
     const PLACEHOLDER = 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg';
     const cleanImageUrl = (url) => (url ? String(url).trim().replace(/^"+|"+$/g,'') : '');
 
-    // …157897l.jpg -> …157897.jpg  (HQ)
     const toHighResUrl = (url) => {
       const u = cleanImageUrl(url);
       if (!u) return '';
       return u.replace(/l(\.(?:jpe?g|png))$/i, '$1');
     };
 
-    // …157897l.jpg -> …157897t.jpg  (thumb 1×)
     const toThumbUrl = (url) => {
       const u = cleanImageUrl(url);
       if (!u) return '';
@@ -385,7 +383,6 @@
       return u;
     };
 
-    // onerror: prova HQ -> thumb -> placeholder
     function imgOnErrorSmart(imgEl, originalUrl) {
       const cur = imgEl.getAttribute('data-state') || 'hq';
       if (cur === 'hq') {
@@ -420,7 +417,6 @@
     let currentPage=1, queryText='';
     let currentMetric='score', currentOrder='desc';
 
-    // Genres
     const genreSet=new Set();
     const selectedGenres=new Set();
 
@@ -535,7 +531,6 @@
       return ordered.filter(k=>cands.includes(k));
     }
 
-    // Ranks globali fissi
     let globalRankMap = new Map();
     function computeGlobalRanks(metric, order){
       const arr = rows.slice().sort((a,b)=>{
@@ -569,53 +564,54 @@
       return id ? `/manga.html?id=${encodeURIComponent(id)}` : '#';
     }
 
-function renderListPage(items, startIndex){
-  listEl.innerHTML='';
-  items.forEach((row,idx)=>{
-    const title = val(row,'title','title_english') || 'Untitled';
+    function renderListPage(items, startIndex){
+      listEl.innerHTML='';
+      items.forEach((row,idx)=>{
+        const title = val(row,'title','title_english') || 'Untitled';
 
-    const rawImg   = val(row,'main_picture','image_url','image','pic','poster');
-    const imgHQ    = toHighResUrl(rawImg);   // usa sempre l'HQ
-    const imgThumb = toThumbUrl(rawImg);     // fallback se HQ fallisce
+        const rawImg   = val(row,'main_picture','image_url','image','pic','poster');
+        const imgHQ    = toHighResUrl(rawImg);
+        const imgThumb = toThumbUrl(rawImg);
 
-    const start  = val(row,'start_date','published_from_year','year');
-    const scoreVal = toNum(val(row,'score'));
-    const popularity = toNum(val(row,'members','favorites','scored_by'));
-    const metricVal = toNum(row[currentMetric]);
-    const genresText = formatGenresForCard(row);
-    const href = buildMangaHref(row);
+        const start  = val(row,'start_date','published_from_year','year');
+        const scoreVal = toNum(val(row,'score'));
+        const popularity = toNum(val(row,'members','favorites','scored_by'));
+        const metricVal = toNum(row[currentMetric]);
+        const genresText = formatGenresForCard(row);
+        const href = buildMangaHref(row);
 
-    const globalPos = globalRankMap.get(String(row.manga_id||'')) || (startIndex+idx+1);
+        const globalPos = globalRankMap.get(String(row.manga_id||'')) || (startIndex+idx+1);
 
-    const metricPill = (currentMetric==='score')
-      ? ''
-      : `<span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>`;
+        const metricPill = (currentMetric==='score')
+          ? ''
+          : `<span class="badge pill">${esc(currentMetric)}: ${isNaN(metricVal)?'—':metricVal}</span>`;
 
-    const card=document.createElement('article'); card.className='rank-card';
-    card.innerHTML = `
-      <div class="rank">${globalPos}</div>
-      <a class="thumb-wrap" href="${href}" aria-label="${esc(title)}">
-        <img class="thumb"
-             loading="lazy"
-             decoding="async"
-             width="80" height="112"
-             src="${esc(imgHQ || imgThumb || PLACEHOLDER)}"
-             data-state="hq"
-             onerror="imgOnErrorSmart(this, '${esc(cleanImageUrl(rawImg))}')"
-             alt="${esc(title)}">
-      </a>
-      <div class="meta">
-        <h3><a href="${href}">${esc(title)}</a></h3>
-        <div class="muted">${start ? esc(start) : ''}${start && genresText ? ' • ' : ''}${genresText ? esc(genresText) : ''}</div>
-        <div class="badges">
-          ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
-          ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
-          ${metricPill}
-        </div>
-      </div>`;
-    listEl.appendChild(card);
-  });
-}
+        const card=document.createElement('article'); card.className='rank-card';
+        card.innerHTML = `
+          <div class="rank">${globalPos}</div>
+          <a class="thumb-wrap" href="${href}" aria-label="${esc(title)}">
+            <img class="thumb"
+                 loading="lazy"
+                 decoding="async"
+                 width="80" height="112"
+                 src="${esc(imgHQ || imgThumb || PLACEHOLDER)}"
+                 data-state="hq"
+                 onerror="imgOnErrorSmart(this, '${esc(cleanImageUrl(rawImg))}')"
+                 alt="${esc(title)}">
+          </a>
+          <div class="meta">
+            <h3><a href="${href}">${esc(title)}</a></h3>
+            <div class="muted">${start ? esc(start) : ''}${start && genresText ? ' • ' : ''}${genresText ? esc(genresText) : ''}</div>
+            <div class="badges">
+              ${!isNaN(scoreVal) ? `<span class="badge score">Score: ${scoreVal.toFixed(2)}</span>` : ''}
+              ${!isNaN(popularity) ? `<span class="badge pop">Popularity: ${popularity}</span>` : ''}
+              ${metricPill}
+            </div>
+          </div>`;
+        listEl.appendChild(card);
+      });
+    }
+
     function updatePagination(totalPages, current){
       paginationEl.innerHTML='';
 
@@ -701,10 +697,18 @@ function renderListPage(items, startIndex){
 
     function hydrateFromURL(){
       const q=new URLSearchParams(location.search);
-      const qText=(q.get('q')||'').trim(); if(qText){ queryText=qText.toLowerCase(); searchInput.value=qText; }
-      const m=q.get('metric'); const o=q.get('order'); const p=parseInt(q.get('page')||'1',10);
+      const qText=(q.get('q')||'').trim(); 
+      if(qText){ 
+        queryText=qText.toLowerCase(); 
+        searchInput.value=qText; 
+      }
+      const m=q.get('metric'); 
+      const o=q.get('order'); 
+      const p=parseInt(q.get('page')||'1',10);
       const rawGenres=q.get('genres');
-      if(rawGenres){ rawGenres.split('|').forEach(g=> selectedGenres.add(g)); updateCountBadge('genres', selectedGenres.size); }
+      if(rawGenres){ 
+        rawGenres.split('|').forEach(g=> selectedGenres.add(g)); 
+      }
       if(m) currentMetric=m;
       if(o) currentOrder=o;
       return Math.max(1, isNaN(p)?1:p);
@@ -735,11 +739,10 @@ function renderListPage(items, startIndex){
           detailsMap.set(row.manga_id, merged);
         }
 
-        // Crea righe MERGE (core + details) così abbiamo main_picture/url ecc.
+        // Crea righe MERGE (core + details)
         rows = core.map(c=>{
           const det = detailsMap.get(c.manga_id) || {};
           const merged = { ...c, ...det };
-          // normalizza alcune chiavi utili
           merged.title = merged.title || merged.title_english || merged.title_japanese || 'Untitled';
           merged.main_picture = merged.main_picture || '';
           merged.genres = merged.genres || c.genres || '[]';
@@ -751,12 +754,17 @@ function renderListPage(items, startIndex){
           && v!==null && v!==undefined));
         numericColumns = sample ? detectNumericColumns(sample) : ['score'];
 
-        // Dropdowns
+        // 1) Stato da URL PRIMA dei dropdown
+        const startPage = hydrateFromURL();
+
+        // 2) Dropdowns coerenti con lo stato idratato
         buildDropdown({
           key:'genres',
           label:'Genres',
           type:'multi',
-          options:[...genreSet].sort((a,b)=>a.localeCompare(b)).map(v=>({label:v,value:v})),
+          options:[...genreSet]
+            .sort((a,b)=>a.localeCompare(b))
+            .map(v=>({label:v,value:v,selected:selectedGenres.has(v)})),
           withSearch:true,
           onSelect:(inp)=>{
             if(inp.checked) selectedGenres.add(inp.value); else selectedGenres.delete(inp.value);
@@ -765,7 +773,11 @@ function renderListPage(items, startIndex){
           }
         });
 
-        const metricOptions = numericColumns.map(v=>({label:v, value:v, selected: v===currentMetric}));
+        const metricOptions = numericColumns.map(v=>({
+          label:v,
+          value:v,
+          selected: v===currentMetric
+        }));
         buildDropdown({
           key:'metric',
           label:`Metric: ${currentMetric}`,
@@ -796,7 +808,10 @@ function renderListPage(items, startIndex){
           }
         });
 
-        const startPage = hydrateFromURL();
+        // Aggiorna badge dei generi ora che esistono nel DOM
+        updateCountBadge('genres', selectedGenres.size);
+
+        // 3) Render iniziale coerente con URL
         applyAndRender(startPage);
 
         dataRendered=true; tryHidePreloader(); statusEl.textContent='';
@@ -814,14 +829,32 @@ function renderListPage(items, startIndex){
 
       // Reset
       clearBtn.addEventListener('click', ()=>{
+        // Generi
         selectedGenres.clear();
         document.querySelectorAll('.filter-menu input[type="checkbox"][data-facet="genres"]').forEach(chk=> chk.checked=false);
         updateCountBadge('genres', 0);
-        queryText=''; searchInput.value='';
+
+        // Ricerca
+        queryText=''; 
+        searchInput.value='';
+
+        // Metric & order (stato)
         currentMetric = 'score';
         currentOrder = 'desc';
-        const mLabel=document.getElementById('btn-label-metric'); if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
-        const oLabel=document.getElementById('btn-label-order');  if(oLabel)  oLabel.textContent=`Order: ${currentOrder}`;
+
+        // Metric & order (UI: label + radio)
+        const mLabel=document.getElementById('btn-label-metric'); 
+        if(mLabel) mLabel.textContent=`Metric: ${currentMetric}`;
+        const oLabel=document.getElementById('btn-label-order');  
+        if(oLabel)  oLabel.textContent=`Order: ${currentOrder}`;
+
+        document.querySelectorAll('input[name="radio-metric"]').forEach(r=>{
+          r.checked = (r.value === 'score');
+        });
+        document.querySelectorAll('input[name="radio-order"]').forEach(r=>{
+          r.checked = (r.value === 'desc');
+        });
+
         applyAndRender(1);
       });
     });
