@@ -8,28 +8,28 @@
   <meta name="description" content="Browse the AniMMUnity manga list. Filter by genres, themes, demographics, serializations, and authors. Fast search, clean cards, and detail pages with full info.">
 
   <!-- HEAD -->
-<!-- Google tag (gtag.js) — GA4 -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
+  <!-- Google tag (gtag.js) — GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KJTF6C789Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
 
-  // Consenso iniziale (UE/GDPR): analytics ok, ads off
-  gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'granted'
-  });
+    // Consenso iniziale (UE/GDPR): analytics ok, ads off
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'granted'
+    });
 
-  gtag('js', new Date());
+    gtag('js', new Date());
 
-  // Config: niente page_view automatico (gestiamo noi) + invio robusto
-  gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
-</script>
+    // Config: niente page_view automatico (gestiamo noi) + invio robusto
+    gtag('config', 'G-KJTF6C789Y', { send_page_view: false, transport_type: 'beacon' });
+  </script>
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://animmunity.github.io/">
+  <link rel="canonical" href="https://animmunity.github.io/manga-list.html">
 
   <!-- Robots -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -44,7 +44,7 @@
   <!-- Open Graph -->
   <meta property="og:site_name" content="AniMMUnity">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://animmunity.github.io/">
+  <meta property="og:url" content="https://animmunity.github.io/manga-list.html">
   <meta property="og:title" content="AniMMUnity — Manga List with Powerful Filters">
   <meta property="og:description" content="Search and filter manga by genres, themes, demographics, serializations, and authors.">
   <meta property="og:image" content="https://animmunity.github.io/assets/og-image.jpg">
@@ -184,93 +184,93 @@
 </head>
 <body>
   <!-- BODY -->
-<script>
-(function(){
-  if (window.__ga4SpaTrackerInstalled) return;
-  window.__ga4SpaTrackerInstalled = true;
+  <script>
+  (function(){
+    if (window.__ga4SpaTrackerInstalled) return;
+    window.__ga4SpaTrackerInstalled = true;
 
-  // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
-  window.acceptAllConsent = function(){
-    gtag('consent', 'update', {
-      ad_storage: 'granted',
-      ad_user_data: 'granted',
-      ad_personalization: 'granted',
-      analytics_storage: 'granted'
-    });
-  };
-
-  function trackPageView(){
-    gtag('event','page_view', {
-      page_location: location.href,
-      page_path: location.pathname + location.search,
-      page_title: document.title
-    });
-  }
-
-  // Normalizza URL ignorando ?q= per non contare ogni digitazione nella ricerca
-  function normalize(url){
-    try{
-      var u = new URL(url, location.origin);
-      u.searchParams.delete('q');
-      return u.pathname + (u.search ? u.search : '');
-    }catch(e){
-      return location.pathname + location.search;
-    }
-  }
-
-  var prevNorm;
-
-  // page_view iniziale + binding eventi
-  document.addEventListener('DOMContentLoaded', function(){
-    prevNorm = normalize(location.href);
-    trackPageView();
-
-    // Eventi Ricerca (#searchInput): invia "search" senza page_view extra
-    var el = document.getElementById('searchInput');
-    if (el){
-      function fire(){
-        var q = (el.value || '').trim();
-        if (!q) return;
-        gtag('event','search', { search_term: q });
-      }
-      el.addEventListener('change', fire);
-      el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
-    }
-
-    // Eventi Filtri (checkbox nei menu filtri)
-    document.body.addEventListener('change', function(e){
-      var t = e.target;
-      if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
-        gtag('event','select_content', {
-          content_type: 'filter',
-          item_id: t.getAttribute('data-facet'),
-          item_name: t.value,
-          selected: t.checked
-        });
-      }
-    });
-  });
-
-  function maybeTrack(){
-    var nowNorm = normalize(location.href);
-    if (nowNorm !== prevNorm){
-      prevNorm = nowNorm;
-      trackPageView();
-    }
-  }
-
-  // Traccia cambi URL senza reload (paginazione/navigazione interna)
-  ['pushState','replaceState'].forEach(function(method){
-    var orig = history[method];
-    history[method] = function(){
-      var ret = orig.apply(this, arguments);
-      setTimeout(maybeTrack, 0);
-      return ret;
+    // Helper da richiamare quando l’utente accetta i cookie (se aggiungi un banner)
+    window.acceptAllConsent = function(){
+      gtag('consent', 'update', {
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        analytics_storage: 'granted'
+      });
     };
-  });
-  window.addEventListener('popstate', maybeTrack);
-})();
-</script>
+
+    function trackPageView(){
+      gtag('event','page_view', {
+        page_location: location.href,
+        page_path: location.pathname + location.search,
+        page_title: document.title
+      });
+    }
+
+    // Normalizza URL ignorando ?q= per non contare ogni digitazione nella ricerca
+    function normalize(url){
+      try{
+        var u = new URL(url, location.origin);
+        u.searchParams.delete('q');
+        return u.pathname + (u.search ? u.search : '');
+      }catch(e){
+        return location.pathname + location.search;
+      }
+    }
+
+    var prevNorm;
+
+    // page_view iniziale + binding eventi
+    document.addEventListener('DOMContentLoaded', function(){
+      prevNorm = normalize(location.href);
+      trackPageView();
+
+      // Eventi Ricerca (#searchInput): invia "search" senza page_view extra
+      var el = document.getElementById('searchInput');
+      if (el){
+        function fire(){
+          var q = (el.value || '').trim();
+          if (!q) return;
+          gtag('event','search', { search_term: q });
+        }
+        el.addEventListener('change', fire);
+        el.addEventListener('keydown', function(e){ if (e.key === 'Enter') fire(); });
+      }
+
+      // Eventi Filtri (checkbox nei menu filtri)
+      document.body.addEventListener('change', function(e){
+        var t = e.target;
+        if (t && t.matches('.filter-menu input[type="checkbox"][data-facet]')){
+          gtag('event','select_content', {
+            content_type: 'filter',
+            item_id: t.getAttribute('data-facet'),
+            item_name: t.value,
+            selected: t.checked
+          });
+        }
+      });
+    });
+
+    function maybeTrack(){
+      var nowNorm = normalize(location.href);
+      if (nowNorm !== prevNorm){
+        prevNorm = nowNorm;
+        trackPageView();
+      }
+    }
+
+    // Traccia cambi URL senza reload (paginazione/navigazione interna)
+    ['pushState','replaceState'].forEach(function(method){
+      var orig = history[method];
+      history[method] = function(){
+        var ret = orig.apply(this, arguments);
+        setTimeout(maybeTrack, 0);
+        return ret;
+      };
+    });
+    window.addEventListener('popstate', maybeTrack);
+  })();
+  </script>
 
 
   <!-- 🔄 Preloader -->
@@ -329,7 +329,7 @@
 
   <script>
     // ===== Utilities =====
-    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    const esc = (s='') => String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
     const debounce = (fn, wait=250) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); }; };
     const fallbackImage = "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg";
 
