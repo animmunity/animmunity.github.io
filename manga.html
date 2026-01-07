@@ -134,33 +134,31 @@
   @keyframes spin{ to{ transform: rotate(360deg) } }
 
   /* Authors block */
-/* Authors block - versione uniforme */
-.authors-list {
-  display: grid;
-  gap: 4px; /* meno spazio tra righe */
-  margin-top: 4px;
-}
-.authors-list .author-item {
-  padding: 0;                /* rimuove padding */
-  border: none;              /* rimuove bordo */
-  background: transparent;   /* rimuove sfondo grigio */
-  border-radius: 0;          /* nessun arrotondamento */
-  color: var(--ink);         /* testo uniforme */
-}
-/* 1) Taglia qualsiasi extrabordo nei caroselli */
-.rail-wrap { overflow: hidden; }
+  .authors-list {
+    display: grid;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .authors-list .author-item {
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    color: var(--ink);
+  }
+  /* 1) Taglia qualsiasi extrabordo nei caroselli */
+  .rail-wrap { overflow: hidden; }
 
-/* 2) Non far sporgere i bottoni: niente valori negativi */
-.nav-prev { left: 6px; transform: translateY(-50%); }
-.nav-next { right: 6px; transform: translateY(-50%); }
+  /* 2) Non far sporgere i bottoni: niente valori negativi */
+  .nav-prev { left: 6px; transform: translateY(-50%); }
+  .nav-next { right: 6px; transform: translateY(-50%); }
 
-/* 3) Cintura di sicurezza globale contro lo scroll orizzontale */
-html, body { overflow-x: hidden; }
+  /* 3) Cintura di sicurezza globale contro lo scroll orizzontale */
+  html, body { overflow-x: hidden; }
 
-/* 4) Effetto griglia: evita che il ::before allarghi il layout */
-.fx-grid { overflow: hidden; }
-.fx-grid::before { inset: 0; } /* se vuoi mantenere l’effetto ampio, usa max(…):
-/* .fx-grid::before { inset: max(-10vw, -80px); } */
+  /* 4) Effetto griglia: evita che il ::before allarghi il layout */
+  .fx-grid { overflow: hidden; }
+  .fx-grid::before { inset: 0; }
 </style>
 </head>
 <body>
@@ -243,7 +241,7 @@ html, body { overflow-x: hidden; }
 
     var item = {
       item_id: item_id || '(unknown)',
-      item_name: ent.name || 'Anime',
+      item_name: ent.name || 'Manga', // CHANGED
       item_category: ent['@type'] || undefined,
       item_brand: ent.productionCompany && ent.productionCompany.name || undefined
     };
@@ -276,13 +274,12 @@ html, body { overflow-x: hidden; }
       gtag('event','video_start', {
         video_provider: (ifr.src || '').includes('youtube') ? 'youtube' : 'unknown',
         video_id: vid || undefined,
-        item_name: ent.name || 'Anime',
+        item_name: ent.name || 'Manga', // CHANGED
         item_category: 'Trailer'
       });
     }
-    // Prova a intercettare il click sul contenitore/iframe
     panel.addEventListener('pointerdown', fire, { passive:true });
-    ifr.addEventListener('load', function(){ /* opzionale future hooks */ }, { once:true });
+    ifr.addEventListener('load', function(){}, { once:true });
   }
 
   function bindChipClicks(){
@@ -332,7 +329,6 @@ html, body { overflow-x: hidden; }
     prevNorm = normalize(location.href);
     trackPageView();
 
-    // Invia view_item quando lo schema è pronto (setDynamicMeta lo aggiorna)
     trySendViewItem();
     var entEl = document.getElementById('ld-entity');
     if (entEl){
@@ -348,13 +344,11 @@ html, body { overflow-x: hidden; }
     bindOutbound();
   });
 
-  /* ========== page_view su navigazioni SPA (se mai usate) ========== */
   function maybeTrack(){
     var nowNorm = normalize(location.href);
     if (nowNorm !== prevNorm){
       prevNorm = nowNorm;
       trackPageView();
-      // Prova a rilanciare view_item su cambio URL SPA
       setTimeout(trySendViewItem, 0);
     }
   }
@@ -438,7 +432,6 @@ const sections = {
 
 function formatMultiline(text){
   if(!text) return '—';
-  // Rimuove il tag in qualunque punto della stringa (anche con spazi/line break attorno)
   const stripped = String(text).replace(/\s*\[Written by MAL Rewrite\]\s*/gi, '');
   return esc(stripped).replace(/\r\n|\r|\n/g,'<br>');
 }
@@ -462,32 +455,23 @@ function decodeHTML(str='') {
     .replace(/&#39;/g, "'");
 }
 
-// Assicura che il testo rappresenti un array JSON di oggetti autori
 function normalizeAuthorsText(raw=''){
   let s = String(raw).trim();
 
-  // Caso CSV: tutto tra doppi apici con apici raddoppiati
   if (s.includes('""') || (s.startsWith('"') && s.endsWith('"'))) {
-    s = s.replace(/^"(.*)"$/s, '$1');   // rimuovi apici esterni
-    s = s.replace(/""/g, '"');          // normalizza apici interni
+    s = s.replace(/^"(.*)"$/s, '$1');
+    s = s.replace(/""/g, '"');
   }
 
-  // Se manca l'array [] ma ci sono più oggetti separati da "},"
   if (!/^\s*\[/.test(s) && /}\s*,\s*{/.test(s)) {
     s = `[${s}]`;
   }
-  // Se è un singolo oggetto { ... } senza []
   if (!/^\s*\[/.test(s) && /^\s*{/.test(s) && /}\s*$/.test(s)) {
     s = `[${s}]`;
   }
 
-  // Metti le chiavi non quotate tra doppi apici: id: → "id":
   s = s.replace(/([{,]\s*)([A-Za-z_][A-Za-z0-9_]*)\s*:/g, '$1"$2":');
-
-  // Converti apici singoli in doppi apici
   s = s.replace(/'/g, '"');
-
-  // Rimuovi virgole finali in oggetti/array: {"a":1,} → {"a":1}
   s = s.replace(/,\s*([}\]])/g, '$1');
 
   return s;
@@ -513,7 +497,6 @@ function parseAuthors(input){
       return name ? { name, role: '' } : null;
     }).filter(Boolean);
   } catch {
-    // Ultimo fallback duro: prova split per "},{"
     try {
       const parts = String(input).split(/}\s*,\s*{/g).map((chunk,i,all)=>{
         let c = chunk.trim();
@@ -522,7 +505,7 @@ function parseAuthors(input){
         return c;
       });
       const fixed = `[${parts.join(',')}]`;
-      return parseAuthors(fixed); // ricicla pipeline
+      return parseAuthors(fixed);
     } catch {
       const name = String(input).replace(/^\[|\]$/g,'').trim();
       return name ? [{ name, role: '' }] : [];
@@ -586,7 +569,6 @@ function renderDetails(manga){
             if (['genres','themes','demographics','serializations','title_synonyms'].includes(f)) v = prettyList(v);
 
             if (f === 'authors') {
-              // Dedup + ordine alfabetico (facoltativo ma utile)
               const items = Array.from(new Map(parseAuthors(manga.authors).map(a=>[a.name, a])).values())
                                 .sort((a,b)=> a.name.localeCompare(b.name));
               if (!items.length) continue;
@@ -629,11 +611,15 @@ function setDynamicMeta(manga){
   set('meta[name="twitter:description"]', desc);
   set('meta[name="twitter:image"]', img);
 
-  const bc = {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[
-    {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
-    {"@type":"ListItem","position":2,"name":"Manga List","item":`${location.origin}/`},
-    {"@type":"ListItem","position":3,"name":title,"item":url}
-  ]};
+  const bc = {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {"@type":"ListItem","position":1,"name":"Home","item":`${location.origin}/`},
+      {"@type":"ListItem","position":2,"name":"Manga List","item":`${location.origin}/manga-list.html`}, <!-- CHANGED -->
+      {"@type":"ListItem","position":3,"name":title,"item":url}
+    ]
+  };
   document.getElementById('ld-breadcrumbs').textContent = JSON.stringify(bc);
 
   const schemaType = 'Book';
@@ -682,7 +668,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const slugFromQuery = normalizeSlug(params.get('slug'));
   const slugFromPath  = normalizeSlug(getSlugFromPath());
 
-  // carica tutti i CSV necessari (allineati a preload: CORS anonimi)
   const fetchOpts = { mode: 'cors', credentials: 'omit', cache: 'force-cache' };
 
   Promise.all([
@@ -695,7 +680,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const d1 = parseCSV(d1Csv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
     const d2 = parseCSV(d2Csv).map(r => ({ ...r, manga_id: String(r.manga_id||'').trim() }));
 
-    // indice dettagli per manga_id (part1 -> part2, preferisci il più completo)
     const detailsMap = new Map();
     for (const row of [...d1, ...d2]){
       if (!row.manga_id) continue;
@@ -709,7 +693,6 @@ window.addEventListener('DOMContentLoaded', () => {
       detailsMap.set(row.manga_id, merged);
     }
 
-    // trova il record corrente
     let recCore = null; let recDetails = null;
     if (mangaId){
       recCore = core.find(a => a.manga_id === mangaId);
